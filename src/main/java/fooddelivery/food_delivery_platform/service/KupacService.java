@@ -20,6 +20,9 @@ public class KupacService {
         return kupacRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Kupac nije pronađen: " + id));
     }
+    public List<Kupac> findByEmail(String email) {
+        return kupacRepository.findByEmail(email).map(List::of).orElse(List.of());
+    }
 
     public Kupac create(Kupac kupac) {
         if (kupacRepository.existsByEmail(kupac.getEmail())) {

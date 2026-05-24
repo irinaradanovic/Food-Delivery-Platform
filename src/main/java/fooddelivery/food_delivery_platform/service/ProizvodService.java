@@ -19,6 +19,10 @@ public class ProizvodService {
                 .orElseThrow(() -> new RuntimeException("Proizvod nije pronađen: " + id));
     }
 
+    public List<Proizvod> getByKategorija(Long id) {
+        return proizvodRepository.findByKategorija_KategorijaId(id);
+    }
+
     public List<Proizvod> search(String naziv) {
         return proizvodRepository.findByNazivContainingIgnoreCase(naziv);
     }

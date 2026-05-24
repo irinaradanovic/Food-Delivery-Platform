@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/kupci")
@@ -15,13 +16,24 @@ public class KupacController {
     private final KupacService kupacService;
 
     @GetMapping
-    public ResponseEntity<List<Kupac>> getAll() {
+    public ResponseEntity<List<Kupac>> getAll(@RequestParam(required = false) String email) {
+        if (email != null) return ResponseEntity.ok(kupacService.findByEmail(email));
         return ResponseEntity.ok(kupacService.getAll());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Kupac> getById(@PathVariable Long id) {
         return ResponseEntity.ok(kupacService.getById(id));
+    }
+
+    @PostMapping("/registracija")
+    public ResponseEntity<?> registracija(@RequestBody Kupac kupac) {
+        try {
+            Kupac novi = kupacService.create(kupac);
+            return ResponseEntity.status(HttpStatus.CREATED).body(novi);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("greska", e.getMessage()));
+        }
     }
 
     @PostMapping

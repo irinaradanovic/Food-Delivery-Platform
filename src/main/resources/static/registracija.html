@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Big Bite – Registracija</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --green:    #2d6a2d;
+            --green-lt: #3a8a3a;
+            --orange:   #e8721c;
+            --cream:    #faf7f2;
+            --dark:     #1a1a1a;
+            --gray:     #6b7280;
+            --border:   #e5e0d8;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--cream);
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        /* Leva strana */
+        .hero {
+            background: var(--green);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 400px; height: 400px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50%;
+            top: -100px; left: -100px;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            width: 300px; height: 300px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 50%;
+            bottom: -80px; right: -80px;
+        }
+
+        .logo-wrap {
+            text-align: center;
+            margin-bottom: 48px;
+            position: relative;
+            z-index: 1;
+        }
+        .logo-icon {
+            width: 100px; height: 100px;
+            background: white; border-radius: 28px;
+            display: flex; align-items: center;
+            justify-content: center; margin: 0 auto 20px;
+            font-size: 48px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        .logo-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 42px; color: white; line-height: 1;
+        }
+        .logo-sub {
+            color: rgba(255,255,255,0.65);
+            font-size: 13px; letter-spacing: 3px;
+            text-transform: uppercase; margin-top: 8px;
+        }
+
+        .benefits {
+            position: relative; z-index: 1; width: 100%; max-width: 320px;
+        }
+        .benefit {
+            display: flex; align-items: center; gap: 14px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 14px; padding: 14px 18px;
+            margin-bottom: 10px; color: white;
+        }
+        .benefit .icon { font-size: 24px; flex-shrink: 0; }
+        .benefit .text { font-size: 14px; opacity: 0.9; }
+
+        /* Desna strana */
+        .form-side {
+            display: flex; flex-direction: column;
+            justify-content: center;
+            padding: 60px;
+            overflow-y: auto;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 32px; color: var(--dark); margin-bottom: 6px;
+        }
+        .subtitle { color: var(--gray); margin-bottom: 32px; font-size: 15px; }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .field { margin-bottom: 16px; }
+
+        label {
+            display: block; font-size: 13px; font-weight: 600;
+            color: var(--dark); margin-bottom: 6px; letter-spacing: 0.3px;
+        }
+
+        input {
+            width: 100%;
+            border: 1.5px solid var(--border); border-radius: 12px;
+            padding: 13px 16px;
+            font-family: 'DM Sans', sans-serif; font-size: 15px;
+            color: var(--dark); background: white; outline: none;
+            transition: border-color 0.2s;
+        }
+        input:focus { border-color: var(--green); }
+        input.error { border-color: #dc2626; }
+
+        .field-error {
+            font-size: 12px; color: #dc2626; margin-top: 4px; display: none;
+        }
+
+        .password-wrap { position: relative; }
+        .password-wrap input { padding-right: 44px; }
+        .toggle-pass {
+            position: absolute; right: 14px; top: 50%;
+            transform: translateY(-50%);
+            background: none; border: none;
+            cursor: pointer; font-size: 16px; color: var(--gray);
+        }
+
+        .strength-bar {
+            height: 4px; border-radius: 2px;
+            background: var(--border); margin-top: 8px; overflow: hidden;
+        }
+        .strength-fill {
+            height: 100%; width: 0; border-radius: 2px;
+            transition: width 0.3s, background 0.3s;
+        }
+        .strength-label {
+            font-size: 11px; color: var(--gray); margin-top: 4px;
+        }
+
+        .alert {
+            padding: 12px 16px; border-radius: 10px;
+            font-size: 14px; margin-bottom: 16px; display: none;
+        }
+        .alert-error { background: #fee2e2; color: #dc2626; }
+        .alert-success { background: #dcfce7; color: #16a34a; }
+
+        .btn-register {
+            width: 100%; background: var(--green); color: white;
+            border: none; border-radius: 12px; padding: 15px;
+            font-family: 'DM Sans', sans-serif; font-size: 16px;
+            font-weight: 600; cursor: pointer; margin-top: 8px;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .btn-register:hover { background: var(--green-lt); }
+        .btn-register:active { transform: scale(0.99); }
+        .btn-register:disabled { background: #9ca3af; cursor: not-allowed; }
+
+        .login-link {
+            text-align: center; font-size: 14px;
+            color: var(--gray); margin-top: 20px;
+        }
+        .login-link a {
+            color: var(--green); font-weight: 600; text-decoration: none;
+        }
+        .login-link a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<div class="hero">
+    <div class="logo-wrap">
+        <div class="logo-icon">🍽️</div>
+        <div class="logo-name">Big Bite</div>
+        <div class="logo-sub">Food + Drink</div>
+    </div>
+
+    </div>
+
+<div class="form-side">
+    <h1>Kreiraj nalog</h1>
+    <p class="subtitle">Pridruži se Big Bite zajednici</p>
+
+    <div id="alert-error" class="alert alert-error"></div>
+    <div id="alert-success" class="alert alert-success"></div>
+
+    <div class="form-row">
+        <div class="field">
+            <label>Ime</label>
+            <input id="ime" type="text" placeholder="Ime">
+            <div class="field-error" id="err-ime">Unesite ime</div>
+        </div>
+        <div class="field">
+            <label>Prezime</label>
+            <input id="prezime" type="text" placeholder="Prezime">
+            <div class="field-error" id="err-prezime">Unesite prezime</div>
+        </div>
+    </div>
+
+    <div class="field">
+        <label>Email adresa</label>
+        <input id="email" type="email" placeholder="Imejl">
+        <div class="field-error" id="err-email">Unesite validan email</div>
+    </div>
+
+    <div class="field">
+        <label>Broj telefona</label>
+        <input id="telefon" type="tel" placeholder="Broj telefona">
+        <div class="field-error" id="err-telefon">Unesite broj telefona</div>
+    </div>
+
+    <div class="field">
+        <label>Adresa dostave</label>
+        <input id="adresa" type="text" placeholder="Ulica i broj, Grad">
+    </div>
+
+    <div class="field">
+        <label>Lozinka</label>
+        <div class="password-wrap">
+            <input id="lozinka" type="password" placeholder="Minimum 6 karaktera"
+                   oninput="provjeriJacinu(this.value)">
+            <button class="toggle-pass" type="button" onclick="toggleLozinka('lozinka', this)">👁</button>
+        </div>
+        <div class="strength-bar"><div class="strength-fill" id="strength-fill"></div></div>
+        <div class="strength-label" id="strength-label"></div>
+        <div class="field-error" id="err-lozinka">Minimum 6 karaktera</div>
+    </div>
+
+    <div class="field">
+        <label>Potvrdi lozinku</label>
+        <div class="password-wrap">
+            <input id="lozinka2" type="password" placeholder="Ponovi lozinku">
+            <button class="toggle-pass" type="button" onclick="toggleLozinka('lozinka2', this)">👁</button>
+        </div>
+        <div class="field-error" id="err-lozinka2">Lozinke se ne poklapaju</div>
+    </div>
+
+    <button class="btn-register" id="btn-reg" onclick="registruj()">
+        Kreiraj nalog
+    </button>
+
+    <p class="login-link">
+        Već imaš nalog? <a href="/login.html">Prijavi se</a>
+    </p>
+</div>
+
+<script>
+    function toggleLozinka(id, btn) {
+        const input = document.getElementById(id);
+        if (input.type === 'password') {
+            input.type = 'text'; btn.textContent = '🙈';
+        } else {
+            input.type = 'password'; btn.textContent = '👁';
+        }
+    }
+
+    function provjeriJacinu(val) {
+        const fill = document.getElementById('strength-fill');
+        const label = document.getElementById('strength-label');
+        let score = 0;
+        if (val.length >= 6) score++;
+        if (val.length >= 10) score++;
+        if (/[A-Z]/.test(val)) score++;
+        if (/[0-9]/.test(val)) score++;
+        if (/[^A-Za-z0-9]/.test(val)) score++;
+
+        const nivoi = [
+            { w: '0%',   bg: '',          txt: '' },
+            { w: '25%',  bg: '#dc2626',   txt: 'Slaba' },
+            { w: '50%',  bg: '#f97316',   txt: 'Srednja' },
+            { w: '75%',  bg: '#eab308',   txt: 'Dobra' },
+            { w: '100%', bg: '#16a34a',   txt: 'Odlična' },
+        ];
+
+        const nivo = val.length === 0 ? 0 : Math.min(score, 4);
+        fill.style.width = nivoi[nivo].w;
+        fill.style.background = nivoi[nivo].bg;
+        label.textContent = nivoi[nivo].txt;
+        label.style.color = nivoi[nivo].bg;
+    }
+
+    function validiraj() {
+        let ok = true;
+
+        const fields = [
+            { id: 'ime',     errId: 'err-ime',     check: v => v.length >= 2 },
+            { id: 'prezime', errId: 'err-prezime',  check: v => v.length >= 2 },
+            { id: 'email',   errId: 'err-email',    check: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) },
+            { id: 'telefon', errId: 'err-telefon',  check: v => v.length >= 6 },
+            { id: 'lozinka', errId: 'err-lozinka',  check: v => v.length >= 6 },
+        ];
+
+        fields.forEach(f => {
+            const input = document.getElementById(f.id);
+            const err = document.getElementById(f.errId);
+            const val = input.value.trim();
+            if (!f.check(val)) {
+                input.classList.add('error');
+                err.style.display = 'block';
+                ok = false;
+            } else {
+                input.classList.remove('error');
+                err.style.display = 'none';
+            }
+        });
+
+        // Provjera poklapanja lozinki
+        const l1 = document.getElementById('lozinka').value;
+        const l2 = document.getElementById('lozinka2').value;
+        const errL2 = document.getElementById('err-lozinka2');
+        const inputL2 = document.getElementById('lozinka2');
+        if (l1 !== l2) {
+            inputL2.classList.add('error');
+            errL2.style.display = 'block';
+            ok = false;
+        } else {
+            inputL2.classList.remove('error');
+            errL2.style.display = 'none';
+        }
+
+        return ok;
+    }
+
+    async function registruj() {
+        const alertErr = document.getElementById('alert-error');
+        const alertOk = document.getElementById('alert-success');
+        alertErr.style.display = 'none';
+        alertOk.style.display = 'none';
+
+        if (!validiraj()) return;
+
+        const btn = document.getElementById('btn-reg');
+        btn.disabled = true;
+        btn.textContent = 'Kreiranje naloga...';
+
+        const podaci = {
+            ime: document.getElementById('ime').value.trim(),
+            prezime: document.getElementById('prezime').value.trim(),
+            email: document.getElementById('email').value.trim(),
+            telefon: document.getElementById('telefon').value.trim(),
+            adresa: document.getElementById('adresa').value.trim(),
+            lozinka: document.getElementById('lozinka').value,
+            uloga: 'KUPAC'
+        };
+
+        try {
+            const res = await fetch('http://localhost:8080/api/kupci/registracija', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(podaci)
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                alertErr.textContent = data.greska || 'Greška pri registraciji.';
+                alertErr.style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = 'Kreiraj nalog';
+                return;
+            }
+
+            alertOk.textContent = `Nalog kreiran! Preusmeravamo na prijavu...`;
+            alertOk.style.display = 'block';
+
+            setTimeout(() => {
+                window.location.href = '/login.html';
+            }, 2000);
+
+        } catch {
+            alertErr.textContent = 'Nije moguće povezati se sa serverom.';
+            alertErr.style.display = 'block';
+            btn.disabled = false;
+            btn.textContent = 'Kreiraj nalog';
+        }
+    }
+
+    // Ukloni grešku na unos
+    ['ime','prezime','email','telefon','lozinka','lozinka2'].forEach(id => {
+        document.getElementById(id).addEventListener('input', () => {
+            document.getElementById(id).classList.remove('error');
+        });
+    });
+
+    // Enter
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Enter') registruj();
+    });
+</script>
+</body>
+</html>

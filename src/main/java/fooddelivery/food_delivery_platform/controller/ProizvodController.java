@@ -44,4 +44,9 @@ public class ProizvodController {
         proizvodService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/kategorija/{kategorijaId}")
+    public ResponseEntity<List<Proizvod>> getByKategorija(@PathVariable Long kategorijaId) {
+        return ResponseEntity.ok(proizvodService.getByKategorija(kategorijaId));
+    }
 }

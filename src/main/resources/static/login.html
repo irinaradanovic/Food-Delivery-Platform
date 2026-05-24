@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Big Bite – Prijava</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --green:     #2d6a2d;
+            --green-lt:  #3a8a3a;
+            --orange:    #e8721c;
+            --cream:     #faf7f2;
+            --dark:      #1a1a1a;
+            --gray:      #6b7280;
+            --border:    #e5e0d8;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--cream);
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        /* Leva strana — hero */
+        .hero {
+            background: var(--green);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 400px; height: 400px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50%;
+            top: -100px; left: -100px;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            width: 300px; height: 300px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 50%;
+            bottom: -80px; right: -80px;
+        }
+
+        .logo-wrap {
+            text-align: center;
+            margin-bottom: 48px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .logo-icon {
+            width: 100px; height: 100px;
+            background: white;
+            border-radius: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 48px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+
+        .logo-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 42px;
+            color: white;
+            line-height: 1;
+        }
+
+        .logo-sub {
+            color: rgba(255,255,255,0.65);
+            font-size: 13px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-top: 8px;
+        }
+
+        .hero-food {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            width: 100%;
+            max-width: 320px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .food-card {
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+            color: white;
+        }
+
+        .food-card .emoji { font-size: 32px; }
+        .food-card .name { font-size: 12px; margin-top: 6px; opacity: 0.8; }
+
+        /* Desna strana — forma */
+        .form-side {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 80px 60px;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 36px;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: var(--gray);
+            margin-bottom: 40px;
+            font-size: 15px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 6px;
+            letter-spacing: 0.3px;
+        }
+
+        input {
+            width: 100%;
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 16px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            color: var(--dark);
+            background: white;
+            outline: none;
+            transition: border-color 0.2s;
+            margin-bottom: 20px;
+        }
+
+        input:focus { border-color: var(--green); }
+
+        .btn-login {
+            width: 100%;
+            background: var(--green);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 16px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            margin-top: 4px;
+        }
+
+        .btn-login:hover { background: var(--green-lt); }
+        .btn-login:active { transform: scale(0.99); }
+
+        .error-msg {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 14px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .divider {
+            text-align: center;
+            color: var(--gray);
+            font-size: 13px;
+            margin: 20px 0;
+            position: relative;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background: var(--border);
+        }
+        .divider::before { left: 0; }
+        .divider::after { right: 0; }
+
+        .register-link {
+            text-align: center;
+            font-size: 14px;
+            color: var(--gray);
+            margin-top: 24px;
+        }
+
+        .register-link a {
+            color: var(--green);
+            font-weight: 600;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="hero">
+    <div class="logo-wrap">
+        <div class="logo-icon">🍽️</div>
+        <div class="logo-name">Big Bite</div>
+        <div class="logo-sub">Food + Drink</div>
+    </div>
+</div>
+
+<div class="form-side">
+    <h1>Dobrodošli</h1>
+    <p class="subtitle">Prijavite se na vaš nalog</p>
+
+    <div id="error-msg" class="error-msg"></div>
+
+    <label>Email adresa</label>
+    <input id="email" type="email" placeholder="Imejl">
+
+    <label>Lozinka</label>
+    <input id="lozinka" type="password" placeholder="••••••••">
+
+    <button class="btn-login" onclick="prijavi()">Prijavi se</button>
+
+     <p class="register-link">
+    Nemaš nalog? <a href="/registracija.html">Registruj se</a>
+    </p>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+    if (localStorage.getItem('kupacId')) window.location.href = '/proizvodi.html';
+
+    async function prijavi() {
+        const email = document.getElementById('email').value.trim();
+        const lozinka = document.getElementById('lozinka').value.trim();
+        const errDiv = document.getElementById('error-msg');
+        errDiv.style.display = 'none';
+
+        if (!email || !lozinka) {
+            errDiv.textContent = 'Unesite email i lozinku.';
+            errDiv.style.display = 'block';
+            return;
+        }
+        try {
+            const kupci = await api.getKupciByEmail(email);
+            if (!kupci || kupci.length === 0) throw new Error();
+            sacuvajSesiju(kupci[0]);
+            window.location.href = '/proizvodi.html';
+        } catch {
+            errDiv.textContent = 'Pogrešan email ili lozinka.';
+            errDiv.style.display = 'block';
+        }
+    }
+
+    document.addEventListener('keydown', e => { if (e.key === 'Enter') prijavi(); });
+</script>
+</body>
+</html>

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Big Bite – Proizvodi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --green: #2d6a2d; --green-lt: #3a8a3a;
+            --orange: #e8721c; --cream: #faf7f2;
+            --dark: #1a1a1a; --gray: #6b7280; --border: #e5e0d8;
+        }
+        body { font-family: 'DM Sans', sans-serif; background: var(--cream); min-height: 100vh; }
+
+        /* NAV */
+        nav {
+            background: white;
+            border-bottom: 1px solid var(--border);
+            padding: 0 40px;
+            height: 68px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky; top: 0; z-index: 100;
+        }
+
+        .nav-logo {
+            display: flex; align-items: center; gap: 10px;
+            text-decoration: none;
+        }
+        .nav-logo-icon {
+            width: 36px; height: 36px; background: var(--green);
+            border-radius: 10px; display: flex; align-items: center;
+            justify-content: center; font-size: 18px;
+        }
+        .nav-logo-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 20px; color: var(--dark);
+        }
+
+        .nav-links { display: flex; align-items: center; gap: 4px; }
+        .nav-links a {
+            padding: 8px 16px; border-radius: 8px;
+            text-decoration: none; font-size: 14px; font-weight: 500;
+            color: var(--gray); transition: all 0.15s;
+        }
+        .nav-links a:hover { background: #f3f4f6; color: var(--dark); }
+        .nav-links a.active { background: var(--green); color: white; }
+        .nav-links a.fav { color: var(--orange); }
+
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .nav-user {
+            font-size: 13px; color: var(--gray);
+            background: #f3f4f6; padding: 6px 12px; border-radius: 20px;
+        }
+        .btn-odjava {
+            background: none; border: 1.5px solid var(--border);
+            border-radius: 8px; padding: 7px 14px;
+            font-size: 13px; font-weight: 500; color: var(--gray);
+            cursor: pointer; transition: all 0.15s;
+        }
+        .btn-odjava:hover { border-color: #dc2626; color: #dc2626; }
+
+        /* MAIN */
+        main { max-width: 1200px; margin: 0 auto; padding: 40px 24px; }
+
+        .page-header { margin-bottom: 32px; }
+        .page-header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 32px; color: var(--dark);
+        }
+        .page-header p { color: var(--gray); font-size: 15px; margin-top: 4px; }
+
+        /* SEARCH BAR */
+        .search-bar {
+            display: flex; gap: 10px; margin-bottom: 32px;
+        }
+        .search-wrap {
+            flex: 1; position: relative;
+        }
+        .search-wrap input {
+            width: 100%; border: 1.5px solid var(--border);
+            border-radius: 12px; padding: 13px 16px 13px 44px;
+            font-family: 'DM Sans', sans-serif; font-size: 15px;
+            color: var(--dark); background: white; outline: none;
+            transition: border-color 0.2s;
+        }
+        .search-wrap input:focus { border-color: var(--green); }
+        .search-icon {
+            position: absolute; left: 14px; top: 50%;
+            transform: translateY(-50%); color: var(--gray);
+            font-size: 17px; pointer-events: none;
+        }
+        .btn-search {
+            background: var(--green); color: white; border: none;
+            border-radius: 12px; padding: 13px 24px;
+            font-family: 'DM Sans', sans-serif; font-size: 14px;
+            font-weight: 600; cursor: pointer; transition: background 0.2s;
+            white-space: nowrap;
+        }
+        .btn-search:hover { background: var(--green-lt); }
+        .btn-reset {
+            background: white; color: var(--gray);
+            border: 1.5px solid var(--border); border-radius: 12px;
+            padding: 13px 18px; font-family: 'DM Sans', sans-serif;
+            font-size: 14px; cursor: pointer; transition: all 0.2s;
+        }
+        .btn-reset:hover { border-color: var(--dark); color: var(--dark); }
+
+        /* GRID */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: white; border-radius: 20px;
+            border: 1px solid var(--border);
+            overflow: hidden; cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.1); }
+
+        .card-img {
+            width: 100%; height: 180px;
+            object-fit: cover; display: block;
+            background: #f0ede8;
+        }
+        .card-img-placeholder {
+            width: 100%; height: 180px;
+            background: linear-gradient(135deg, #f0ede8, #e8e4dc);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 52px;
+        }
+
+        .card-body { padding: 18px; }
+        .card-top {
+            display: flex; justify-content: space-between;
+            align-items: flex-start; margin-bottom: 8px;
+        }
+        .card-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 17px; color: var(--dark); flex: 1;
+        }
+        .btn-fav {
+            background: none; border: none; cursor: pointer;
+            font-size: 22px; padding: 2px; transition: transform 0.15s;
+            flex-shrink: 0;
+        }
+        .btn-fav:hover { transform: scale(1.2); }
+
+        .card-desc {
+            font-size: 13px; color: var(--gray);
+            margin-bottom: 12px; line-height: 1.5;
+        }
+        .card-footer {
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .card-kcal {
+            font-size: 13px; font-weight: 600; color: var(--orange);
+        }
+        .card-kat {
+            font-size: 12px; background: #f0f7f0; color: var(--green);
+            padding: 4px 10px; border-radius: 20px; font-weight: 500;
+        }
+
+        .empty-state {
+            grid-column: 1/-1; text-align: center; padding: 80px 0;
+            color: var(--gray);
+        }
+        .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a href="/proizvodi.html" class="nav-logo">
+        <div class="nav-logo-icon">🍽️</div>
+        <span class="nav-logo-text">Big Bite</span>
+    </a>
+    <div class="nav-links">
+        <a href="/proizvodi.html" class="active">Proizvodi</a>
+        <a href="/kategorije.html">Kategorije</a>
+        <a href="/omiljeni.html" class="fav">♥ Omiljeni</a>
+    </div>
+    <div class="nav-right">
+        <span class="nav-user" id="nav-user"></span>
+        <button class="btn-odjava" onclick="odjavi()">Odjavi se</button>
+    </div>
+</nav>
+
+<main>
+    <div class="page-header">
+        <h1>Svi proizvodi</h1>
+        <p>Pronađite omiljenu hranu i piće</p>
+    </div>
+
+    <div class="search-bar">
+        <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input id="pretraga" type="text" placeholder="Pretraži">
+        </div>
+        <button class="btn-search" onclick="pretraziProizvode()">Pretraži</button>
+        <button class="btn-reset" onclick="ucitajProizvode()">Poništi</button>
+    </div>
+
+    <div id="grid" class="grid">
+        <div class="empty-state"><div class="icon">⏳</div><p>Učitavanje...</p></div>
+    </div>
+</main>
+
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+    zastitiStranicu();
+    const sesija = getSesija();
+    document.getElementById('nav-user').textContent = sesija.ime || sesija.email;
+
+    let omiljeniIds = new Set();
+
+    const hrana = {'pizza':'🍕','burger':'🍔','pasta':'🍝','piletina':'🍗','piće':'🥤','lemonade':'🍋','supa':'🍲','salata':'🥗'};
+    function getEmoji(naziv) {
+        const n = naziv.toLowerCase();
+        for (const [k, v] of Object.entries(hrana)) if (n.includes(k)) return v;
+        return '🍽️';
+    }
+
+    async function ucitajOmiljene() {
+        try {
+            const lista = await api.getOmiljeni(getKupacId());
+            omiljeniIds = new Set(lista.map(o => o.proizvod.proizvodId));
+        } catch {}
+    }
+
+    async function ucitajProizvode() {
+        document.getElementById('pretraga').value = '';
+        const grid = document.getElementById('grid');
+        grid.innerHTML = '<div class="empty-state"><div class="icon">⏳</div><p>Učitavanje...</p></div>';
+        await ucitajOmiljene();
+        try {
+            const lista = await api.getProizvodi();
+            prikaziProizvode(lista);
+        } catch {
+            grid.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><p>Greška pri učitavanju.</p></div>';
+        }
+    }
+
+    async function pretraziProizvode() {
+        const upit = document.getElementById('pretraga').value.trim();
+        if (!upit) { ucitajProizvode(); return; }
+        try {
+            await api.zabeleziPretragu(getKupacId(), upit);
+            const lista = await api.searchProizvodi(upit);
+            prikaziProizvode(lista);
+        } catch {
+            document.getElementById('grid').innerHTML =
+                '<div class="empty-state"><div class="icon">⚠️</div><p>Greška pri pretrazi.</p></div>';
+        }
+    }
+
+    function prikaziProizvode(lista) {
+        const grid = document.getElementById('grid');
+        if (!lista.length) {
+            grid.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><p>Nema rezultata.</p></div>';
+            return;
+        }
+        grid.innerHTML = lista.map(p => `
+            <div class="card" onclick="klikNaProizvod(${p.proizvodId})">
+                <div class="card-img-placeholder">${getEmoji(p.naziv)}</div>
+                <div class="card-body">
+                    <div class="card-top">
+                        <div class="card-name">${p.naziv}</div>
+                        <button class="btn-fav" onclick="event.stopPropagation(); toggleOmiljeni(${p.proizvodId}, this)"
+                                data-id="${p.proizvodId}">
+                            ${omiljeniIds.has(p.proizvodId) ? '❤️' : '🤍'}
+                        </button>
+                    </div>
+                    <div class="card-desc">${p.opis || 'Bez opisa'}</div>
+                    <div class="card-footer">
+                        <span class="card-kcal">${p.kalorije ? p.kalorije + ' kcal' : ''}</span>
+                        <span class="card-kat">${p.kategorija?.naziv || 'Ostalo'}</span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    async function klikNaProizvod(id) {
+        try { await api.zabeleziKlik(getKupacId(), id); } catch {}
+    }
+
+    async function toggleOmiljeni(id, btn) {
+        try {
+            if (omiljeniIds.has(id)) {
+                await api.ukloniOmiljeni(getKupacId(), id);
+                omiljeniIds.delete(id); btn.textContent = '🤍';
+            } else {
+                await api.dodajOmiljeni(getKupacId(), id);
+                omiljeniIds.add(id); btn.textContent = '❤️';
+            }
+        } catch { alert('Greška.'); }
+    }
+
+    document.getElementById('pretraga').addEventListener('keydown', e => {
+        if (e.key === 'Enter') pretraziProizvode();
+    });
+
+    ucitajProizvode();
+</script>
+</body>
+</html>
