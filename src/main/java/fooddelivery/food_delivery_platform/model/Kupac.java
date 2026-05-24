@@ -1,5 +1,6 @@
 package fooddelivery.food_delivery_platform.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,18 +19,22 @@ public class Kupac extends Korisnik {
     private String adresa;
     private String brojKartice;
 
+
     @OneToMany(mappedBy = "kupac", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
+    @JsonIgnore
     private List<Klik> klikovi = new ArrayList<>();
 
     @OneToMany(mappedBy = "kupac", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
+    @JsonIgnore
     private List<Pretraga> pretrage = new ArrayList<>();
 
     @OneToMany(mappedBy = "kupac", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
+    @JsonIgnore
     private List<OmiljeniProizvod> omiljeniProizvodi = new ArrayList<>();
 }
