@@ -15,16 +15,32 @@ async function apiFetch(url, options = {}) {
 }
 
 const api = {
+    // Kupci
     getKupciByEmail: (email) => apiFetch(`/kupci?email=${encodeURIComponent(email)}`),
+
+    // Proizvodi
     getProizvodi: () => apiFetch('/proizvodi'),
     searchProizvodi: (naziv) => apiFetch(`/proizvodi/search?naziv=${encodeURIComponent(naziv)}`),
     getProizvodiByKategorija: (id) => apiFetch(`/proizvodi/kategorija/${id}`),
+
+    // Kategorije
     getKategorije: () => apiFetch('/kategorije'),
+
+    // Omiljeni proizvodi
     getOmiljeni: (kupacId) => apiFetch(`/omiljeni/${kupacId}`),
     dodajOmiljeni: (kupacId, proizvodId) =>
         apiFetch(`/omiljeni/${kupacId}/proizvodi/${proizvodId}`, { method: 'POST' }),
     ukloniOmiljeni: (kupacId, proizvodId) =>
         apiFetch(`/omiljeni/${kupacId}/proizvodi/${proizvodId}`, { method: 'DELETE' }),
+
+    // Omiljene kategorije
+    getOmiljeneKategorije: (kupacId) => apiFetch(`/omiljene-kategorije/${kupacId}`),
+    dodajOmiljenuKategoriju: (kupacId, kategorijaId) =>
+        apiFetch(`/omiljene-kategorije/${kupacId}/kategorije/${kategorijaId}`, { method: 'POST' }),
+    ukloniOmiljenuKategoriju: (kupacId, kategorijaId) =>
+        apiFetch(`/omiljene-kategorije/${kupacId}/kategorije/${kategorijaId}`, { method: 'DELETE' }),
+
+    // Tracking
     zabeleziKlik: (kupacId, proizvodId) =>
         apiFetch(`/tracking/klik/${kupacId}/proizvodi/${proizvodId}`, { method: 'POST' }),
     zabeleziPretragu: (kupacId, tekst) =>

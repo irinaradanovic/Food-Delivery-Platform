@@ -47,16 +47,27 @@
             margin-bottom: 48px;
         }
 
+        /* Kategorija kartica sa srcem */
         .kat-card {
             background: white; border: 2px solid var(--border);
-            border-radius: 18px; padding: 28px 16px;
+            border-radius: 18px; padding: 24px 16px 18px;
             text-align: center; cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s; position: relative;
         }
         .kat-card:hover { border-color: var(--green); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(45,106,45,0.12); }
         .kat-card.active { border-color: var(--green); background: #f0f7f0; }
         .kat-card .icon { font-size: 40px; margin-bottom: 10px; }
         .kat-card .naziv { font-weight: 600; font-size: 14px; color: var(--dark); }
+
+        /* Srce na kategoriji */
+        .btn-fav-kat {
+            position: absolute; top: 10px; right: 10px;
+            background: none; border: none; cursor: pointer;
+            font-size: 16px; line-height: 1;
+            transition: transform 0.15s;
+            z-index: 2;
+        }
+        .btn-fav-kat:hover { transform: scale(1.3); }
 
         /* Proizvodi sekcija */
         .proizvodi-sekcija { display: none; }
@@ -77,7 +88,19 @@
         }
         .prod-card { background: white; border-radius: 18px; border: 1px solid var(--border); overflow: hidden; transition: all 0.2s; }
         .prod-card:hover { transform: translateY(-3px); box-shadow: 0 10px 32px rgba(0,0,0,0.08); }
-        .prod-img { height: 160px; display: flex; align-items: center; justify-content: center; font-size: 48px; background: linear-gradient(135deg, #f0ede8, #e8e4dc); }
+        .prod-img { height: 160px; display: flex; align-items: center; justify-content: center; font-size: 48px; background: linear-gradient(135deg, #f0ede8, #e8e4dc); position: relative; }
+
+        /* Ikonica kategorije na jelu */
+        .prod-kat-badge {
+            position: absolute; bottom: 8px; right: 10px;
+            background: white; border-radius: 20px;
+            padding: 3px 8px; font-size: 12px;
+            display: flex; align-items: center; gap: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            color: var(--green); font-weight: 600;
+        }
+        .prod-kat-badge .kat-ico { font-size: 13px; }
+
         .prod-body { padding: 16px; }
         .prod-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
         .prod-name { font-family: 'Playfair Display', serif; font-size: 16px; color: var(--dark); }
@@ -133,33 +156,33 @@
     document.getElementById('nav-user').textContent = getSesija().ime || '';
 
     let omiljeniIds = new Set();
+    let omiljeneKatIds = new Set();
+    let aktivnaKategorija = null;
 
     const katEmoji = {
         'pizza': '🍕', 'burger': '🍔', 'pasta': '🍝', 'piletina': '🍗',
         'piće': '🥤', 'pice': '🥤', 'deserti': '🍰', 'desert': '🍰',
         'salate': '🥗', 'salata': '🥗', 'supe': '🍲', 'supa': '🍲',
-        'riba': '🐟', 'roštilj': '🥩'
+        'riba': '🐟', 'roštilj': '🥩', 'ostalo': '🍽️'
     };
 
     function getKatEmoji(naziv) {
+        if (!naziv) return '🍽️';
         const n = naziv.toLowerCase();
         for (const [k, v] of Object.entries(katEmoji)) if (n.includes(k)) return v;
         return '🍽️';
     }
 
-    const hrana = {'pizza':'🍕','burger':'🍔','pasta':'🍝','piletina':'🍗','piće':'🥤','supa':'🍲','salata':'🥗'};
-    function getProdEmoji(naziv) {
-        const n = naziv.toLowerCase();
-        for (const [k, v] of Object.entries(hrana)) if (n.includes(k)) return v;
-        return '🍽️';
-    }
-
     async function init() {
         try {
-            const [kat, omiljeni] = await Promise.all([
-                api.getKategorije(), api.getOmiljeni(getKupacId())
+            const kupacId = getKupacId();
+            const [kat, omiljeni, omiljeneKat] = await Promise.all([
+                api.getKategorije(),
+                api.getOmiljeni(kupacId),
+                api.getOmiljeneKategorije(kupacId)
             ]);
             omiljeniIds = new Set(omiljeni.map(o => o.proizvod.proizvodId));
+            omiljeneKatIds = new Set(omiljeneKat.map(o => o.kategorija.kategorijaId));
             prikaziKategorije(kat);
         } catch {
             document.getElementById('kat-grid').innerHTML =
@@ -174,20 +197,41 @@
             return;
         }
         grid.innerHTML = lista.map(k => `
-            <div class="kat-card" onclick="prikaziProizvode(${k.kategorijaId}, '${k.naziv}', this)">
+            <div class="kat-card" id="kat-${k.kategorijaId}" onclick="prikaziProizvode(${k.kategorijaId}, '${k.naziv}', this)">
+                <button class="btn-fav-kat" onclick="toggleOmiljenaKat(event, ${k.kategorijaId})">
+                    ${omiljeneKatIds.has(k.kategorijaId) ? '❤️' : '🤍'}
+                </button>
                 <div class="icon">${getKatEmoji(k.naziv)}</div>
                 <div class="naziv">${k.naziv}</div>
             </div>
         `).join('');
     }
 
+    async function toggleOmiljenaKat(event, katId) {
+        event.stopPropagation(); // ne aktiviraj klik na karticu
+        const kupacId = getKupacId();
+        const btn = event.currentTarget;
+        try {
+            if (omiljeneKatIds.has(katId)) {
+                await api.ukloniOmiljenuKategoriju(kupacId, katId);
+                omiljeneKatIds.delete(katId);
+                btn.textContent = '🤍';
+            } else {
+                await api.dodajOmiljenuKategoriju(kupacId, katId);
+                omiljeneKatIds.add(katId);
+                btn.textContent = '❤️';
+            }
+        } catch { alert('Greška.'); }
+    }
+
     async function prikaziProizvode(id, naziv, el) {
         document.querySelectorAll('.kat-card').forEach(c => c.classList.remove('active'));
         el.classList.add('active');
+        aktivnaKategorija = { id, naziv };
 
         const sekcija = document.getElementById('proizvodi-sekcija');
         sekcija.style.display = 'block';
-        document.getElementById('sekcija-naziv').textContent = naziv;
+        document.getElementById('sekcija-naziv').textContent = getKatEmoji(naziv) + ' ' + naziv;
         document.getElementById('sekcija-count').textContent = '...';
         document.getElementById('prod-grid').innerHTML =
             '<div class="empty-state"><div class="icon">⏳</div><p>Učitavanje...</p></div>';
@@ -204,9 +248,17 @@
                 return;
             }
 
-            document.getElementById('prod-grid').innerHTML = lista.map(p => `
+            document.getElementById('prod-grid').innerHTML = lista.map(p => {
+                const katNaziv = p.kategorija?.naziv || naziv;
+                const katIco = getKatEmoji(katNaziv);
+                return `
                 <div class="prod-card">
-                    <div class="prod-img">${getProdEmoji(p.naziv)}</div>
+                    <div class="prod-img">
+                        ${katIco}
+                        <div class="prod-kat-badge">
+                            <span class="kat-ico">${katIco}</span>${katNaziv}
+                        </div>
+                    </div>
                     <div class="prod-body">
                         <div class="prod-top">
                             <div class="prod-name">${p.naziv}</div>
@@ -217,7 +269,7 @@
                         <div class="prod-desc">${p.opis || 'Bez opisa'}</div>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
         } catch {
             document.getElementById('prod-grid').innerHTML =
                 '<div class="empty-state"><div class="icon">⚠️</div><p>Greška.</p></div>';

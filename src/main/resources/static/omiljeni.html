@@ -30,16 +30,34 @@
 
         main { max-width: 1200px; margin: 0 auto; padding: 40px 24px; }
 
-        .page-header { margin-bottom: 32px; display: flex; align-items: center; gap: 14px; }
+        .page-header { margin-bottom: 24px; display: flex; align-items: center; gap: 14px; }
         .page-header h1 { font-family: 'Playfair Display', serif; font-size: 32px; color: var(--dark); }
         .header-count { background: var(--orange); color: white; font-size: 13px; font-weight: 600; padding: 4px 12px; border-radius: 20px; }
 
+        /* Tabovi */
+        .tabs { display: flex; gap: 8px; margin-bottom: 32px; border-bottom: 2px solid var(--border); }
+        .tab-btn {
+            padding: 10px 20px; border: none; background: none; cursor: pointer;
+            font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600;
+            color: var(--gray); border-bottom: 2px solid transparent;
+            margin-bottom: -2px; transition: all 0.15s;
+        }
+        .tab-btn.active { color: var(--orange); border-bottom-color: var(--orange); }
+        .tab-btn:hover:not(.active) { color: var(--dark); }
+        .tab-count { background: #f3f4f6; color: var(--gray); font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 20px; margin-left: 6px; }
+        .tab-btn.active .tab-count { background: #fef3e8; color: var(--orange); }
+
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* Proizvodi grid */
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 20px;
         }
 
+        /* Proizvod kartica */
         .card {
             background: white; border-radius: 20px;
             border: 1px solid var(--border);
@@ -47,40 +65,53 @@
             position: relative;
         }
         .card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.1); }
+        .card-img { height: 180px; display: flex; align-items: center; justify-content: center; font-size: 60px; background: linear-gradient(135deg, #fff9f5, #fef3e8); position: relative; }
 
-        .card-img { height: 180px; display: flex; align-items: center; justify-content: center; font-size: 60px; background: linear-gradient(135deg, #fff9f5, #fef3e8); }
+        /* Ikonica kategorije na slici jela */
+        .prod-kat-badge {
+            position: absolute; bottom: 8px; right: 10px;
+            background: white; border-radius: 20px;
+            padding: 3px 8px; font-size: 12px;
+            display: flex; align-items: center; gap: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            color: var(--green); font-weight: 600;
+        }
 
         .card-body { padding: 18px; }
         .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
         .card-name { font-family: 'Playfair Display', serif; font-size: 17px; color: var(--dark); flex: 1; }
-
-        .btn-remove {
-            background: #fef2f2; color: #dc2626;
-            border: none; border-radius: 8px;
-            padding: 6px 12px; font-size: 12px; font-weight: 600;
-            cursor: pointer; transition: all 0.15s; flex-shrink: 0;
-        }
+        .btn-remove { background: #fef2f2; color: #dc2626; border: none; border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; flex-shrink: 0; }
         .btn-remove:hover { background: #dc2626; color: white; }
-
         .card-desc { font-size: 13px; color: var(--gray); margin-bottom: 12px; line-height: 1.5; }
         .card-footer { display: flex; justify-content: space-between; align-items: center; }
         .card-kcal { font-size: 13px; font-weight: 600; color: var(--orange); }
         .card-kat { font-size: 12px; background: #f0f7f0; color: var(--green); padding: 4px 10px; border-radius: 20px; font-weight: 500; }
         .card-date { font-size: 11px; color: var(--gray); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
 
-        /* Empty state */
-        .empty-wrap {
-            grid-column: 1/-1;
-            text-align: center; padding: 100px 0;
+        /* Kategorija kartica */
+        .kat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
+        .kat-card {
+            background: white; border: 2px solid var(--border);
+            border-radius: 18px; padding: 28px 16px 20px;
+            text-align: center; position: relative; transition: all 0.2s;
         }
+        .kat-card:hover { border-color: var(--green); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(45,106,45,0.12); }
+        .kat-card .icon { font-size: 44px; margin-bottom: 10px; }
+        .kat-card .naziv { font-weight: 600; font-size: 15px; color: var(--dark); margin-bottom: 4px; }
+        .kat-card .kat-date { font-size: 11px; color: var(--gray); }
+        .btn-remove-kat {
+            position: absolute; top: 10px; right: 10px;
+            background: #fef2f2; color: #dc2626; border: none; border-radius: 8px;
+            padding: 4px 8px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.15s;
+        }
+        .btn-remove-kat:hover { background: #dc2626; color: white; }
+
+        /* Empty state */
+        .empty-wrap { grid-column: 1/-1; text-align: center; padding: 100px 0; }
         .empty-heart { font-size: 72px; margin-bottom: 16px; }
         .empty-title { font-family: 'Playfair Display', serif; font-size: 24px; color: var(--dark); margin-bottom: 8px; }
         .empty-sub { color: var(--gray); font-size: 15px; margin-bottom: 24px; }
-        .btn-explore {
-            display: inline-block; background: var(--green); color: white;
-            text-decoration: none; padding: 13px 28px; border-radius: 12px;
-            font-weight: 600; font-size: 15px; transition: background 0.2s;
-        }
+        .btn-explore { display: inline-block; background: var(--green); color: white; text-decoration: none; padding: 13px 28px; border-radius: 12px; font-weight: 600; font-size: 15px; transition: background 0.2s; }
         .btn-explore:hover { background: var(--green-lt); }
     </style>
 </head>
@@ -105,13 +136,35 @@
 <main>
     <div class="page-header">
         <h1>♥ Moji omiljeni</h1>
-        <span class="header-count" id="header-count" style="display:none"></span>
     </div>
 
-    <div id="grid" class="grid">
-        <div class="empty-wrap">
-            <div class="empty-heart">⏳</div>
-            <p class="empty-sub">Učitavanje...</p>
+    <!-- Tabovi -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="promenTab('proizvodi', this)">
+            Jela <span class="tab-count" id="count-proizvodi">0</span>
+        </button>
+        <button class="tab-btn" onclick="promenTab('kategorije', this)">
+            Kategorije <span class="tab-count" id="count-kategorije">0</span>
+        </button>
+    </div>
+
+    <!-- Tab: Proizvodi -->
+    <div id="tab-proizvodi" class="tab-panel active">
+        <div id="grid-proizvodi" class="grid">
+            <div class="empty-wrap">
+                <div class="empty-heart">⏳</div>
+                <p class="empty-sub">Učitavanje...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab: Kategorije -->
+    <div id="tab-kategorije" class="tab-panel">
+        <div id="grid-kategorije" class="kat-grid">
+            <div class="empty-wrap">
+                <div class="empty-heart">⏳</div>
+                <p class="empty-sub">Učitavanje...</p>
+            </div>
         </div>
     </div>
 </main>
@@ -122,68 +175,130 @@
     zastitiStranicu();
     document.getElementById('nav-user').textContent = getSesija().ime || '';
 
-    const hrana = {'pizza':'🍕','burger':'🍔','pasta':'🍝','piletina':'🍗','piće':'🥤','supa':'🍲','salata':'🥗'};
-    function getEmoji(naziv) {
+    const katEmoji = {
+        'pizza': '🍕', 'burger': '🍔', 'pasta': '🍝', 'piletina': '🍗',
+        'piće': '🥤', 'pice': '🥤', 'deserti': '🍰', 'desert': '🍰',
+        'salate': '🥗', 'salata': '🥗', 'supe': '🍲', 'supa': '🍲',
+        'riba': '🐟', 'roštilj': '🥩', 'ostalo': '🍽️'
+    };
+
+    function getKatEmoji(naziv) {
+        if (!naziv) return '🍽️';
         const n = naziv.toLowerCase();
-        for (const [k, v] of Object.entries(hrana)) if (n.includes(k)) return v;
+        for (const [k, v] of Object.entries(katEmoji)) if (n.includes(k)) return v;
         return '🍽️';
     }
 
-    async function ucitajOmiljene() {
-        const grid = document.getElementById('grid');
+    function promenTab(name, btn) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-' + name).classList.add('active');
+    }
+
+    async function ucitajSve() {
+        const kupacId = getKupacId();
         try {
-            const lista = await api.getOmiljeni(getKupacId());
-
-            if (!lista.length) {
-                grid.innerHTML = `
-                    <div class="empty-wrap">
-                        <div class="empty-heart">🤍</div>
-                        <div class="empty-title">Još nema omiljenih</div>
-                        <p class="empty-sub">Dodajte proizvode u omiljene klikom na srce</p>
-                        <a href="/proizvodi.html" class="btn-explore">Istraži proizvode</a>
-                    </div>`;
-                return;
-            }
-
-            const count = document.getElementById('header-count');
-            count.textContent = lista.length + (lista.length === 1 ? ' proizvod' : ' proizvoda');
-            count.style.display = 'inline-block';
-
-            grid.innerHTML = lista.map(o => `
-                <div class="card" id="card-${o.proizvod.proizvodId}">
-                    <div class="card-img">${getEmoji(o.proizvod.naziv)}</div>
-                    <div class="card-body">
-                        <div class="card-top">
-                            <div class="card-name">${o.proizvod.naziv}</div>
-                            <button class="btn-remove" onclick="ukloniOmiljeni(${o.proizvod.proizvodId})">
-                                Ukloni
-                            </button>
-                        </div>
-                        <div class="card-desc">${o.proizvod.opis || 'Bez opisa'}</div>
-                        <div class="card-footer">
-                            <span class="card-kcal">${o.proizvod.kalorije ? o.proizvod.kalorije + ' kcal' : ''}</span>
-                            <span class="card-kat">${o.proizvod.kategorija?.naziv || 'Ostalo'}</span>
-                        </div>
-                        <div class="card-date">Dodato: ${new Date(o.datumDodavanja).toLocaleDateString('sr-RS')}</div>
-                    </div>
-                </div>
-            `).join('');
+            const [omiljeniProizvodi, omiljeneKategorije] = await Promise.all([
+                api.getOmiljeni(kupacId),
+                api.getOmiljeneKategorije(kupacId)
+            ]);
+            prikaziProizvode(omiljeniProizvodi);
+            prikaziKategorije(omiljeneKategorije);
         } catch {
-            grid.innerHTML = '<div class="empty-wrap"><div class="empty-heart">⚠️</div><p class="empty-sub">Greška pri učitavanju.</p></div>';
+            document.getElementById('grid-proizvodi').innerHTML =
+                '<div class="empty-wrap"><div class="empty-heart">⚠️</div><p class="empty-sub">Greška pri učitavanju.</p></div>';
         }
     }
 
-    async function ukloniOmiljeni(id) {
+    function prikaziProizvode(lista) {
+        document.getElementById('count-proizvodi').textContent = lista.length;
+        const grid = document.getElementById('grid-proizvodi');
+
+        if (!lista.length) {
+            grid.innerHTML = `
+                <div class="empty-wrap">
+                    <div class="empty-heart">🤍</div>
+                    <div class="empty-title">Još nema omiljenih jela</div>
+                    <p class="empty-sub">Dodajte jela u omiljene klikom na srce</p>
+                    <a href="/proizvodi.html" class="btn-explore">Istraži jela</a>
+                </div>`;
+            return;
+        }
+
+        grid.innerHTML = lista.map(o => {
+            const katNaziv = o.proizvod.kategorija?.naziv || 'Ostalo';
+            const katIco = getKatEmoji(katNaziv);
+            return `
+            <div class="card" id="card-${o.proizvod.proizvodId}">
+                <div class="card-img">
+                    ${katIco}
+                    <div class="prod-kat-badge">
+                        <span>${katIco}</span>${katNaziv}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="card-top">
+                        <div class="card-name">${o.proizvod.naziv}</div>
+                        <button class="btn-remove" onclick="ukloniProizvod(${o.proizvod.proizvodId})">Ukloni</button>
+                    </div>
+                    <div class="card-desc">${o.proizvod.opis || 'Bez opisa'}</div>
+                    <div class="card-footer">
+                        <span class="card-kcal">${o.proizvod.kalorije ? o.proizvod.kalorije + ' kcal' : ''}</span>
+                        <span class="card-kat">${katNaziv}</span>
+                    </div>
+                    <div class="card-date">Dodato: ${new Date(o.datumDodavanja).toLocaleDateString('sr-RS')}</div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function prikaziKategorije(lista) {
+        document.getElementById('count-kategorije').textContent = lista.length;
+        const grid = document.getElementById('grid-kategorije');
+
+        if (!lista.length) {
+            grid.innerHTML = `
+                <div class="empty-wrap">
+                    <div class="empty-heart">🤍</div>
+                    <div class="empty-title">Još nema omiljenih kategorija</div>
+                    <p class="empty-sub">Dodajte kategorije u omiljene klikom na srce</p>
+                    <a href="/kategorije.html" class="btn-explore">Istraži kategorije</a>
+                </div>`;
+            return;
+        }
+
+        grid.innerHTML = lista.map(o => `
+            <div class="kat-card" id="kat-card-${o.kategorija.kategorijaId}">
+                <button class="btn-remove-kat" onclick="ukloniKategoriju(${o.kategorija.kategorijaId})">Ukloni</button>
+                <div class="icon">${getKatEmoji(o.kategorija.naziv)}</div>
+                <div class="naziv">${o.kategorija.naziv}</div>
+                <div class="kat-date">Dodato: ${new Date(o.datumDodavanja).toLocaleDateString('sr-RS')}</div>
+            </div>
+        `).join('');
+    }
+
+    async function ukloniProizvod(id) {
         try {
             await api.ukloniOmiljeni(getKupacId(), id);
             const card = document.getElementById(`card-${id}`);
             card.style.transition = 'all 0.3s';
             card.style.opacity = '0'; card.style.transform = 'scale(0.9)';
-            setTimeout(() => { card.remove(); ucitajOmiljene(); }, 300);
+            setTimeout(() => { card.remove(); ucitajSve(); }, 300);
         } catch { alert('Greška pri uklanjanju.'); }
     }
 
-    ucitajOmiljene();
+    async function ukloniKategoriju(id) {
+        try {
+            await api.ukloniOmiljenuKategoriju(getKupacId(), id);
+            const card = document.getElementById(`kat-card-${id}`);
+            card.style.transition = 'all 0.3s';
+            card.style.opacity = '0'; card.style.transform = 'scale(0.9)';
+            setTimeout(() => { card.remove(); ucitajSve(); }, 300);
+        } catch { alert('Greška pri uklanjanju.'); }
+    }
+
+    ucitajSve();
 </script>
 </body>
 </html>
