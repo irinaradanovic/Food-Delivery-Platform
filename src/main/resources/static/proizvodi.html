@@ -8,7 +8,7 @@
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         :root {
-            --green: #2d6a2d; --green-lt: #3a8a3a;
+            --green: #422121; --green-lt: #3a8a3a;
             --orange: #e8721c; --cream: #faf7f2;
             --dark: #1a1a1a; --gray: #6b7280; --border: #e5e0d8;
         }
@@ -133,7 +133,11 @@
             width: 100%; height: 180px;
             background: linear-gradient(135deg, #f0ede8, #e8e4dc);
             display: flex; align-items: center; justify-content: center;
-            font-size: 52px;
+            font-size: 52px; overflow: hidden; position: relative;
+        }
+        .card-img-placeholder img {
+            position: absolute; inset: 0;
+            width: 100%; height: 100%; object-fit: cover;
         }
 
         .card-body { padding: 18px; }
@@ -269,7 +273,9 @@
         }
         grid.innerHTML = lista.map(p => `
             <div class="card" onclick="klikNaProizvod(${p.proizvodId})">
-                <div class="card-img-placeholder">${getEmoji(p.naziv)}</div>
+                <div class="card-img-placeholder">
+                    ${p.fotografija ? `<img src="${p.fotografija}" alt="${p.naziv}" loading="lazy">` : getEmoji(p.naziv)}
+                </div>
                 <div class="card-body">
                     <div class="card-top">
                         <div class="card-name">${p.naziv}</div>

@@ -88,7 +88,9 @@
         }
         .prod-card { background: white; border-radius: 18px; border: 1px solid var(--border); overflow: hidden; transition: all 0.2s; }
         .prod-card:hover { transform: translateY(-3px); box-shadow: 0 10px 32px rgba(0,0,0,0.08); }
-        .prod-img { height: 160px; display: flex; align-items: center; justify-content: center; font-size: 48px; background: linear-gradient(135deg, #f0ede8, #e8e4dc); position: relative; }
+        .prod-img { height: 160px; background: linear-gradient(135deg, #f0ede8, #e8e4dc); position: relative; overflow: hidden;
+            display: flex; align-items: center; justify-content: center; font-size: 48px; }
+        .prod-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 
         /* Ikonica kategorije na jelu */
         .prod-kat-badge {
@@ -161,7 +163,7 @@
 
     const katEmoji = {
         'pizza': '🍕', 'burger': '🍔', 'pasta': '🍝', 'piletina': '🍗',
-        'piće': '🥤', 'pice': '🥤', 'deserti': '🍰', 'desert': '🍰',
+        'piće': '🥤', 'pića': '🥤', 'pice': '🥤', 'pić': '🥤', 'deserti': '🍰', 'desert': '🍰',
         'salate': '🥗', 'salata': '🥗', 'supe': '🍲', 'supa': '🍲',
         'riba': '🐟', 'roštilj': '🥩', 'ostalo': '🍽️'
     };
@@ -254,7 +256,7 @@
                 return `
                 <div class="prod-card">
                     <div class="prod-img">
-                        ${katIco}
+                        ${p.fotografija ? `<img src="${p.fotografija}" alt="${p.naziv}" loading="lazy">` : katIco}
                         <div class="prod-kat-badge">
                             <span class="kat-ico">${katIco}</span>${katNaziv}
                         </div>
