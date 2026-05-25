@@ -41,8 +41,11 @@ const api = {
         apiFetch(`/omiljene-kategorije/${kupacId}/kategorije/${kategorijaId}`, { method: 'DELETE' }),
 
     // Tracking
-    zabeleziKlik: (kupacId, proizvodId) =>
-        apiFetch(`/tracking/klik/${kupacId}/proizvodi/${proizvodId}`, { method: 'POST' }),
+    zabeleziKlik: (kupacId, proizvodId, tipAkcije = 'PREGLED') =>
+        apiFetch(`/tracking/klik/${kupacId}/proizvodi/${proizvodId}`, {
+            method: 'POST',
+            body: JSON.stringify({ tipAkcije })
+        }),
     zabeleziPretragu: (kupacId, tekst) =>
         apiFetch(`/tracking/pretraga/${kupacId}`, {
             method: 'POST',
