@@ -19,6 +19,7 @@ public class Proizvod {
     private String naziv;
     private String opis;
     private BigDecimal kalorije;
+    private BigDecimal cena;
     private String fotografija;
     private BigDecimal kolicina;
     private String mernaJedinica;
