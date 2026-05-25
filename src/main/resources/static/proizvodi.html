@@ -664,8 +664,10 @@
     }
 
     function promeniKolicinuUKorpi(idx, delta) {
+        const stavka = korpa[idx];
         korpa[idx].kolicina += delta;
         if (korpa[idx].kolicina <= 0) {
+            try { api.zabeleziKlik(getKupacId(), stavka.id, 'UKLONI_IZ_KORPE'); } catch {}
             korpa.splice(idx, 1);
         }
         sacuvajKorpu();
@@ -674,6 +676,10 @@
     }
 
     function ocistiKorpu() {
+        const kupacId = getKupacId();
+        korpa.forEach(stavka => {
+            try { api.zabeleziKlik(kupacId, stavka.id, 'UKLONI_IZ_KORPE'); } catch {}
+        });
         korpa = [];
         sacuvajKorpu();
         renderKorpaPanel();
@@ -861,7 +867,7 @@
 
     // ── Detalji modal ───────────────────────────────────
     async function otvoriDetalje(proizvodId) {
-        try { await api.zabeleziKlik(getKupacId(), proizvodId, 'PREGLED'); } catch {}
+        try { await api.zabeleziKlik(getKupacId(), proizvodId, 'DETALJI'); } catch {}
         try {
             const p = await fetch(`http://localhost:8080/api/proizvodi/${proizvodId}`).then(r => r.json());
             aktivniProizvod = p;
@@ -913,9 +919,11 @@
             if (omiljeniIds.has(id)) {
                 await api.ukloniOmiljeni(getKupacId(), id);
                 omiljeniIds.delete(id); btn.textContent = '🤍';
+                try { api.zabeleziKlik(getKupacId(), id, 'UKLONI_OMILJENI'); } catch {}
             } else {
                 await api.dodajOmiljeni(getKupacId(), id);
                 omiljeniIds.add(id); btn.textContent = '❤️';
+                try { api.zabeleziKlik(getKupacId(), id, 'DODAJ_OMILJENI'); } catch {}
             }
         } catch { alert('Greška.'); }
     }
@@ -928,9 +936,11 @@
             if (omiljeniIds.has(id)) {
                 await api.ukloniOmiljeni(getKupacId(), id);
                 omiljeniIds.delete(id); btn.textContent = '🤍';
+                try { api.zabeleziKlik(getKupacId(), id, 'UKLONI_OMILJENI'); } catch {}
             } else {
                 await api.dodajOmiljeni(getKupacId(), id);
                 omiljeniIds.add(id); btn.textContent = '❤️';
+                try { api.zabeleziKlik(getKupacId(), id, 'DODAJ_OMILJENI'); } catch {}
             }
             const karticaFav = document.querySelector(`[onclick="toggleOmiljeni(${id}, this)"]`);
             if (karticaFav) karticaFav.textContent = omiljeniIds.has(id) ? '❤️' : '🤍';
