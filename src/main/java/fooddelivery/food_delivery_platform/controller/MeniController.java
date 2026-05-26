@@ -8,7 +8,9 @@ import fooddelivery.food_delivery_platform.repository.RestoranRepository;
 import fooddelivery.food_delivery_platform.service.MeniService;
 import fooddelivery.food_delivery_platform.service.RestoranService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -40,11 +42,17 @@ public class MeniController {
         return meniService.findByRestoranRestoranId(restoranId);
     }
 
+    // azuriranje menija (menadzer)
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateMenu(@PathVariable Long id, @RequestBody MeniUpdateDTO dto) {
+    public ResponseEntity<?> ažurirajMeni(
+            @PathVariable Long id,
+            @RequestBody MeniUpdateDTO dto,
+            @RequestHeader("X-User-Id") Long trenutniKorisnikId) {
         try {
-            Meni azuriranMeni = meniService.updateMenu(id, dto);
+            Meni azuriranMeni = meniService.updateMenu(id, dto, trenutniKorisnikId);
             return ResponseEntity.ok(azuriranMeni);
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

@@ -70,8 +70,15 @@
             align-items: center;
             justify-content: center;
             margin: 0 auto 20px;
-            font-size: 48px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            overflow: hidden;
+            padding: 12px;
+        }
+
+        .logo-img {
+            width: 200%;
+            height: 200%;
+            object-fit: contain;
         }
 
         .logo-name {
@@ -89,29 +96,6 @@
             margin-top: 8px;
         }
 
-        .hero-food {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            width: 100%;
-            max-width: 320px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .food-card {
-            background: rgba(255,255,255,0.12);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 16px;
-            padding: 16px;
-            text-align: center;
-            color: white;
-        }
-
-        .food-card .emoji { font-size: 32px; }
-        .food-card .name { font-size: 12px; margin-top: 6px; opacity: 0.8; }
-
-        /* Desna strana — forma */
         .form-side {
             display: flex;
             flex-direction: column;
@@ -185,24 +169,6 @@
             display: none;
         }
 
-        .divider {
-            text-align: center;
-            color: var(--gray);
-            font-size: 13px;
-            margin: 20px 0;
-            position: relative;
-        }
-        .divider::before, .divider::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            width: 40%;
-            height: 1px;
-            background: var(--border);
-        }
-        .divider::before { left: 0; }
-        .divider::after { right: 0; }
-
         .register-link {
             text-align: center;
             font-size: 14px;
@@ -221,7 +187,9 @@
 
 <div class="hero">
     <div class="logo-wrap">
-        <div class="logo-icon">🍽️</div>
+        <div class="logo-icon">
+            <img src="/asset/logo.png" alt="Big Bite Logo" class="logo-img">
+        </div>
         <div class="logo-name">Big Bite</div>
         <div class="logo-sub">Food + Drink</div>
     </div>
@@ -241,15 +209,14 @@
 
     <button class="btn-login" onclick="prijavi()">Prijavi se</button>
 
-     <p class="register-link">
-    Nemaš nalog? <a href="/registracija.html">Registruj se</a>
+    <p class="register-link">
+        Nemaš nalog? <a href="/registracija.html">Registruj se</a>
     </p>
 </div>
 
 <script src="/js/api.js"></script>
 <script src="/js/auth.js"></script>
 <script>
-    // Ako je neko već ulogovan, preusmeri ga tamo gde mu je mesto na osnovu uloge
     const sesija = getSesija();
     if (sesija.uloga === 'KUPAC') window.location.href = '/proizvodi.html';
     if (sesija.uloga === 'MENADZER') window.location.href = '/izbor-restorana.html';
@@ -267,14 +234,12 @@
         }
 
         try {
-
             const korisnik = await apiFetch('/auth/login', {
                 method: 'POST',
                 body: JSON.stringify({ email: emailUnos, lozinka: lozinkaUnos })
             });
 
             sacuvajSesiju(korisnik);
-
 
             if (korisnik.uloga === 'MENADZER') {
                 window.location.href = '/izbor-restorana.html';

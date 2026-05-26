@@ -33,27 +33,76 @@
 
         <div class="md:col-span-2 space-y-4">
             <div>
-                <span id="prikaz-tip" class="text-xs font-bold uppercase px-3 py-1 bg-gray-200 text-gray-700 rounded-full tracking-wider">Loading...</span>
+                <span id="prikaz-tip" class="text-xs font-bold uppercase px-3 py-1 bg-gray-200 text-gray-700 rounded-full tracking-wider hidden"></span>
             </div>
 
-            <h1 id="prikaz-naziv" class="text-4xl font-extrabold text-gray-900">—</h1>
+            <h1 id="prikaz-naziv" class="text-4xl font-extrabold text-gray-900"></h1>
 
-            <p id="prikaz-opis" class="text-gray-600 text-base leading-relaxed">Učitavanje opisa menija...</p>
+            <p id="prikaz-opis" class="text-gray-600 text-base leading-relaxed"></p>
 
             <div id="kontejner-specificno" class="text-gray-700 font-medium space-y-1 pt-2 hidden">
             </div>
 
             <div class="pt-1">
-                <span id="prikaz-status" class="text-lg font-bold block">—</span>
+                <span id="prikaz-status" class="text-lg font-bold block"></span>
             </div>
         </div>
 
         <div class="flex flex-col w-full justify-start md:pt-10">
-            <button onclick="otvoriModal()" class="w-full bg-white hover:bg-gray-100 text-gray-700 font-semibold py-4 px-6 rounded-xl transition text-center shadow-sm cursor-pointer border border-gray-300">
+            <button onclick="otvoriModal()" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-semibold py-4 px-6 rounded-xl transition text-center shadow-sm cursor-pointer border border-transparent">
                 Izmeni osnovne informacije
             </button>
         </div>
 
+    </div>
+</div>
+
+<div id="modal-azuriraj" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl space-y-4 mx-4">
+        <h2 class="text-2xl font-bold text-gray-800">Ažuriraj meni</h2>
+
+        <form id="forma-azuriraj" class="space-y-4" onsubmit="sacuvajIzmene(event)">
+            <div>
+                <label class="block text-sm font-semibold text-gray-600 mb-1">Naziv menija</label>
+                <input type="text" id="input-naziv" required class="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-emerald-500">
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-gray-600 mb-1">Opis</label>
+                <textarea id="input-opis" rows="3" class="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-emerald-500"></textarea>
+            </div>
+
+            <div id="modal-sekcija-sezonski" class="hidden grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600 mb-1">Početak sezone</label>
+                    <input type="date" id="input-pocetak-sezone" class="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600 mb-1">Kraj sezone</label>
+                    <input type="date" id="input-kraj-sezone" class="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-emerald-500">
+                </div>
+            </div>
+
+            <div id="modal-sekcija-vremenski" class="hidden grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600 mb-1">Vreme početka</label>
+                    <input type="time" id="input-vreme-od" class="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600 mb-1">Vreme kraja</label>
+                    <input type="time" id="input-vreme-do" class="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-emerald-500">
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-2">
+                <button type="button" onclick="zatvoriModal()" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium rounded-lg transition cursor-pointer">
+                    Otkaži
+                </button>
+                <button type="submit" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition shadow-sm cursor-pointer">
+                    Sačuvaj
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -80,7 +129,10 @@
 
             document.getElementById('prikaz-naziv').textContent = meni.naziv;
             document.getElementById('prikaz-opis').textContent = meni.opis || 'Nema opisa za ovaj meni.';
-            document.getElementById('prikaz-tip').textContent = meni.tipMenija || 'Nepoznat tip menija';
+
+            const tipEl = document.getElementById('prikaz-tip');
+            tipEl.textContent = meni.tipMenija || 'Nepoznat tip menija';
+            tipEl.classList.remove('hidden'); // Prikazujemo značku tek kad stigne podatak
 
             const specKontejner = document.getElementById('kontejner-specificno');
             specKontejner.innerHTML = '';
@@ -129,7 +181,76 @@
     }
 
     function otvoriModal() {
-        console.log("Dugme kliknuto! Sledeći korak je implementacija modala za izmenu.");
+        if (!trenutniMeni) return;
+
+        document.getElementById('input-naziv').value = trenutniMeni.naziv;
+        document.getElementById('input-opis').value = trenutniMeni.opis || '';
+
+        const sekcijaSezonski = document.getElementById('modal-sekcija-sezonski');
+        const sekcijaVremenski = document.getElementById('modal-sekcija-vremenski');
+
+        sekcijaSezonski.classList.add('hidden');
+        sekcijaVremenski.classList.add('hidden');
+
+        if (trenutniMeni.tipMenija === 'SEZONSKI') {
+            sekcijaSezonski.classList.remove('hidden');
+            document.getElementById('input-pocetak-sezone').value = trenutniMeni.pocetakSezone || '';
+            document.getElementById('input-kraj-sezone').value = trenutniMeni.krajSezone || '';
+        }
+        else if (trenutniMeni.tipMenija === 'VREMENSKI') {
+            sekcijaVremenski.classList.remove('hidden');
+            document.getElementById('input-vreme-od').value = trenutniMeni.vremeOd ? trenutniMeni.vremeOd.substring(0,5) : '';
+            document.getElementById('input-vreme-do').value = trenutniMeni.vremeDo ? trenutniMeni.vremeDo.substring(0,5) : '';
+        }
+
+        document.getElementById('modal-azuriraj').classList.remove('hidden');
+    }
+
+    function zatvoriModal() {
+        document.getElementById('modal-azuriraj').classList.add('hidden');
+    }
+
+    async function sacuvajIzmene(event) {
+        event.preventDefault();
+
+        const ulogovaniKorisnikId = localStorage.getItem('korisnikId');
+        const finalniDto = {
+            naziv: document.getElementById('input-naziv').value,
+            opis: document.getElementById('input-opis').value,
+            pocetakSezone: null,
+            krajSezone: null,
+            vremeOd: null,
+            vremeDo: null
+        };
+        if (trenutniMeni.tipMenija === 'SEZONSKI') {
+            finalniDto.pocetakSezone = document.getElementById('input-pocetak-sezone').value || null;
+            finalniDto.krajSezone = document.getElementById('input-kraj-sezone').value || null;
+        }
+        else if (trenutniMeni.tipMenija === 'VREMENSKI') {
+            finalniDto.vremeOd = document.getElementById('input-vreme-od').value ? document.getElementById('input-vreme-od').value + ":00" : null;
+            finalniDto.vremeDo = document.getElementById('input-vreme-do').value ? document.getElementById('input-vreme-do').value + ":00" : null;
+        }
+
+        try {
+            await apiFetch(`/meni/${meniId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-User-Id': ulogovaniKorisnikId
+                },
+                body: JSON.stringify(finalniDto)
+            });
+
+            zatvoriModal();
+            
+            alert("Meni je uspešno ažuriran!");
+
+            await ucitajDetaljeMenija();
+
+        } catch (error) {
+            console.error("Greška pri čuvanju:", error);
+            alert("Nemate pravo pristupa ili je došlo do greške prilikom čuvanja.");
+        }
     }
 
     window.addEventListener('DOMContentLoaded', ucitajDetaljeMenija);
