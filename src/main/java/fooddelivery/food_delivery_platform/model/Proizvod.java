@@ -15,6 +15,7 @@ public class Proizvod {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "proizvod_id")
     private Long proizvodId;
 
     private String naziv;
@@ -23,19 +24,19 @@ public class Proizvod {
     private BigDecimal cena;
     private String fotografija;
     private BigDecimal kolicina;
+
+    @Column(name = "merna_jedinica")
     private String mernaJedinica;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "kategorijaId")
+    @JoinColumn(name = "kategorija_id")
     private Kategorija kategorija;
-
-    // ... tvoja polja (naziv, opis, cena...)
 
     @ManyToMany
     @JoinTable(
             name = "proizvod_alergeni",
             joinColumns = @JoinColumn(name = "proizvodId"),
-            inverseJoinColumns = @JoinColumn(name = "alergenId")
+            inverseJoinColumns = @JoinColumn(name = "alergen_id")
     )
     private List<Alergen> alergeni;
 
@@ -43,7 +44,7 @@ public class Proizvod {
     @JoinTable(
             name = "proizvod_sastojci",
             joinColumns = @JoinColumn(name = "proizvodId"),
-            inverseJoinColumns = @JoinColumn(name = "sastojakId")
+            inverseJoinColumns = @JoinColumn(name = "sastojak_id")
     )
     private List<Sastojak> sastojci;
 }

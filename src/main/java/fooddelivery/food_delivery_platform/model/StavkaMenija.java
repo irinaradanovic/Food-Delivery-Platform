@@ -17,15 +17,21 @@ public class StavkaMenija {
     private Long stavkaId;
 
     @ManyToOne
-    @JoinColumn(name = "meniId")
+    @JoinColumn(name = "meni_id")
     private Meni meni;
 
     @ManyToOne
-    @JoinColumn(name = "proizvodId")
+    @JoinColumn(name = "proizvod_id")
     private Proizvod proizvod;
 
+    @Column(name = "vreme_pripreme_min")
     private Integer vremePripremeMin;
+
+    @Column(name = "vreme_pripreme_max")
     private Integer vremePripremeMax;
     private BigDecimal cena;
     private boolean dostupno;
+
+    @Builder.Default
+    private boolean obrisan = false;
 }
