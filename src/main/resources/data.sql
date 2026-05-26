@@ -9,6 +9,8 @@ INSERT INTO menadzeri (korisnik_id) VALUES (1), (2), (3);
 -- Kupci
 INSERT INTO korisnici (korisnik_id, ime, prezime, telefon, lozinka, email, datum_reg, uloga) VALUES (4, NULL, 'markovic@gmail.com', 'Marko', '123456', 'Markovic', '064235768', 'KUPAC');
 INSERT INTO korisnici (korisnik_id, ime, prezime, telefon, lozinka, email, datum_reg, uloga) VALUES (5, NULL, 'lalic@gmail.com', 'Nenad', '123456', 'Lalic', '06789256812', 'KUPAC');
+INSERT INTO korisnici (korisnik_id, ime, prezime, telefon, lozinka, email, datum_reg, uloga) VALUES (6, NULL, 'dostava@gmail.com', 'Dosta', '123456', 'Dostava', '06789256812', 'DOSTAVLJAC');
+
 
 -- Dostavljaci
 INSERT INTO korisnici (korisnik_id, ime, prezime, telefon, lozinka, email, datum_reg, uloga) VALUES
@@ -23,7 +25,6 @@ INSERT INTO dostavljaci (korisnik_id, status, prosecna_ocena, broj_dostava, broj
 
 /*INSERT INTO kupci VALUES ('Narodnog fronta 16, Novi Sad', NULL, 4);
 INSERT INTO kupci VALUES ('Narodnog fronta 19, Novi Sad', NULL, 5); */
-
 
 
 
@@ -212,6 +213,19 @@ INSERT INTO proizvodi (proizvod_id, naziv, opis, cena, kolicina, merna_jedinica,
                                                                                                                            (47, 'Proja sa sirom', 'Domaća proja sa sitnim sirom', 260.00, 120.00, 'g', 260.00, 'https://png.pngtree.com/png-vector/20241102/ourmid/pngtree-classic-homemade-cornbread-slice-with-a-golden-crust-on-white-background-png-image_14232559.png', 14),
                                                                                                                            (48, 'Mešano meso sa roštilja', 'Bogata porcija mešanog mesa sa roštilja', 890.00, 600.00, 'g', 890.00, 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=600&h=400&fit=crop&auto=format', 14);
 
+-- Porudzbine (korisnik_id: 2->5, porudzbina_id: 1-7 su slobodni)
+INSERT INTO porudzbine (porudzbina_id, korisnik_id, adresa_dostave, datum_kreiranja, kupon_id, napomena, status, ukupna_cena)
+VALUES
+    (1, 5, 'Narodnog Fronta 7, Novi Sad', '2026-05-25 09:08:06.068921', NULL, '',       'KREIRANA', 9.80),
+    (2, 5, 'Narodnog Fronta 7, Novi Sad', '2026-05-25 09:08:18.871066', NULL, '2. sprat', 'KREIRANA', 9.80),
+    (3, 5, 'Narodnog Fronta 7, Novi Sad', '2026-05-25 09:09:25.310633', NULL, '2. sprat', 'KREIRANA', 9.80),
+    (4, 5, 'Narodnog Fronta 7, Novi Sad', '2026-05-25 09:09:32.69165',  NULL, '2. sprat', 'KREIRANA', 9.80),
+    (5, 5, 'Narodnog Fronta 7, Novi Sad', '2026-05-25 09:10:02.493091', NULL, '2. sprat', 'KREIRANA', 9.80),
+    (6, 5, 'Narodnog Fronta 7, Novi Sad', '2026-05-25 09:10:14.984126', NULL, '2. sprat', 'KREIRANA', 9.80),
+    (7, 5, 'Narodnog Fronta 7, Novi Sad', '2026-05-25 09:10:29.991216', NULL, '2. sprat', 'KREIRANA', 9.80);
+
+
+
 -- Klikovi (korisnik_id: 2->5, proizvod_id: stari+16)
 INSERT INTO klikovi (klik_id, tip_akcije, vreme_klika, korisnik_id, proizvod_id) VALUES
                                                                                      (1,  'PREGLED',          '2026-05-24 11:18:19.77089',   5, 21),
@@ -278,6 +292,37 @@ INSERT INTO pretrage (pretraga_id, tekst_upita, tip_pretrage, vreme_pretrage, ko
                                                                                                (11, 'car',        'OPSTA', '2026-05-24 13:34:36.56451',  5),
                                                                                                (12, 'limunada',   'OPSTA', '2026-05-25 23:38:32.113215', 5),
                                                                                                (13, 'hygui',      'OPSTA', '2026-05-25 23:39:20.161768', 5);
+INSERT INTO stavke_menija (stavka_id, meni_id, proizvod_id, cena, dostupno, vreme_pripreme_min, vreme_pripreme_max, obrisan) VALUES
+(17, 2, 17, 850.00, true, 8, 12, false),
+(18, 2, 18, 980.00, true, 8, 12, false),
+(19, 2, 19, 1050.00, true, 10, 15, false),
+(20, 2, 20, 780.00, true, 8, 12, false),
+(21, 1, 21, 750.00, true, 10, 15, false),
+(22, 1, 22, 950.00, true, 12, 18, false),
+(23, 1, 23, 820.00, true, 10, 15, false);
+
+INSERT INTO stavke_porudzbine (stavka_id, cena, porudzbina_id, kolicina, stavka_menija_id) VALUES
+(DEFAULT, 550.00, 1, 1, 1),
+(DEFAULT, 820.00, 1, 2, 2),
+(DEFAULT, 320.00, 2, 1, 5),
+(DEFAULT, 410.00, 2, 1, 6),
+(DEFAULT, 750.00, 3, 1, 7),
+(DEFAULT, 620.00, 3, 1, 8),
+(DEFAULT, 130.00, 3, 1, 9),
+(DEFAULT, 360.00, 3, 1, 10);
+
+INSERT INTO kuponi (kupon_id, kod, popust_iznos, popust_procenat, vazi_od, vazi_do, aktivan, max_upotreba, upotrebljeno_puta, vlasnik_id) VALUES
+(1, 'WELCOME100', 100.00, NULL, '2026-05-01 00:00:00', '2028-12-31 23:59:59', true, 100, 0, 4),
+(2, 'SUMMER20', NULL, 20.00, '2026-06-01 00:00:00', '2026-08-31 23:59:59', true, 50, 0, 5);
+
+INSERT INTO statusi_porudzbine (status_istorija_id, porudzbina_id, status, vreme_promene, promenio_korisnik_id) VALUES
+(1, 1, 'KREIRANA', '2026-05-25 09:08:06.068921', 5),
+(2, 2, 'KREIRANA', '2026-05-25 09:08:18.871066', 5),
+(3, 3, 'KREIRANA', '2026-05-25 09:09:25.310633', 5),
+(4, 4, 'KREIRANA', '2026-05-25 09:09:32.691650', 5),
+(5, 5, 'KREIRANA', '2026-05-25 09:10:02.493091', 5),
+(6, 6, 'KREIRANA', '2026-05-25 09:10:14.984126', 5),
+(7, 7, 'KREIRANA', '2026-05-25 09:10:29.991216', 5);
 
 
 -- Sinhronizacija sekvenci za bazu
@@ -288,6 +333,10 @@ SELECT setval(pg_get_serial_sequence('sastojci', 'sastojak_id'), MAX(sastojak_id
 SELECT setval(pg_get_serial_sequence('proizvodi', 'proizvod_id'), MAX(proizvod_id)) FROM proizvodi;
 SELECT setval(pg_get_serial_sequence('meniji', 'meni_id'), MAX(meni_id)) FROM meniji;
 SELECT setval(pg_get_serial_sequence('stavke_menija', 'stavka_id'), MAX(stavka_id)) FROM stavke_menija;
+SELECT setval(pg_get_serial_sequence('stavke_menija', 'stavka_id'), MAX(stavka_id)) FROM stavke_menija;
+SELECT setval(pg_get_serial_sequence('kuponi', 'kupon_id'), MAX(kupon_id)) FROM kuponi;
+SELECT setval(pg_get_serial_sequence('porudzbine', 'porudzbina_id'), MAX(porudzbina_id)) FROM porudzbine;
+SELECT setval(pg_get_serial_sequence('statusi_porudzbine', 'status_istorija_id'), MAX(status_istorija_id)) FROM statusi_porudzbine;
 SELECT setval(pg_get_serial_sequence('klikovi', 'klik_id'), MAX(klik_id)) FROM klikovi;
 SELECT setval(pg_get_serial_sequence('pretrage', 'pretraga_id'), MAX(pretraga_id)) FROM pretrage;
 
