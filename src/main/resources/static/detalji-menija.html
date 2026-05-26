@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <title>Detalji menija</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        nav {
+            background: white; border-bottom: 1px solid #e5e0d8;
+            padding: 0 40px; height: 68px; width: 100%;
+            display: flex; align-items: center; justify-content: space-between;
+            position: fixed; top: 0; left: 0; z-index: 100;
+        }
+        .nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .nav-logo-icon { width: 76px; height: 96px; display: flex; align-items: center; justify-content: center; }
+        .nav-logo-text { font-family: 'Playfair Display', serif; font-size: 20px; color: #1a1a1a; font-weight: 700; }
+        .nav-links { display: flex; align-items: center; gap: 4px; }
+        .nav-links a { padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 500; color: #6b7280; transition: all 0.15s; }
+        .nav-links a:hover { background: #f3f4f6; color: #1a1a1a; }
+        .nav-links a.active { background: #2d6a2d !important; color: white !important; }
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .nav-user { font-size: 13px; color: #6b7280; background: #f3f4f6; padding: 6px 12px; border-radius: 20px; font-family: sans-serif; }
+        .btn-odjava { background: none; border: 1.5px solid #e5e0d8; border-radius: 8px; padding: 7px 14px; font-size: 13px; font-weight: 500; color: #6b7280; cursor: pointer; transition: all 0.15s; }
+        .btn-odjava:hover { border-color: #dc2626; color: #dc2626; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen pt-24 p-8">
+
+<nav></nav>
+
+<div class="max-w-5xl mx-auto">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+
+        <div class="md:col-span-2 space-y-4">
+            <div>
+                <span id="prikaz-tip" class="text-xs font-bold uppercase px-3 py-1 bg-gray-200 text-gray-700 rounded-full tracking-wider">Loading...</span>
+            </div>
+
+            <h1 id="prikaz-naziv" class="text-4xl font-extrabold text-gray-900">—</h1>
+
+            <p id="prikaz-opis" class="text-gray-600 text-base leading-relaxed">Učitavanje opisa menija...</p>
+
+            <div id="kontejner-specificno" class="text-gray-700 font-medium space-y-1 pt-2 hidden">
+            </div>
+
+            <div class="pt-1">
+                <span id="prikaz-status" class="text-lg font-bold block">—</span>
+            </div>
+        </div>
+
+        <div class="flex flex-col w-full justify-start md:pt-10">
+            <button onclick="otvoriModal()" class="w-full bg-white hover:bg-gray-100 text-gray-700 font-semibold py-4 px-6 rounded-xl transition text-center shadow-sm cursor-pointer border border-gray-300">
+                Izmeni osnovne informacije
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<script src="./js/api.js"></script>
+<script src="./js/auth.js"></script>
+<script>
+    zastitiStranicu();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const meniId = urlParams.get('meniId');
+    let trenutniMeni = null;
+
+    async function ucitajDetaljeMenija() {
+        if (!meniId) {
+            alert("Meni ID nedostaje u URL-u!");
+            return;
+        }
+
+        try {
+            const meni = await apiFetch(`/meni/${meniId}`);
+            trenutniMeni = meni;
+
+            console.log("Preuzeti podaci o meniju:", meni);
+
+            document.getElementById('prikaz-naziv').textContent = meni.naziv;
+            document.getElementById('prikaz-opis').textContent = meni.opis || 'Nema opisa za ovaj meni.';
+            document.getElementById('prikaz-tip').textContent = meni.tipMenija || 'Nepoznat tip menija';
+
+            const specKontejner = document.getElementById('kontejner-specificno');
+            specKontejner.innerHTML = '';
+
+            if (meni.tipMenija === 'SEZONSKI' && meni.pocetakSezone && meni.krajSezone) {
+                specKontejner.innerHTML = `
+                    <div class="text-gray-700"><span class="text-gray-400 font-normal">Datum početka sezone:</span> ${formatujDatum(meni.pocetakSezone)}</div>
+                    <div class="text-gray-700"><span class="text-gray-400 font-normal">Datum kraja sezone:</span> ${formatujDatum(meni.krajSezone)}</div>
+                `;
+                specKontejner.classList.remove('hidden');
+            }
+            else if (meni.tipMenija === 'VREMENSKI' && meni.vremeOd && meni.vremeDo) {
+                const odVreme = meni.vremeOd.length > 5 ? meni.vremeOd.substring(0,5) : meni.vremeOd;
+                const doVreme = meni.vremeDo.length > 5 ? meni.vremeDo.substring(0,5) : meni.vremeDo;
+
+                specKontejner.innerHTML = `
+                    <div class="text-gray-700"><span class="text-gray-400 font-normal">Vreme početka:</span> ${odVreme}h</div>
+                    <div class="text-gray-700"><span class="text-gray-400 font-normal">Vreme kraja:</span> ${doVreme}h</div>
+                `;
+                specKontejner.classList.remove('hidden');
+            }
+            else {
+                specKontejner.classList.add('hidden');
+            }
+
+            const statusEl = document.getElementById('prikaz-status');
+            if (meni.aktivan) {
+                statusEl.textContent = "Aktivan";
+                statusEl.className = "text-lg font-bold text-emerald-600 block";
+            } else {
+                statusEl.textContent = "Neaktivan";
+                statusEl.className = "text-lg font-bold text-red-500 block";
+            }
+
+        } catch (error) {
+            console.error("Greška pri učitavanju:", error);
+            document.getElementById('prikaz-opis').textContent = "Greška prilikom preuzimanja podataka sa servera.";
+            document.getElementById('prikaz-opis').className = "text-red-500 mt-2";
+        }
+    }
+
+    function formatujDatum(isoString) {
+        if (!isoString) return "";
+        const d = new Date(isoString);
+        return d.toLocaleDateString('sr-RS', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
+
+    function otvoriModal() {
+        console.log("Dugme kliknuto! Sledeći korak je implementacija modala za izmenu.");
+    }
+
+    window.addEventListener('DOMContentLoaded', ucitajDetaljeMenija);
+</script>
+</body>
+</html>

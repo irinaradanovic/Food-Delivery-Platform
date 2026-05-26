@@ -1,6 +1,8 @@
 package fooddelivery.food_delivery_platform.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
@@ -9,6 +11,16 @@ import java.time.LocalDate;
 @Table(name = "meniji")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "tipMenija", discriminatorType = DiscriminatorType.STRING)
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        include = JsonTypeInfo.As.PROPERTY,
+        property = "tipMenija", // ovo mapira diskriminator direktno u JSON polje tipMenija
+        visible = true
+)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = SezonskiMeni.class, name = "SEZONSKI"),
+        @JsonSubTypes.Type(value = VremenskiMeni.class, name = "VREMENSKI")
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
