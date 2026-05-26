@@ -6,16 +6,13 @@ INSERT INTO korisnici (korisnik_id, ime, prezime, telefon, lozinka, email, datum
 
 INSERT INTO menadzeri (korisnik_id) VALUES (1), (2), (3);
 
-<<<<<<< Updated upstream
 -- Kupci
 INSERT INTO korisnici (korisnik_id, ime, prezime, telefon, lozinka, email, datum_reg, uloga) VALUES (4, NULL, 'markovic@gmail.com', 'Marko', '123456', 'Markovic', '064235768', 'KUPAC');
 INSERT INTO korisnici (korisnik_id, ime, prezime, telefon, lozinka, email, datum_reg, uloga) VALUES (5, NULL, 'lalic@gmail.com', 'Nenad', '123456', 'Lalic', '06789256812', 'KUPAC');
 
 /*INSERT INTO kupci VALUES ('Narodnog fronta 16, Novi Sad', NULL, 4);
 INSERT INTO kupci VALUES ('Narodnog fronta 19, Novi Sad', NULL, 5); */
-=======
--- Kupci su integrisani na kraju fajla (korisnik_id 4 i 5, zbog konflikta sa menadzerima 1-3)
->>>>>>> Stashed changes
+
 
 
 
@@ -152,14 +149,13 @@ INSERT INTO stavke_menija (stavka_id, meni_id, proizvod_id, cena, dostupno, vrem
 
 
 -- omiljene_kategorije
-<<<<<<< Updated upstream
 /*INSERT INTO omiljene_kategorije VALUES (1, '2026-05-24 12:19:57.447502', 3, 2);
 INSERT INTO omiljene_kategorije VALUES (2, '2026-05-24 12:32:55.337159', 5, 2);
 
 -- omiljeni_proizvodi
 INSERT INTO omiljeni_proizvodi VALUES (9, '2026-05-24 11:27:48.164161', 2, 1);
 INSERT INTO omiljeni_proizvodi VALUES (12, '2026-05-25 10:24:59.061989', 2, 25); */
-=======
+
 -- Napomena: korisnik 2 (iz kupac bloka) = korisnik_id 5 u integraciji
 -- kategorija 3 (Pasta) -> 9, kategorija 5 (Salate) -> 11
 INSERT INTO omiljene_kategorije VALUES (1, '2026-05-24 12:19:57.447502', 9, 5);
@@ -321,7 +317,7 @@ INSERT INTO pretrage (pretraga_id, tekst_upita, tip_pretrage, vreme_pretrage, ko
                                                                                                (11, 'car',        'OPSTA', '2026-05-24 13:34:36.56451',  5),
                                                                                                (12, 'limunada',   'OPSTA', '2026-05-25 23:38:32.113215', 5),
                                                                                                (13, 'hygui',      'OPSTA', '2026-05-25 23:39:20.161768', 5);
->>>>>>> Stashed changes
+
 
 -- Sinhronizacija sekvenci za bazu
 SELECT setval(pg_get_serial_sequence('korisnici', 'korisnik_id'), MAX(korisnik_id)) FROM korisnici;
