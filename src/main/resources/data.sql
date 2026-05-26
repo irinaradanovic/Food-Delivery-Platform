@@ -327,3 +327,5 @@ SELECT setval(pg_get_serial_sequence('sastojci', 'sastojak_id'), MAX(sastojak_id
 SELECT setval(pg_get_serial_sequence('proizvodi', 'proizvod_id'), MAX(proizvod_id)) FROM proizvodi;
 SELECT setval(pg_get_serial_sequence('meniji', 'meni_id'), MAX(meni_id)) FROM meniji;
 SELECT setval(pg_get_serial_sequence('stavke_menija', 'stavka_id'), MAX(stavka_id)) FROM stavke_menija;
+SELECT setval(pg_get_serial_sequence('klikovi', 'klik_id'), MAX(klik_id)) FROM klikovi;
+SELECT setval(pg_get_serial_sequence('pretrage', 'pretraga_id'), MAX(pretraga_id)) FROM pretrage;
