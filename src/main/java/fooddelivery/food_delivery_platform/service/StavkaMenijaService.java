@@ -1,5 +1,6 @@
 package fooddelivery.food_delivery_platform.service;
 
+import fooddelivery.food_delivery_platform.dto.IzmenaStavkeMenijaDTO;
 import fooddelivery.food_delivery_platform.dto.NovaStavkaMenijaDTO;
 import fooddelivery.food_delivery_platform.model.Meni;
 import fooddelivery.food_delivery_platform.model.StavkaMenija;
@@ -50,6 +51,10 @@ public class StavkaMenijaService {
     @Transactional(readOnly = true)
     public List<StavkaMenija> getItemsByMenu(Long meniId) {
         return stavkaMenijaRepository.findByMeniMeniIdAndObrisanFalse(meniId);
+    }
+
+    public StavkaMenija getItemById(Long id) {
+        return stavkaMenijaRepository.findById(id).orElse(null);
     }
 
 
@@ -152,6 +157,91 @@ public class StavkaMenijaService {
         }
 
         stavka.setObrisan(true);
+        stavkaMenijaRepository.save(stavka);
+    }
+
+    @Transactional
+    public void updateMenuItem(Long meniId, Long stavkaId, IzmenaStavkeMenijaDTO dto, MultipartFile slika , Long trenutniKorisnikId) {
+        StavkaMenija stavka = stavkaMenijaRepository.findById(stavkaId)
+                .orElseThrow(() -> new EntityNotFoundException("Stavka ne postoji"));
+
+        if (!stavka.getMeni().getMeniId().equals(meniId)) {
+            throw new IllegalArgumentException("Ova stavka ne pripada izabranom meniju!");
+        }
+
+
+        Restoran restoran = stavka.getMeni().getRestoran();
+        if (restoran == null || !restoran.getMenadzer().getKorisnikId().equals(trenutniKorisnikId)) {
+            throw new AccessDeniedException("Nemate ovlašćenje da menjate stavke u ovom meniju!");
+        }
+
+        Proizvod proizvod = stavka.getProizvod();
+
+        // Ažuriranje primitivnih polja proizvoda i stavke
+        proizvod.setNaziv(dto.getNaziv());
+        proizvod.setOpis(dto.getOpis());
+        proizvod.setKalorije(dto.getKalorije());
+        proizvod.setKolicina(dto.getKolicina());
+        proizvod.setMernaJedinica(dto.getMernaJedinica());
+        proizvod.setCena(dto.getCena());
+
+        stavka.setCena(dto.getCena());
+        stavka.setVremePripremeMin(dto.getVremePripremeMin());
+        stavka.setVremePripremeMax(dto.getVremePripremeMax());
+
+        // Obrada Kategorije
+        if (dto.getNovaKategorijaNaziv() != null && !dto.getNovaKategorijaNaziv().isBlank()) {
+            Kategorija novaKat = Kategorija.builder()
+                    .naziv(dto.getNovaKategorijaNaziv().trim())
+                    .kreiraoKorisnikId(trenutniKorisnikId)
+                    .build();
+            novaKat = kategorijaRepository.save(novaKat);
+            proizvod.setKategorija(novaKat);
+        } else if (dto.getKategorijaId() != null) {
+            Kategorija kat = kategorijaRepository.findById(dto.getKategorijaId())
+                    .orElseThrow(() -> new EntityNotFoundException("Kategorija nije pronađena"));
+            proizvod.setKategorija(kat);
+        }
+
+        proizvod.getSastojci().clear();
+        if (dto.getSastojciIds() != null) {
+            proizvod.getSastojci().addAll(sastojakRepository.findAllById(dto.getSastojciIds()));
+        }
+        if (dto.getNoviSastojciNazivi() != null) {
+            for (String naziv : dto.getNoviSastojciNazivi()) {
+                if (!naziv.trim().isEmpty()) {
+                    Sastojak s = Sastojak.builder()
+                            .naziv(naziv.trim())
+                            .kreiraoKorisnikId(trenutniKorisnikId)
+                            .build();
+                    proizvod.getSastojci().add(sastojakRepository.save(s));
+                }
+            }
+        }
+
+        proizvod.getAlergeni().clear();
+        if (dto.getAlergeniIds() != null) {
+            proizvod.getAlergeni().addAll(alergenRepository.findAllById(dto.getAlergeniIds()));
+        }
+
+        if (slika != null && !slika.isEmpty()) {
+            try {
+                Path uploadPath = Paths.get(UPLOAD_DIR);
+                if (!Files.exists(uploadPath)) {
+                    Files.createDirectories(uploadPath);
+                }
+                String jedinstvenoIme = UUID.randomUUID().toString() + "_" + slika.getOriginalFilename();
+                Path fajlPutanja = uploadPath.resolve(jedinstvenoIme);
+                Files.copy(slika.getInputStream(), fajlPutanja, StandardCopyOption.REPLACE_EXISTING);
+
+                String putanjaSlikeUBazi = "images/food/" + jedinstvenoIme;
+                proizvod.setFotografija(putanjaSlikeUBazi);
+            } catch (IOException e) {
+                throw new RuntimeException("Greška prilikom čuvanja fotografije proizvoda.", e);
+            }
+        }
+
+        proizvodRepository.save(proizvod);
         stavkaMenijaRepository.save(stavka);
     }
 
