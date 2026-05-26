@@ -70,6 +70,8 @@ INSERT INTO meniji (meni_id, naziv, opis, tip_menija, verzija, aktivan, datum_od
 
 -- Povezivanje Menija i Proizvoda sa cenama na meniju
 INSERT INTO stavke_menija (stavka_id, meni_id, proizvod_id, cena, dostupno, vreme_pripreme_min, vreme_pripreme_max) VALUES
-                                                                                                                        (1, 1, 1, 550.00, true, 10, 15), -- U Meni 1 stavljamo Classic Burger
-                                                                                                                        (2, 2, 2, 750.00, true, 12, 20), -- U Meni 2 (Vremenski) stavljamo Pizzu po jutarnjoj ceni
-                                                                                                                        (3, 3, 3, 490.00, true, 5, 10);  -- U Meni 3 (Sezonski) stavljamo Cezar Salatu
+                                                                                                                        (1, 1, 1, 550.00, true, 10, 15),
+                                                                                                                        (2, 2, 2, 750.00, true, 12, 20),
+                                                                                                                        (3, 3, 3, 490.00, true, 5, 10);
+
+SELECT setval(pg_get_serial_sequence('korisnici', 'korisnik_id'), MAX(korisnik_id)) FROM korisnici;

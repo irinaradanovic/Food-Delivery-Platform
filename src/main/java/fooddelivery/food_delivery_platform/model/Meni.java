@@ -1,5 +1,6 @@
 package fooddelivery.food_delivery_platform.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
@@ -24,6 +25,7 @@ public abstract class Meni {
     private LocalDate datumDo;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     @JoinColumn(name = "restoranId")
     private Restoran restoran;
 
