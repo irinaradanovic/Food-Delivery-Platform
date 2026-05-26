@@ -158,13 +158,13 @@ INSERT INTO omiljeni_proizvodi VALUES (12, '2026-05-25 10:24:59.061989', 2, 25);
 
 -- Napomena: korisnik 2 (iz kupac bloka) = korisnik_id 5 u integraciji
 -- kategorija 3 (Pasta) -> 9, kategorija 5 (Salate) -> 11
-INSERT INTO omiljene_kategorije VALUES (1, '2026-05-24 12:19:57.447502', 9, 5);
+/*INSERT INTO omiljene_kategorije VALUES (1, '2026-05-24 12:19:57.447502', 9, 5);
 INSERT INTO omiljene_kategorije VALUES (2, '2026-05-24 12:32:55.337159', 11, 5);
 
 -- omiljeni_proizvodi
 -- korisnik 2 -> 5, proizvod 1 -> 17 (Margherita), proizvod 25 -> 41 (Pepsi)
 INSERT INTO omiljeni_proizvodi VALUES (9, '2026-05-24 11:27:48.164161', 5, 17);
-INSERT INTO omiljeni_proizvodi VALUES (12, '2026-05-25 10:24:59.061989', 5, 41);
+INSERT INTO omiljeni_proizvodi VALUES (12, '2026-05-25 10:24:59.061989', 5, 41);  */
 
 -- =========================================================================
 -- INTEGRISANI PODACI IZ KUPAC MODULA
