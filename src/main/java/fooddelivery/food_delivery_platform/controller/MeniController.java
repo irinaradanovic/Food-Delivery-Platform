@@ -57,4 +57,11 @@ public class MeniController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    // deaktiviranje menija (menadzer)
+    @PutMapping("/{id}/deaktiviraj")
+    public ResponseEntity<Void> deaktivirajMeni(@PathVariable Long id,  @RequestHeader("X-User-Id") Long trenutniKorisnikId) {
+        meniService.deactivateMenu(id, trenutniKorisnikId);
+        return ResponseEntity.noContent().build();
+    }
 }

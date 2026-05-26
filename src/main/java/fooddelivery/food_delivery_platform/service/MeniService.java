@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import java.time.LocalDate;
 
 import java.util.List;
 
@@ -60,5 +61,21 @@ public class MeniService {
         }
 
         return meniRepository.save(meni);
+    }
+
+
+    @Transactional
+    public void deactivateMenu(Long id, Long trenutniKorisnikId) {
+        Meni meni = meniRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Meni sa ID-jem " + id + " nije pronađen."));
+
+        Restoran restoran = meni.getRestoran();
+        if (restoran == null || !restoran.getMenadzer().getKorisnikId().equals(trenutniKorisnikId)) {
+            throw new AccessDeniedException("Nemate ovlašćenje da menjate meni ovog restorana!");
+        }
+        meni.setAktivan(false);
+        meni.setDatumDo(LocalDate.now()); // Postavlja se datum kada je meni deaktiviran
+
+        meniRepository.save(meni);
     }
 }
