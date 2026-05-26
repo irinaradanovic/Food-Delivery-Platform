@@ -19,7 +19,7 @@ public class Restoran {
     private String adresa;
     private String kontakt;
 
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "menadzerId")
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "menadzer_id")
     private Menadzer menadzer;
 }

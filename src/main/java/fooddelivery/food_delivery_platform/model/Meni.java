@@ -38,7 +38,7 @@ public abstract class Meni {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-    @JoinColumn(name = "restoranId")
+    @JoinColumn(name = "restoran_id")
     private Restoran restoran;
 
 }
