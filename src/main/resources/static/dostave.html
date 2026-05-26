@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upravljanje Dostavama</title>
+
+    <link rel="stylesheet" href="css/delivery.css">
+
+    <style>
+        /* Profesionalni dodaci za tabelu dostava */
+        .delivery-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .delivery-table th, .delivery-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eef2f5;
+            font-size: 0.95rem;
+        }
+
+        .delivery-table th {
+            background-color: #f8f9fa;
+            color: #34495e;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+
+        .delivery-table tr:hover {
+            background-color: #fcfcfc;
+        }
+
+        /* Stilovi za statuse dostave */
+        .badge {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: inline-block;
+            text-transform: uppercase;
+        }
+
+        .status-transport {
+            background-color: #e3f2fd;
+            color: #0d47a1;
+            border: 1px solid #bbdefb;
+        }
+
+        .status-dodeljena {
+            background-color: #fff8e1;
+            color: #ff6f00;
+            border: 1px solid #ffe082;
+        }
+
+        .status-isporucena {
+            background-color: #e8f5e9;
+            color: #1b5e20;
+            border: 1px solid #c8e6c9;
+        }
+
+        .address-container {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .address-label {
+            font-size: 0.75rem;
+            color: #95a5a6;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .address-text {
+            color: #2c3e50;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="navbar">
+        <a href="dostavljaci.html">Dostavljači</a>
+        <a href="dostave.html" class="active">Dostave</a>
+        <a href="mapa.html">Mapa</a>
+        <a href="analitika.html">Analitika</a>
+        <a href="notifikacije.html">Notifikacije</a>
+    </div>
+
+    <h1>Pregled Aktivnih Dostava</h1>
+
+    <div class="card" style="padding: 10px; overflow-x: auto;">
+
+        <table class="delivery-table">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Porudžbina ID</th>
+                <th>Dostavljač</th>
+                <th>Ruta (Preuzimanje → Isporuka)</th>
+                <th>ETA</th>
+                <th>Status</th>
+            </tr>
+            </thead>
+
+            <tbody id="dostaveTable">
+            </tbody>
+        </table>
+
+    </div>
+
+</div>
+
+<script src="js/dostave.js"></script>
+
+</body>
+</html>
