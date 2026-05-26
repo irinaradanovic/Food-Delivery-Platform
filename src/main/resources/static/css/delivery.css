@@ -1,0 +1,96 @@
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f6f9;
+    margin: 0;
+    padding: 20px;
+}
+
+h1 {
+    color: #333;
+}
+
+.container {
+    max-width: 1200px;
+    margin: auto;
+}
+
+.card {
+    background: white;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table th,
+table td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+}
+
+.status {
+    padding: 6px 12px;
+    border-radius: 8px;
+    color: white;
+    font-size: 12px;
+}
+
+.DOSTUPAN {
+    background: green;
+}
+
+.ZAUZET {
+    background: orange;
+}
+
+.OFFLINE {
+    background: gray;
+}
+
+.U_TRANSPORTU {
+    background: blue;
+}
+
+.DODELJENA {
+    background: orange;
+}
+
+.ISPORUCENA {
+    background: green;
+}
+
+button {
+    padding: 10px 15px;
+    border: none;
+    background: #2563eb;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #1e40af;
+}
+
+.navbar {
+    margin-bottom: 20px;
+}
+
+.navbar a {
+    margin-right: 15px;
+    text-decoration: none;
+    color: #2563eb;
+    font-weight: bold;
+}
+
+#map {
+    height: 600px;
+    width: 100%;
+    border-radius: 10px;
+}

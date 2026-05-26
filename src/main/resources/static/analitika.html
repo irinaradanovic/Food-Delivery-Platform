@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Analitika Performansi</title>
+
+    <link rel="stylesheet" href="css/delivery.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .driver-card {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border-top: 4px solid #3498db;
+        }
+
+        .driver-card:nth-child(even) {
+            border-top-color: #2ecc71;
+        }
+
+        .driver-card:nth-child(3) {
+            border-top-color: #9b59b6;
+        }
+
+        .driver-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #f1f1f1;
+            padding-bottom: 10px;
+        }
+
+        .driver-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .driver-role {
+            font-size: 0.8rem;
+            background: #e8f4fd;
+            color: #3498db;
+            padding: 3px 8px;
+            border-radius: 12px;
+            text-transform: uppercase;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .value-good { color: #2ecc71 !important; }
+        .value-warning { color: #f39c12 !important; }
+        .value-danger { color: #e74c3c !important; }
+
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .summary-table th, .summary-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .summary-table th {
+            background-color: #f8f9fa;
+            color: #34495e;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="navbar">
+        <a href="dostavljaci.html">Dostavljači</a>
+        <a href="dostave.html">Dostave</a>
+        <a href="mapa.html">Mapa</a>
+        <a href="analitika.html" class="active">Analitika</a>
+        <a href="notifikacije.html">Notifikacije</a>
+    </div>
+
+    <h1>Analitika Dostavljača</h1>
+
+    <div class="analytics-grid">
+
+        <div class="driver-card">
+            <div class="driver-header">
+                <span class="driver-name">Petar Petrović</span>
+                <span class="driver-role">ID #1</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Ukupan broj dostava:</span>
+                <span class="stat-value">152</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Isporučeno na vreme:</span>
+                <span class="stat-value value-good">96.1%</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Broj odbijanja:</span>
+                <span class="stat-value value-good">2</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Prosečna ocena:</span>
+                <span class="stat-value">⭐ 4.80</span>
+            </div>
+        </div>
+
+        <div class="driver-card">
+            <div class="driver-header">
+                <span class="driver-name">Milan Milić</span>
+                <span class="driver-role">ID #2</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Ukupan broj dostava:</span>
+                <span class="stat-value">98</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Isporučeno na vreme:</span>
+                <span class="stat-value value-warning">89.4%</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Broj odbijanja:</span>
+                <span class="stat-value value-danger">11</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Prosečna ocena:</span>
+                <span class="stat-value">⭐ 4.60</span>
+            </div>
+        </div>
+
+        <div class="driver-card">
+            <div class="driver-header">
+                <span class="driver-name">Nikola Nikolić</span>
+                <span class="driver-role">ID #3</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Ukupan broj dostava:</span>
+                <span class="stat-value">210</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Isporučeno na vreme:</span>
+                <span class="stat-value value-good">94.8%</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Broj odbijanja:</span>
+                <span class="stat-value value-warning">5</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Prosečna ocena:</span>
+                <span class="stat-value">⭐ 4.90</span>
+            </div>
+        </div>
+
+    </div>
+
+    <h2 style="margin-top: 40px; margin-bottom: 15px; color: #2c3e50;">Uporedni pregled efikasnosti</h2>
+    <div class="card">
+        <table class="summary-table">
+            <thead>
+            <tr>
+                <th>Dostavljač (ID)</th>
+                <th>Ukupno dostava</th>
+                <th>Na vreme (%)</th>
+                <th>Odbijeno</th>
+                <th>Prosečna Ocena</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><strong>Petar Petrović (1)</strong></td>
+                <td>152</td>
+                <td style="color: #2ecc71; font-weight: bold;">96.1%</td>
+                <td>2</td>
+                <td>4.80 / 5.0</td>
+            </tr>
+            <tr>
+                <td><strong>Milan Milić (2)</strong></td>
+                <td>98</td>
+                <td style="color: #e67e22; font-weight: bold;">89.4%</td>
+                <td>11</td>
+                <td>4.60 / 5.0</td>
+            </tr>
+            <tr>
+                <td><strong>Nikola Nikolić (3)</strong></td>
+                <td>210</td>
+                <td style="color: #2ecc71; font-weight: bold;">94.8%</td>
+                <td>5</td>
+                <td>4.90 / 5.0</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script src="js/analitika.js"></script>
+
+</body>
+</html>

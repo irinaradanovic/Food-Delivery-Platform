@@ -10,6 +10,17 @@ INSERT INTO menadzeri (korisnik_id) VALUES (1), (2), (3);
 INSERT INTO korisnici (korisnik_id, ime, prezime, telefon, lozinka, email, datum_reg, uloga) VALUES (4, NULL, 'markovic@gmail.com', 'Marko', '123456', 'Markovic', '064235768', 'KUPAC');
 INSERT INTO korisnici (korisnik_id, ime, prezime, telefon, lozinka, email, datum_reg, uloga) VALUES (5, NULL, 'lalic@gmail.com', 'Nenad', '123456', 'Lalic', '06789256812', 'KUPAC');
 
+-- Dostavljaci
+INSERT INTO korisnici (korisnik_id, ime, prezime, telefon, lozinka, email, datum_reg, uloga) VALUES
+                                                                                                 (6, 'Ivana', 'Ivanovic', '064000111', 'password123', 'ivana@test.com', '2026-05-25', 'DOSTAVLJAC'),
+                                                                                                 (7, 'Stefan', 'Stavanović', '065222333', 'password123', 'stefan@test.com', '2026-05-25', 'DOSTAVLJAC');
+
+-- Pretpostavka strukture za tabelu dostavljaci:
+-- korisnik_id, status, prosecna_ocena, broj_dostava, broj_odbijanja, procenat_na_vreme
+INSERT INTO dostavljaci (korisnik_id, status, prosecna_ocena, broj_dostava, broj_odbijanja, procenat_na_vreme) VALUES
+                                                                                                                   (6, 'SLOBODAN', 4.85, 124, 5, 94.2),
+                                                                                                                   (7, 'NA_ZADATKU', 4.60, 98, 12, 88.5);
+
 /*INSERT INTO kupci VALUES ('Narodnog fronta 16, Novi Sad', NULL, 4);
 INSERT INTO kupci VALUES ('Narodnog fronta 19, Novi Sad', NULL, 5); */
 
@@ -329,3 +340,56 @@ SELECT setval(pg_get_serial_sequence('meniji', 'meni_id'), MAX(meni_id)) FROM me
 SELECT setval(pg_get_serial_sequence('stavke_menija', 'stavka_id'), MAX(stavka_id)) FROM stavke_menija;
 SELECT setval(pg_get_serial_sequence('klikovi', 'klik_id'), MAX(klik_id)) FROM klikovi;
 SELECT setval(pg_get_serial_sequence('pretrage', 'pretraga_id'), MAX(pretraga_id)) FROM pretrage;
+
+
+--podsistem za dostavu
+
+INSERT INTO dostavljaci
+(id, ime, prezime, telefon, trenutna_lat, trenutna_lng, status, prosecna_ocena, broj_dostava)
+VALUES
+    (1, 'Petar', 'Petrović', '064111111', 45.2671, 19.8335, 'DOSTUPAN', 4.8, 152),
+
+    (2, 'Milan', 'Milić', '064222222', 45.2517, 19.8369, 'ZAUZET', 4.6, 98),
+
+    (3, 'Nikola', 'Nikolić', '064333333', 45.2440, 19.8425, 'DOSTUPAN', 4.9, 210);
+
+INSERT INTO dostave
+(id, porudzbina_id, dostavljac_id,
+ adresa_preuzimanja,
+ adresa_isporuke,
+ vreme_kreiranja,
+ procenjeno_vreme,
+ status)
+VALUES
+    (1, 101, 1,
+     'Bulevar Oslobođenja 10',
+     'Cara Dušana 25',
+     NOW(),
+     25,
+     'U_TRANSPORTU'),
+
+    (2, 102, 2,
+     'Futoška 15',
+     'Narodnog Fronta 44',
+     NOW(),
+     35,
+     'DODELJENA');
+
+INSERT INTO lokacije_dostavljaca
+(id, dostavljac_id, latitude, longitude, timestamp)
+VALUES
+    (1, 1, 45.2671, 19.8335, NOW()),
+
+    (2, 2, 45.2517, 19.8369, NOW()),
+
+    (3, 3, 45.2440, 19.8425, NOW());
+
+INSERT INTO ocene_dostavljaca
+(id, dostavljac_id, ocena, komentar, tip_ocene)
+VALUES
+    (1, 1, 5, 'Odlična dostava', 'KUPAC'),
+
+    (2, 1, 4, 'Brza isporuka', 'RESTORAN'),
+
+    (3, 2, 5, 'Veoma ljubazan dostavljač', 'KUPAC');
+
