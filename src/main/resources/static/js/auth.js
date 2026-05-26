@@ -77,6 +77,11 @@ function osveziNavigaciju() {
             ${linkoviHtml}
         </div>
         <div class="nav-right">
+            ${uloga !== 'MENADZER' ? `
+            <button class="nav-korpa" onclick="prikaziKorpu()">
+                🛒 Korpa
+                <span class="korpa-badge" id="korpa-badge"></span>
+            </button>` : ''}
             <span class="nav-user" id="nav-user">${sesija.ime || ''}</span>
             <button class="btn-odjava" onclick="odjavi()">Odjavi se</button>
         </div>
