@@ -55,14 +55,17 @@
     <hr class="border-gray-200">
 
     <div class="space-y-6">
-        <div class="flex items-center justify-between">
+        <div class="space-y-3">
             <h2 class="text-2xl font-bold text-gray-800">Stavke na meniju</h2>
-            <button onclick="alert('Funkcionalnost za dodavanje stavke radimo uskoro!')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-semibold flex items-center gap-2 shadow-sm transition cursor-pointer">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="String.valueOf(12)M12 4.5v15m7.5-7.5h-15" />
+
+            <a href="#" onclick="window.location.href=`dodaj-stavku.html?meniId=${meniId}`"
+               class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-semibold shadow-sm transition w-fit">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                     stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                 </svg>
                 Nova stavka
-            </button>
+            </a>
         </div>
 
         <div id="kategorije-stavke-kontejner" class="space-y-10">
@@ -215,8 +218,11 @@
                 `;
 
                 stavkeKat.forEach(s => {
+                    const API_BASE = "http://localhost:8080";
                     const p = s.proizvod;
-                    const slikaUrl = p.fotografija ? p.fotografija : 'https://placehold.co/150x150?text=Nema+Slike';
+                    const slikaUrl = p.fotografija
+                        ? `${API_BASE}/${p.fotografija}`
+                        : 'https://placehold.co/150x150?text=Nema+Slike';
 
                     const sastojciStr = p.sastojci && p.sastojci.length > 0 ? p.sastojci.map(s => s.naziv).join(', ') : 'Nema podataka';
                     const alergeniStr = p.alergeni && p.alergeni.length > 0 ? p.alergeni.map(a => a.naziv).join(', ') : 'Nema';
@@ -343,7 +349,6 @@
         }
     }
 
-    // NOVE FUNKCIJE ZA UPRAVLJANJE DEAKTIVACIJOM MENIJA
     function otvoriDeaktivaciju() {
         document.getElementById('modal-deaktiviraj').classList.remove('hidden');
     }
@@ -356,7 +361,6 @@
         const ulogovaniKorisnikId = localStorage.getItem('korisnikId');
 
         try {
-            // Slanje PUT zahteva na api/meni/id/deaktiviraj uz prosleđivanje korisnikId-ja u headeru
             await apiFetch(`/meni/${meniId}/deaktiviraj`, {
                 method: 'PUT',
                 headers: {
@@ -366,7 +370,7 @@
 
             zatvoriDeaktivaciju();
             alert("Meni je uspešno deaktiviran!");
-            await ucitajDetaljeMenija(); // Osvežava statuse i uklanja crveno dugme pošto je sada neaktivan
+            await ucitajDetaljeMenija(); 
         } catch (error) {
             alert("Nemate pravo pristupa ili je došlo do greške prilikom deaktivacije.");
             zatvoriDeaktivaciju();

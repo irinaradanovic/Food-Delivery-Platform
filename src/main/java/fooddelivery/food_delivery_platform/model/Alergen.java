@@ -6,6 +6,7 @@ import lombok.*;
 @Entity
 @Table(name = "alergeni")
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Alergen {
