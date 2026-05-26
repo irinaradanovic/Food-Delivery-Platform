@@ -16,4 +16,7 @@ public class Kategorija {
     private Long kategorijaId;
 
     private String naziv;
+
+    @Column(name = "kreirao_korisnik_id", nullable = true)
+    private Long kreiraoKorisnikId;
 }

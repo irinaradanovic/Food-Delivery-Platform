@@ -2,7 +2,9 @@ package fooddelivery.food_delivery_platform.controller;
 
 import fooddelivery.food_delivery_platform.model.Kategorija;
 import fooddelivery.food_delivery_platform.repository.KategorijaRepository;
+import fooddelivery.food_delivery_platform.service.KategorijaService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,6 +16,9 @@ import java.util.List;
 public class KategorijaController {
 
     private final KategorijaRepository kategorijaRepository;
+
+    @Autowired
+    private KategorijaService kategorijaService;
 
     @GetMapping
     public ResponseEntity<List<Kategorija>> getAll() {
@@ -35,5 +40,11 @@ public class KategorijaController {
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         kategorijaRepository.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/menadzer")
+    public ResponseEntity<List<Kategorija>> getCategoriesForManager(@RequestHeader("X-User-Id") Long trenutniKorisnikId) {
+        List<Kategorija> kategorije = kategorijaService.getCategoriesForManager(trenutniKorisnikId);
+        return ResponseEntity.ok(kategorije);
     }
 }
