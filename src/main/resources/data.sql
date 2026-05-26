@@ -185,7 +185,9 @@ INSERT INTO kategorije VALUES (8, 'Ostalo');
 INSERT INTO korisnici VALUES (1, NULL, 'markovic@gmail.com', 'Marko', '123456', 'Markovic', '064235768', 'KUPAC');
 INSERT INTO korisnici VALUES (2, NULL, 'lalic@gmail.com', 'Nenad', '123456', 'Lalic', '06789256812', 'KUPAC');
 
-
+-- Podaci: kupci
+INSERT INTO kupci VALUES ('Narodnog fronta 16, Novi Sad', NULL, 1);
+INSERT INTO kupci VALUES ('Narodnog fronta 19, Novi Sad', NULL, 2);
 
 -- Podaci: proizvodi
 INSERT INTO proizvodi VALUES (1, 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=600&h=400&fit=crop&auto=format', 850.00, 450.00, 'g', 'Margherita', 'Klasična pizza sa paradajz sosom, mocarelom i bosiljkom', 1, 850.00);
@@ -221,6 +223,93 @@ INSERT INTO proizvodi VALUES (30, 'https://images.unsplash.com/photo-15652995853
 INSERT INTO proizvodi VALUES (31, 'https://png.pngtree.com/png-vector/20241102/ourmid/pngtree-classic-homemade-cornbread-slice-with-a-golden-crust-on-white-background-png-image_14232559.png', 260.00, 120.00, 'g', 'Proja sa sirom', 'Domaća proja sa sitnim sirom', 8, 260.00);
 INSERT INTO proizvodi VALUES (32, 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=600&h=400&fit=crop&auto=format', 890.00, 600.00, 'g', 'Mešano meso sa roštilja', 'Bogata porcija mešanog mesa sa roštilja', 8, 890.00);
 
+-- Podaci: porudzbine
+INSERT INTO porudzbine VALUES (1, 'Narodnog Fronta 7, Novi Sad', '2026-05-25 09:08:06.068921', NULL, '', 'KREIRANA', 'STANDARDNA', 9.80, 2);
+INSERT INTO porudzbine VALUES (2, 'Narodnog Fronta 7, Novi Sad', '2026-05-25 09:08:18.871066', NULL, '2. sprat', 'KREIRANA', 'STANDARDNA', 9.80, 2);
+INSERT INTO porudzbine VALUES (3, 'Narodnog Fronta 7, Novi Sad', '2026-05-25 09:09:25.310633', NULL, '2. sprat', 'KREIRANA', 'STANDARDNA', 9.80, 2);
+INSERT INTO porudzbine VALUES (4, 'Narodnog Fronta 7, Novi Sad', '2026-05-25 09:09:32.69165', NULL, '2. sprat', 'KREIRANA', 'STANDARDNA', 9.80, 2);
+INSERT INTO porudzbine VALUES (5, 'Narodnog Fronta 7, Novi Sad', '2026-05-25 09:10:02.493091', NULL, '2. sprat', 'KREIRANA', 'STANDARDNA', 9.80, 2);
+INSERT INTO porudzbine VALUES (6, 'Narodnog Fronta 7, Novi Sad', '2026-05-25 09:10:14.984126', NULL, '2. sprat', 'KREIRANA', 'STANDARDNA', 9.80, 2);
+INSERT INTO porudzbine VALUES (7, 'Narodnog Fronta 7, Novi Sad', '2026-05-25 09:10:29.991216', NULL, '2. sprat', 'KREIRANA', 'STANDARDNA', 9.80, 2);
 
+-- Podaci: stavke_porudzbine
+INSERT INTO stavke_porudzbine VALUES (1, 9.80, 1, 1, 2);
+INSERT INTO stavke_porudzbine VALUES (2, 9.80, 1, 2, 2);
+INSERT INTO stavke_porudzbine VALUES (3, 9.80, 1, 3, 2);
+INSERT INTO stavke_porudzbine VALUES (4, 9.80, 1, 4, 2);
+INSERT INTO stavke_porudzbine VALUES (5, 9.80, 1, 5, 2);
+INSERT INTO stavke_porudzbine VALUES (6, 9.80, 1, 6, 2);
+INSERT INTO stavke_porudzbine VALUES (7, 9.80, 1, 7, 2);
 
+-- Podaci: klikovi
+INSERT INTO klikovi VALUES (1, 'PREGLED', '2026-05-24 11:18:19.77089', 2, 5);
+INSERT INTO klikovi VALUES (2, 'PREGLED', '2026-05-24 11:18:20.970097', 2, 5);
+INSERT INTO klikovi VALUES (3, 'PREGLED', '2026-05-24 11:18:21.96425', 2, 5);
+INSERT INTO klikovi VALUES (4, 'PREGLED', '2026-05-24 11:18:23.339181', 2, 9);
+INSERT INTO klikovi VALUES (5, 'PREGLED', '2026-05-24 11:18:23.587001', 2, 9);
+INSERT INTO klikovi VALUES (6, 'PREGLED', '2026-05-24 11:20:37.208674', 2, 11);
+INSERT INTO klikovi VALUES (7, 'PREGLED', '2026-05-24 12:21:14.605071', 2, 14);
+INSERT INTO klikovi VALUES (8, 'PREGLED', '2026-05-24 12:21:15.745218', 2, 14);
+INSERT INTO klikovi VALUES (9, 'PREGLED', '2026-05-24 13:09:53.582406', 2, 23);
+INSERT INTO klikovi VALUES (10, 'PREGLED', '2026-05-24 13:13:51.795557', 2, 32);
+INSERT INTO klikovi VALUES (11, 'PREGLED', '2026-05-24 13:13:52.990959', 2, 32);
+INSERT INTO klikovi VALUES (12, 'PREGLED', '2026-05-24 13:15:06.971218', 2, 32);
+INSERT INTO klikovi VALUES (13, 'PREGLED', '2026-05-24 13:19:02.19047', 2, 31);
+INSERT INTO klikovi VALUES (14, 'PREGLED', '2026-05-24 13:19:04.136781', 2, 31);
+INSERT INTO klikovi VALUES (15, 'PREGLED', '2026-05-24 13:20:56.377343', 2, 28);
+INSERT INTO klikovi VALUES (16, 'PREGLED', '2026-05-24 13:21:36.645282', 2, 26);
+INSERT INTO klikovi VALUES (17, 'PREGLED', '2026-05-24 13:22:46.494394', 2, 28);
+INSERT INTO klikovi VALUES (18, 'PREGLED', '2026-05-24 13:46:10.569618', 2, 2);
+INSERT INTO klikovi VALUES (19, 'PREGLED', '2026-05-24 18:22:09.433661', 2, 26);
+INSERT INTO klikovi VALUES (20, 'KORPA', '2026-05-24 18:22:20.19602', 2, 26);
+INSERT INTO klikovi VALUES (21, 'KORPA', '2026-05-24 18:22:31.277277', 2, 26);
+INSERT INTO klikovi VALUES (22, 'PREGLED', '2026-05-24 18:22:49.912077', 2, 1);
+INSERT INTO klikovi VALUES (23, 'KORPA', '2026-05-25 09:07:22.400348', 2, 2);
+INSERT INTO klikovi VALUES (24, 'PREGLED', '2026-05-25 09:12:20.191611', 2, 11);
+INSERT INTO klikovi VALUES (25, 'KORPA', '2026-05-25 09:12:49.583981', 2, 13);
+INSERT INTO klikovi VALUES (26, 'KORPA', '2026-05-25 09:12:53.837157', 2, 13);
+INSERT INTO klikovi VALUES (27, 'PREGLED', '2026-05-25 09:18:08.261056', 2, 1);
+INSERT INTO klikovi VALUES (28, 'KORPA', '2026-05-25 09:45:03.390327', 2, 2);
+INSERT INTO resignation INSERT INTO klikovi VALUES (29, 'KORPA', '2026-05-25 09:59:46.08506', 2, 26);
+INSERT INTO klikovi VALUES (30, 'KORPA', '2026-05-25 10:00:06.103191', 2, 2);
+INSERT INTO klikovi VALUES (31, 'KORPA', '2026-05-25 10:17:53.926342', 2, 26);
+INSERT INTO klikovi VALUES (32, 'KORPA', '2026-05-25 10:23:38.663827', 2, 2);
+INSERT INTO klikovi VALUES (33, 'PREGLED', '2026-05-25 10:24:28.563324', 2, 26);
+INSERT INTO klikovi VALUES (34, 'KORPA', '2026-05-25 18:27:16.045984', 2, 2);
+INSERT INTO klikovi VALUES (35, 'PLACANJE', '2026-05-25 18:27:18.820107', 2, 2);
+INSERT INTO klikovi VALUES (36, 'KUPOVINA', '2026-05-25 18:27:18.830747', 2, 2);
+INSERT INTO klikovi VALUES (37, 'PREGLED', '2026-05-25 18:35:28.70401', 2, 14);
+INSERT INTO klikovi VALUES (38, 'PREGLED', '2026-05-25 18:45:38.15342', 2, 2);
+INSERT INTO klikovi VALUES (39, 'DODAJ_OMILJENI', '2026-05-25 23:36:50.74754', 2, 2);
+INSERT INTO klikovi VALUES (40, 'UKLONI_OMILJENI', '2026-05-25 23:36:51.352762', 2, 2);
+INSERT INTO klikovi VALUES (41, 'KORPA', '2026-05-25 23:36:55.221134', 2, 2);
+INSERT INTO klikovi VALUES (42, 'UKLONI_IZ_KORPE', '2026-05-25 23:37:01.971029', 2, 2);
+INSERT INTO klikovi VALUES (43, 'REZULTAT_PRETRAGE', '2026-05-25 23:38:32.146358', 2, 26);
+INSERT INTO klikovi VALUES (44, 'DODAJ_OMILJENI', '2026-05-25 23:53:18.022442', 2, 4);
+INSERT INTO klikovi VALUES (45, 'UKLONI_OMILJENI', '2026-05-25 23:53:18.753286', 2, 4);
+INSERT INTO klikovi VALUES (46, 'DETALJI', '2026-05-25 23:53:19.440917', 2, 4);
+INSERT INTO klikovi VALUES (47, 'KORPA', '2026-05-25 23:53:24.247347', 2, 4);
+INSERT INTO klikovi VALUES (48, 'UKLONI_IZ_KORPE', '2026-05-25 23:53:27.653239', 2, 4);
 
+-- Podaci: pretrage
+INSERT INTO pretrage VALUES (1, 'pica', 'OPSTA', '2026-05-24 10:43:09.564465', 1);
+INSERT INTO pretrage VALUES (2, 'marg', 'OPSTA', '2026-05-24 11:19:54.241524', 2);
+INSERT INTO pretrage VALUES (3, 'margherita', 'OPSTA', '2026-05-24 11:20:06.445416', 2);
+INSERT INTO pretrage VALUES (4, 'carbonara', 'OPSTA', '2026-05-24 11:20:23.631874', 2);
+INSERT INTO pretrage VALUES (5, 'Carbonara', 'OPSTA', '2026-05-24 11:20:28.330843', 2);
+INSERT INTO pretrage VALUES (6, 'Carbonara', 'OPSTA', '2026-05-24 11:20:42.420398', 2);
+INSERT INTO pretrage VALUES (7, 'carbonara', 'OPSTA', '2026-05-24 11:31:22.584595', 2);
+INSERT INTO pretrage VALUES (8, 'carbonara', 'OPSTA', '2026-05-24 11:31:22.584595', 2);
+INSERT INTO pretrage VALUES (9, 'margherita', 'OPSTA', '2026-05-24 13:34:29.974048', 2);
+INSERT INTO pretrage VALUES (10, 'marg', 'OPSTA', '2026-05-24 13:34:34.080257', 2);
+INSERT INTO pretrage VALUES (11, 'car', 'OPSTA', '2026-05-24 13:34:36.56451', 2);
+INSERT INTO pretrage VALUES (12, 'limunada', 'OPSTA', '2026-05-25 23:38:32.113215', 2);
+INSERT INTO pretrage VALUES (13, 'hygui', 'OPSTA', '2026-05-25 23:39:20.161768', 2);
+
+-- Podaci: omiljene_kategorije
+INSERT INTO omiljene_kategorije VALUES (1, '2026-05-24 12:19:57.447502', 3, 2);
+INSERT INTO omiljene_kategorije VALUES (2, '2026-05-24 12:32:55.337159', 5, 2);
+
+-- Podaci: omiljeni_proizvodi
+INSERT INTO omiljeni_proizvodi VALUES (9, '2026-05-24 11:27:48.164161', 2, 1);
+INSERT INTO omiljeni_proizvodi VALUES (12, '2026-05-25 10:24:59.061989', 2, 25);
