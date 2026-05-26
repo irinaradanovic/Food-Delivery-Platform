@@ -51,6 +51,9 @@ public class Porudzbina {
     @Column(name = "ukupna_cena")
     private BigDecimal ukupnaCena;
 
+    @Transient
+    private Long dostavljacId;
+
     @OneToMany(mappedBy = "porudzbina", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     @ToString.Exclude

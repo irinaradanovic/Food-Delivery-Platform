@@ -9,6 +9,8 @@ INSERT INTO menadzeri (korisnik_id) VALUES (1), (2), (3);
 -- Kupci
 INSERT INTO korisnici (korisnik_id, ime, prezime, telefon, lozinka, email, datum_reg, uloga) VALUES (4, NULL, 'markovic@gmail.com', 'Marko', '123456', 'Markovic', '064235768', 'KUPAC');
 INSERT INTO korisnici (korisnik_id, ime, prezime, telefon, lozinka, email, datum_reg, uloga) VALUES (5, NULL, 'lalic@gmail.com', 'Nenad', '123456', 'Lalic', '06789256812', 'KUPAC');
+INSERT INTO korisnici (korisnik_id, ime, prezime, telefon, lozinka, email, datum_reg, uloga) VALUES (6, NULL, 'dostava@gmail.com', 'Dosta', '123456', 'Dostava', '06789256812', 'DOSTAVLJAC');
+
 
 /*INSERT INTO kupci VALUES ('Narodnog fronta 16, Novi Sad', NULL, 4);
 INSERT INTO kupci VALUES ('Narodnog fronta 19, Novi Sad', NULL, 5); */
@@ -241,15 +243,7 @@ VALUES
     (6, 5, 'Narodnog Fronta 7, Novi Sad', '2026-05-25 09:10:14.984126', NULL, '2. sprat', 'KREIRANA', 9.80),
     (7, 5, 'Narodnog Fronta 7, Novi Sad', '2026-05-25 09:10:29.991216', NULL, '2. sprat', 'KREIRANA', 9.80);
 
--- Stavke porudzbine (porudzbina_id: 1, stavke_menija: 17-23)
-INSERT INTO stavke_porudzbine (stavka_id, cena, porudzbina_id, kolicina, stavka_menija_id) VALUES
-                                                                                          (1, 9.80, 1, 1, 17),
-                                                                                          (2, 9.80, 1, 2, 18),
-                                                                                          (3, 9.80, 1, 3, 19),
-                                                                                          (4, 9.80, 1, 4, 20),
-                                                                                          (5, 9.80, 1, 5, 21),
-                                                                                          (6, 9.80, 1, 6, 22),
-                                                                                          (7, 9.80, 1, 7, 23);
+
 
 -- Klikovi (korisnik_id: 2->5, proizvod_id: stari+16)
 -- Napomena: uklonjena sintaksna greška u originalu (INSERT INTO resignation)
@@ -326,6 +320,16 @@ INSERT INTO stavke_menija (stavka_id, meni_id, proizvod_id, cena, dostupno, vrem
 (21, 1, 21, 750.00, true, 10, 15, false),
 (22, 1, 22, 950.00, true, 12, 18, false),
 (23, 1, 23, 820.00, true, 10, 15, false);
+
+INSERT INTO stavke_porudzbine (stavka_id, cena, porudzbina_id, kolicina, stavka_menija_id) VALUES
+(DEFAULT, 550.00, 1, 1, 1),
+(DEFAULT, 820.00, 1, 2, 2),
+(DEFAULT, 320.00, 2, 1, 5),
+(DEFAULT, 410.00, 2, 1, 6),
+(DEFAULT, 750.00, 3, 1, 7),
+(DEFAULT, 620.00, 3, 1, 8),
+(DEFAULT, 130.00, 3, 1, 9),
+(DEFAULT, 360.00, 3, 1, 10);
 
 INSERT INTO kuponi (kupon_id, kod, popust_iznos, popust_procenat, vazi_od, vazi_do, aktivan, max_upotreba, upotrebljeno_puta, vlasnik_id) VALUES
 (1, 'WELCOME100', 100.00, NULL, '2026-05-01 00:00:00', '2028-12-31 23:59:59', true, 100, 0, 4),

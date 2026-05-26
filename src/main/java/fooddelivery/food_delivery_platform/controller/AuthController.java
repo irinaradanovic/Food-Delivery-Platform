@@ -37,4 +37,5 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(Map.of("poruka", "Pogrešan email ili lozinka!"));
     }
+
 }

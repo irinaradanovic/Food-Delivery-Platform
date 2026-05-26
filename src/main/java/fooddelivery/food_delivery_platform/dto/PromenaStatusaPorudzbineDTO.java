@@ -9,6 +9,4 @@ public class PromenaStatusaPorudzbineDTO {
 
     @NotNull
     private StatusPorudzbine noviStatus;
-
-    private Long promenioKorisnikId;
 }
