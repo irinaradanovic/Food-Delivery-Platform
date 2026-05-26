@@ -249,25 +249,42 @@
 <script src="/js/api.js"></script>
 <script src="/js/auth.js"></script>
 <script>
-    if (localStorage.getItem('kupacId')) window.location.href = '/proizvodi.html';
+    // Ako je neko već ulogovan, preusmeri ga tamo gde mu je mesto na osnovu uloge
+    const sesija = getSesija();
+    if (sesija.uloga === 'KUPAC') window.location.href = '/proizvodi.html';
+    if (sesija.uloga === 'MENADZER') window.location.href = '/izbor-restorana.html';
 
     async function prijavi() {
-        const email = document.getElementById('email').value.trim();
-        const lozinka = document.getElementById('lozinka').value.trim();
+        const emailUnos = document.getElementById('email').value.trim();
+        const lozinkaUnos = document.getElementById('lozinka').value.trim();
         const errDiv = document.getElementById('error-msg');
         errDiv.style.display = 'none';
 
-        if (!email || !lozinka) {
+        if (!emailUnos || !lozinkaUnos) {
             errDiv.textContent = 'Unesite email i lozinku.';
             errDiv.style.display = 'block';
             return;
         }
+
         try {
-            const kupci = await api.getKupciByEmail(email);
-            if (!kupci || kupci.length === 0) throw new Error();
-            sacuvajSesiju(kupci[0]);
-            window.location.href = '/proizvodi.html';
-        } catch {
+
+            const korisnik = await apiFetch('/auth/login', {
+                method: 'POST',
+                body: JSON.stringify({ email: emailUnos, lozinka: lozinkaUnos })
+            });
+
+            sacuvajSesiju(korisnik);
+
+
+            if (korisnik.uloga === 'MENADZER') {
+                window.location.href = '/izbor-restorana.html';
+            } else if (korisnik.uloga === 'KUPAC') {
+                window.location.href = '/proizvodi.html';
+            } else {
+                throw new Error('Nepoznata uloga');
+            }
+
+        } catch (error) {
             errDiv.textContent = 'Pogrešan email ili lozinka.';
             errDiv.style.display = 'block';
         }

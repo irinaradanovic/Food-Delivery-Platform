@@ -15,13 +15,14 @@
         body { font-family: 'DM Sans', sans-serif; background: var(--cream); min-height: 100vh; }
 
         nav { background: white; border-bottom: 1px solid var(--border); padding: 0 40px; height: 68px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
-        .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-        .nav-logo-icon { width: 36px; height: 36px; background: var(--green); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .nav-logo-icon { width: 76px; height: 76px; display: flex; align-items: center; justify-content: center; }
         .nav-logo-text { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--dark); }
         .nav-links { display: flex; align-items: center; gap: 4px; }
         .nav-links a { padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 500; color: var(--gray); transition: all 0.15s; }
         .nav-links a:hover { background: #f3f4f6; color: var(--dark); }
         .nav-links a.active { background: var(--orange); color: white; }
+        .nav-links a.active { background: var(--orange) !important; color: white !important; }
         .nav-links a.fav { color: var(--orange); }
         .nav-right { display: flex; align-items: center; gap: 12px; }
         .nav-user { font-size: 13px; color: var(--gray); background: #f3f4f6; padding: 6px 12px; border-radius: 20px; }
@@ -118,19 +119,6 @@
 <body>
 
 <nav>
-    <a href="/proizvodi.html" class="nav-logo">
-        <div class="nav-logo-icon">🍽️</div>
-        <span class="nav-logo-text">Big Bite</span>
-    </a>
-    <div class="nav-links">
-        <a href="/proizvodi.html">Proizvodi</a>
-        <a href="/kategorije.html">Kategorije</a>
-        <a href="/omiljeni.html" class="active fav">♥ Omiljeni</a>
-    </div>
-    <div class="nav-right">
-        <span class="nav-user" id="nav-user"></span>
-        <button class="btn-odjava" onclick="odjavi()">Odjavi se</button>
-    </div>
 </nav>
 
 <main>
@@ -173,7 +161,6 @@
 <script src="/js/auth.js"></script>
 <script>
     zastitiStranicu();
-    document.getElementById('nav-user').textContent = getSesija().ime || '';
 
     const katEmoji = {
         'pizza': '🍕', 'burger': '🍔', 'pasta': '🍝', 'piletina': '🍗',

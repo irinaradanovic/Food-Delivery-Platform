@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <title>Pregled menija</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        nav {
+            background: white; border-bottom: 1px solid #e5e0d8;
+            padding: 0 40px; height: 68px; width: 100%;
+            display: flex; align-items: center; justify-content: space-between;
+            position: fixed; top: 0; left: 0; z-index: 100;
+        }
+        .nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .nav-logo-icon { width: 76px; height: 76px; display: flex; align-items: center; justify-content: center; }
+        .nav-logo-text { font-family: 'Playfair Display', serif; font-size: 20px; color: #1a1a1a; font-weight: 700; }
+        .nav-links { display: flex; align-items: center; gap: 4px; }
+        .nav-links a { padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 500; color: #6b7280; transition: all 0.15s; }
+        .nav-links a:hover { background: #f3f4f6; color: #1a1a1a; }
+        .nav-links a.active { background: #2d6a2d !important; color: white !important; }
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .nav-user { font-size: 13px; color: #6b7280; background: #f3f4f6; padding: 6px 12px; border-radius: 20px; font-family: sans-serif; }
+        .btn-odjava { background: none; border: 1.5px solid #e5e0d8; border-radius: 8px; padding: 7px 14px; font-size: 13px; font-weight: 500; color: #6b7280; cursor: pointer; transition: all 0.15s; }
+        .btn-odjava:hover { border-color: #dc2626; color: #dc2626; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen pt-24 p-8">
+
+<nav></nav>
+
+<div class="max-w-6xl mx-auto">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-800">Meniji restorana</h1>
+    </div>
+
+    <div id="meniji-kontejner" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+        <p class="text-gray-500 col-span-4">Učitavanje menija...</p>
+    </div>
+</div>
+
+<script src="./js/api.js"></script>
+<script src="./js/auth.js"></script>
+<script>
+    zastitiStranicu();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const restoranId = urlParams.get('restoranId');
+
+    async function ucitajMenije() {
+        if (!restoranId) {
+            document.getElementById('meniji-kontejner').innerHTML = '<p class="text-red-500 col-span-4">Nije prosleđen ID restorana.</p>';
+            return;
+        }
+
+        try {
+            const meniji = await apiFetch(`/menadzer/restorani/${restoranId}/meniji`);
+            const kontejner = document.getElementById('meniji-kontejner');
+            kontejner.innerHTML = '';
+
+            if (meniji && meniji.length > 0) {
+                meniji.forEach(meni => {
+                    const kartica = document.createElement('div');
+                    kartica.className = "bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 flex flex-col justify-between";
+
+                    let slikaUrl = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400";
+                    if (meni.tipMenija === 'VREMENSKI') slikaUrl = "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=400";
+                    if (meni.tipMenija === 'SEZONSKI') slikaUrl = "https://images.unsplash.com/photo-1511690656952-34342bb7c2f2?w=400";
+
+                    // Prikazuje samo sliku, tip menija i naziv
+                    kartica.innerHTML = `
+                            <div>
+                                <img src="${slikaUrl}" alt="Meni slika" class="w-full h-40 object-cover">
+                                <div class="p-4">
+                                    <span class="text-xs font-semibold uppercase px-2 py-1 bg-gray-100 text-gray-600 rounded-full">${meni.tipMenija}</span>
+                                    <h3 class="text-xl font-bold text-gray-800 mt-2">${meni.naziv}</h3>
+                                </div>
+                            </div>
+                        `;
+                    kontejner.appendChild(kartica);
+                });
+            }
+
+            // Novo puno zeleno dugme sa belim plusom i tekstom
+            const dugmeDodaj = document.createElement('div');
+            dugmeDodaj.className = "bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg flex flex-col justify-center items-center p-8 cursor-pointer min-h-[240px] shadow-md transition transform hover:-translate-y-1 text-center";
+            dugmeDodaj.innerHTML = `
+                    <div class="w-14 h-14 bg-white text-emerald-600 rounded-full flex items-center justify-center text-3xl font-bold shadow-sm mb-4">
+                        +
+                    </div>
+                    <span class="font-bold text-lg">Dodaj novi meni</span>
+                `;
+
+            dugmeDodaj.onclick = () => {
+                window.location.href = `novi-meni.html?restoranId=${restoranId}`;
+            };
+
+            kontejner.appendChild(dugmeDodaj);
+
+        } catch (error) {
+            console.error("Greška:", error);
+            document.getElementById('meniji-kontejner').innerHTML = '<p class="text-red-500 col-span-4">Greška pri učitavanju podataka.</p>';
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', ucitajMenije);
+</script>
+</body>
+</html>

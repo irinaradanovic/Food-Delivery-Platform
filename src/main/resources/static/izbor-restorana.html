@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <title>Izbor restorana</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        /* Dodatni CSS da se naš nav iz auth.js lepo uklopi sa Tailwind-om */
+        nav {
+            background: white; border-bottom: 1px solid #e5e0d8;
+            padding: 0 40px; height: 68px; width: 100%;
+            display: flex; align-items: center; justify-content: space-between;
+            position: fixed; top: 0; left: 0; z-index: 100;
+        }
+        .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .nav-logo-icon { width: 76px; height: 76px;  border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .nav-logo-text { font-family: 'Playfair Display', serif; font-size: 20px; color: #1a1a1a; font-weight: 700; }
+        .nav-links { display: flex; align-items: center; gap: 4px; }
+        .nav-links a { padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 500; color: #6b7280; transition: all 0.15s; }
+        .nav-links a:hover { background: #f3f4f6; color: #1a1a1a; }
+        .nav-links a.active { background: #2d6a2d !important; color: white !important; }
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .nav-user { font-size: 13px; color: #6b7280; background: #f3f4f6; padding: 6px 12px; border-radius: 20px; font-family: sans-serif; }
+        .btn-odjava { background: none; border: 1.5px solid #e5e0d8; border-radius: 8px; padding: 7px 14px; font-size: 13px; font-weight: 500; color: #6b7280; cursor: pointer; transition: all 0.15s; }
+        .btn-odjava:hover { border-color: #dc2626; color: #dc2626; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-6 pt-24">
+
+<nav></nav>
+
+<h1 class="text-3xl font-bold text-gray-800 mb-8">Izaberite restoran</h1>
+
+<div id="restorani-kontejner" class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl">
+    <p class="text-gray-500 text-center col-span-3">Učitavanje restorana...</p>
+</div>
+
+<script src="./js/api.js"></script>
+<script src="./js/auth.js"></script>
+<script>
+    // 1. Zaštita stranice i uzimanje ID-ja iz sesije
+    zastitiStranicu();
+    const ulogovanMenadzerId = getKupacId(); // koristi istu funkciju jer ona vuče 'korisnikId'
+
+    async function ucitajRestorane() {
+        try {
+            // Pozivamo bekhend API sa dinamičkim ID-jem
+            const restorani = await apiFetch(`/menadzer/restorani?menadzerId=${ulogovanMenadzerId}`);
+
+            const kontejner = document.getElementById('restorani-kontejner');
+            kontejner.innerHTML = '';
+
+            if (!restorani || restorani.length === 0) {
+                kontejner.innerHTML = '<p class="text-red-500 text-center col-span-3">Nemate dodeljenih restorana.</p>';
+                return;
+            }
+
+            restorani.forEach(restoran => {
+                const kartica = document.createElement('div');
+                kartica.className = "bg-emerald-600 hover:bg-emerald-700 text-white font-semibold p-8 rounded-xl shadow-lg cursor-pointer transition transform hover:-translate-y-1 text-center flex flex-col justify-center items-center h-40";
+
+                kartica.innerHTML = `
+                        <h2 class="text-2xl font-bold mb-2">${restoran.naziv}</h2>
+                        <p class="text-emerald-100 text-sm">${restoran.adresa}</p>
+                    `;
+
+                kartica.onclick = () => {
+                    // preusmeravanje na listu menija
+                    window.location.href = `lista-menija.html?restoranId=${restoran.restoranId}`;
+                };
+
+                kontejner.appendChild(kartica);
+            });
+
+        } catch (error) {
+            console.error("Greška:", error);
+            document.getElementById('restorani-kontejner').innerHTML = '<p class="text-red-500 text-center col-span-3">Greška pri povezivanju sa serverom.</p>';
+        }
+    }
+
+    // Pokreni funkciju odmah čim se stranica učita
+    window.addEventListener('DOMContentLoaded', ucitajRestorane);
+</script>
+</body>
+</html>
