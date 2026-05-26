@@ -19,7 +19,8 @@ import java.time.LocalDate;
 )
 @JsonSubTypes({
         @JsonSubTypes.Type(value = SezonskiMeni.class, name = "SEZONSKI"),
-        @JsonSubTypes.Type(value = VremenskiMeni.class, name = "VREMENSKI")
+        @JsonSubTypes.Type(value = VremenskiMeni.class, name = "VREMENSKI"),
+        @JsonSubTypes.Type(value = StandardniMeni.class, name = "STANDARDNI")
 })
 @Data
 @NoArgsConstructor

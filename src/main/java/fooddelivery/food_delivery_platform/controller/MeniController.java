@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
+import jakarta.persistence.EntityNotFoundException;
 
 import java.util.List;
 
@@ -44,7 +45,7 @@ public class MeniController {
 
     // azuriranje menija (menadzer)
     @PutMapping("/{id}")
-    public ResponseEntity<?> ažurirajMeni(
+    public ResponseEntity<?> updateMenu(
             @PathVariable Long id,
             @RequestBody MeniUpdateDTO dto,
             @RequestHeader("X-User-Id") Long trenutniKorisnikId) {
@@ -60,8 +61,27 @@ public class MeniController {
 
     // deaktiviranje menija (menadzer)
     @PutMapping("/{id}/deaktiviraj")
-    public ResponseEntity<Void> deaktivirajMeni(@PathVariable Long id,  @RequestHeader("X-User-Id") Long trenutniKorisnikId) {
+    public ResponseEntity<Void> deactivateMenu(@PathVariable Long id,  @RequestHeader("X-User-Id") Long trenutniKorisnikId) {
         meniService.deactivateMenu(id, trenutniKorisnikId);
         return ResponseEntity.noContent().build();
+    }
+
+
+    @PostMapping
+    public ResponseEntity<?> createNewMenu(
+            @RequestBody Meni noviMeni,
+            @RequestHeader("X-User-Id") Long trenutniKorisnikId) {
+        try {
+            Meni kreiranMeni = meniService.createMenu(noviMeni, trenutniKorisnikId);
+            return ResponseEntity.status(HttpStatus.CREATED).body(kreiranMeni);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Greška na serveru: " + e.getMessage());
+        }
     }
 }

@@ -12,9 +12,19 @@ INSERT INTO korisnici (korisnik_id, ime, prezime, telefon, lozinka, email, datum
 INSERT INTO korisnici (korisnik_id, ime, prezime, telefon, lozinka, email, datum_reg, uloga) VALUES (6, NULL, 'dostava@gmail.com', 'Dosta', '123456', 'Dostava', '06789256812', 'DOSTAVLJAC');
 
 
+-- Dostavljaci
+INSERT INTO korisnici (korisnik_id, ime, prezime, telefon, lozinka, email, datum_reg, uloga) VALUES
+                                                                                                 (6, 'Ivana', 'Ivanovic', '064000111', 'password123', 'ivana@test.com', '2026-05-25', 'DOSTAVLJAC'),
+                                                                                                 (7, 'Stefan', 'Stavanović', '065222333', 'password123', 'stefan@test.com', '2026-05-25', 'DOSTAVLJAC');
+
+-- Pretpostavka strukture za tabelu dostavljaci:
+-- korisnik_id, status, prosecna_ocena, broj_dostava, broj_odbijanja, procenat_na_vreme
+INSERT INTO dostavljaci (korisnik_id, status, prosecna_ocena, broj_dostava, broj_odbijanja, procenat_na_vreme) VALUES
+                                                                                                                   (6, 'SLOBODAN', 4.85, 124, 5, 94.2),
+                                                                                                                   (7, 'NA_ZADATKU', 4.60, 98, 12, 88.5);
+
 /*INSERT INTO kupci VALUES ('Narodnog fronta 16, Novi Sad', NULL, 4);
 INSERT INTO kupci VALUES ('Narodnog fronta 19, Novi Sad', NULL, 5); */
--- Kupci su integrisani na kraju fajla (korisnik_id 4 i 5, zbog konflikta sa menadzerima 1-3)
 
 
 
@@ -150,38 +160,9 @@ INSERT INTO stavke_menija (stavka_id, meni_id, proizvod_id, cena, dostupno, vrem
 (14, 3, 11, 380.00, true, 2, 5, false);
 
 
--- omiljene_kategorije
-/*INSERT INTO omiljene_kategorije VALUES (1, '2026-05-24 12:19:57.447502', 3, 2);
-INSERT INTO omiljene_kategorije VALUES (2, '2026-05-24 12:32:55.337159', 5, 2);
 
--- omiljeni_proizvodi
-INSERT INTO omiljeni_proizvodi VALUES (9, '2026-05-24 11:27:48.164161', 2, 1);
-INSERT INTO omiljeni_proizvodi VALUES (12, '2026-05-25 10:24:59.061989', 2, 25); */
--- Napomena: korisnik 2 (iz kupac bloka) = korisnik_id 5 u integraciji
--- kategorija 3 (Pasta) -> 9, kategorija 5 (Salate) -> 11
-INSERT INTO omiljene_kategorije VALUES (1, '2026-05-24 12:19:57.447502', 9, 5);
-INSERT INTO omiljene_kategorije VALUES (2, '2026-05-24 12:32:55.337159', 11, 5);
-
--- omiljeni_proizvodi
--- korisnik 2 -> 5, proizvod 1 -> 17 (Margherita), proizvod 25 -> 41 (Pepsi)
-INSERT INTO omiljeni_proizvodi VALUES (9, '2026-05-24 11:27:48.164161', 5, 17);
-INSERT INTO omiljeni_proizvodi VALUES (12, '2026-05-25 10:24:59.061989', 5, 41);
-
--- =========================================================================
--- INTEGRISANI PODACI IZ KUPAC MODULA
--- Mapiranja:
---   korisnici: stari 1->4, stari 2->5
---   kategorije: stari 1-8 -> novi 7-14
---   proizvodi: stari 1-32 -> novi 17-48
--- =========================================================================
 
 -- Kupci (korisnici)
-INSERT INTO korisnici (korisnik_id, datum_reg, email, ime, lozinka, prezime, telefon, uloga)
-VALUES (4, NULL, 'markovic@gmail.com', 'Marko', '123456', 'Markovic', '064235768', 'KUPAC')
-ON CONFLICT (korisnik_id) DO NOTHING;
-INSERT INTO korisnici (korisnik_id, datum_reg, email, ime, lozinka, prezime, telefon, uloga)
-VALUES (5, NULL, 'lalic@gmail.com', 'Nenad', '123456', 'Lalic', '06789256812', 'KUPAC')
-ON CONFLICT (korisnik_id) DO NOTHING;
 
 INSERT INTO kupci (korisnik_id, adresa, broj_kartice) VALUES (4, 'Narodnog fronta 16, Novi Sad', NULL);
 INSERT INTO kupci (korisnik_id, adresa, broj_kartice) VALUES (5, 'Narodnog fronta 19, Novi Sad', NULL);
@@ -246,7 +227,6 @@ VALUES
 
 
 -- Klikovi (korisnik_id: 2->5, proizvod_id: stari+16)
--- Napomena: uklonjena sintaksna greška u originalu (INSERT INTO resignation)
 INSERT INTO klikovi (klik_id, tip_akcije, vreme_klika, korisnik_id, proizvod_id) VALUES
                                                                                      (1,  'PREGLED',          '2026-05-24 11:18:19.77089',   5, 21),
                                                                                      (2,  'PREGLED',          '2026-05-24 11:18:20.970097',  5, 21),
@@ -357,3 +337,58 @@ SELECT setval(pg_get_serial_sequence('stavke_menija', 'stavka_id'), MAX(stavka_i
 SELECT setval(pg_get_serial_sequence('kuponi', 'kupon_id'), MAX(kupon_id)) FROM kuponi;
 SELECT setval(pg_get_serial_sequence('porudzbine', 'porudzbina_id'), MAX(porudzbina_id)) FROM porudzbine;
 SELECT setval(pg_get_serial_sequence('statusi_porudzbine', 'status_istorija_id'), MAX(status_istorija_id)) FROM statusi_porudzbine;
+SELECT setval(pg_get_serial_sequence('klikovi', 'klik_id'), MAX(klik_id)) FROM klikovi;
+SELECT setval(pg_get_serial_sequence('pretrage', 'pretraga_id'), MAX(pretraga_id)) FROM pretrage;
+
+
+--podsistem za dostavu
+
+INSERT INTO dostavljaci
+(id, ime, prezime, telefon, trenutna_lat, trenutna_lng, status, prosecna_ocena, broj_dostava)
+VALUES
+    (1, 'Petar', 'Petrović', '064111111', 45.2671, 19.8335, 'DOSTUPAN', 4.8, 152),
+
+    (2, 'Milan', 'Milić', '064222222', 45.2517, 19.8369, 'ZAUZET', 4.6, 98),
+
+    (3, 'Nikola', 'Nikolić', '064333333', 45.2440, 19.8425, 'DOSTUPAN', 4.9, 210);
+
+INSERT INTO dostave
+(id, porudzbina_id, dostavljac_id,
+ adresa_preuzimanja,
+ adresa_isporuke,
+ vreme_kreiranja,
+ procenjeno_vreme,
+ status)
+VALUES
+    (1, 101, 1,
+     'Bulevar Oslobođenja 10',
+     'Cara Dušana 25',
+     NOW(),
+     25,
+     'U_TRANSPORTU'),
+
+    (2, 102, 2,
+     'Futoška 15',
+     'Narodnog Fronta 44',
+     NOW(),
+     35,
+     'DODELJENA');
+
+INSERT INTO lokacije_dostavljaca
+(id, dostavljac_id, latitude, longitude, timestamp)
+VALUES
+    (1, 1, 45.2671, 19.8335, NOW()),
+
+    (2, 2, 45.2517, 19.8369, NOW()),
+
+    (3, 3, 45.2440, 19.8425, NOW());
+
+INSERT INTO ocene_dostavljaca
+(id, dostavljac_id, ocena, komentar, tip_ocene)
+VALUES
+    (1, 1, 5, 'Odlična dostava', 'KUPAC'),
+
+    (2, 1, 4, 'Brza isporuka', 'RESTORAN'),
+
+    (3, 2, 5, 'Veoma ljubazan dostavljač', 'KUPAC');
+

@@ -25,15 +25,24 @@ public class TrackingController {
                 .body(trackingService.zabeleziKlik(kupacId, proizvodId, tipAkcije));
     }
 
+    @PostMapping("/klik/{kupacId}/kategorije/{kategorijaId}")
+    public ResponseEntity<Klik> zabeleziKlikKategorija(
+            @PathVariable Long kupacId,
+            @PathVariable Long kategorijaId,
+            @RequestBody(required = false) Map<String, String> body) {
+        String tipAkcije = body != null ? body.getOrDefault("tipAkcije", "PREGLED") : "PREGLED";
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(trackingService.zabeleziKlikKategorija(kupacId, kategorijaId, tipAkcije));
+    }
+
     @PostMapping("/pretraga/{kupacId}")
     public ResponseEntity<Pretraga> zabeleziPretragu(
             @PathVariable Long kupacId,
-            @RequestBody Map<String, String> body) {
+            @RequestBody Map<String, Object> body) {
+        String tekst = (String) body.get("tekstUpita");
+        String tip = (String) body.getOrDefault("tipPretrage", "OPSTA");
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(trackingService.zabeleziPretragu(
-                        kupacId,
-                        body.get("tekstUpita"),
-                        body.getOrDefault("tipPretrage", "OPSTA")));
+                .body(trackingService.zabeleziPretragu(kupacId, tekst, tip));
     }
 
     @GetMapping("/klikovi/{kupacId}")

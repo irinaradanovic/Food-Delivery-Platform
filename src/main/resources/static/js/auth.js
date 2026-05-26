@@ -54,7 +54,7 @@ function osveziNavigaciju() {
     if (uloga === 'MENADZER') {
         linkoviHtml = `
             <a href="/izbor-restorana.html" id="nav-restorani">Moji restorani</a>
-            <a href="/moji-meniji.html" id="nav-meniji">Moji meniji</a>
+            <!--a href="/moji-meniji.html" id="nav-meniji">Moji meniji</a> -->
             <!--a href="/analitika.html" id="nav-analitika">Analitika</a> -->
             <!--a href="/profil.html" id="nav-profil">Profil</a> -->
         `;

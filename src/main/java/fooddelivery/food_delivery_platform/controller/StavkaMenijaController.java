@@ -1,8 +1,10 @@
 package fooddelivery.food_delivery_platform.controller;
 
+import fooddelivery.food_delivery_platform.dto.IzmenaStavkeMenijaDTO;
 import fooddelivery.food_delivery_platform.dto.NovaStavkaMenijaDTO;
 import fooddelivery.food_delivery_platform.model.StavkaMenija;
 import fooddelivery.food_delivery_platform.service.StavkaMenijaService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,6 +25,10 @@ public class StavkaMenijaController {
     @Autowired
     private StavkaMenijaService stavkaMenijaService;
 
+    @GetMapping("/{id}")
+    public StavkaMenija getStavkaMenija(@PathVariable Long id) {
+        return stavkaMenijaService.getItemById(id);
+    }
 
     @GetMapping("/meni/{meniId}")
     public ResponseEntity<List<StavkaMenija>> getItemsByMenu(@PathVariable Long meniId) {
@@ -38,6 +44,42 @@ public class StavkaMenijaController {
 
         stavkaMenijaService.addMenuItem(meniId, trenutniKorisnikId, dto, slika);
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @DeleteMapping("/meni/{meniId}/stavka/{stavkaId}")
+    public ResponseEntity<?> deleteItem(
+            @PathVariable Long meniId,
+            @PathVariable Long stavkaId,
+            @RequestHeader("X-User-Id") Long trenutniKorisnikId) {
+        try {
+            stavkaMenijaService.deleteItem(meniId, stavkaId, trenutniKorisnikId);
+            return ResponseEntity.noContent().build();
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Greška: " + e.getMessage());
+        }
+    }
+
+
+    @PutMapping("/meni/{meniId}/stavka/{stavkaId}")
+    public ResponseEntity<?> azurirajStavku(
+            @PathVariable("meniId") Long meniId,
+            @PathVariable Long stavkaId,
+            @RequestPart("podaci") IzmenaStavkeMenijaDTO dto,
+            @RequestPart(value = "slika", required = false) MultipartFile slika,
+            @RequestHeader("X-User-Id") Long korisnikId) {
+
+        try {
+            stavkaMenijaService.updateMenuItem(meniId, stavkaId, dto, slika, korisnikId);
+            return ResponseEntity.ok().body("Stavka je uspešno izmenjena.");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
 }

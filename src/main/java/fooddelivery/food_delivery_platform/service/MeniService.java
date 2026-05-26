@@ -6,6 +6,7 @@ import fooddelivery.food_delivery_platform.model.Restoran;
 import fooddelivery.food_delivery_platform.model.SezonskiMeni;
 import fooddelivery.food_delivery_platform.model.VremenskiMeni;
 import fooddelivery.food_delivery_platform.repository.MeniRepository;
+import fooddelivery.food_delivery_platform.repository.RestoranRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,9 @@ public class MeniService {
 
     @Autowired
     private MeniRepository meniRepository;
+
+    @Autowired
+    private RestoranRepository restoranRepository;
 
     public List<Meni> getAll() { return meniRepository.findAll(); }
 
@@ -77,5 +81,27 @@ public class MeniService {
         meni.setDatumDo(LocalDate.now()); // Postavlja se datum kada je meni deaktiviran
 
         meniRepository.save(meni);
+    }
+
+    @Transactional
+    public Meni createMenu(Meni noviMeni, Long trenutniKorisnikId) {
+        if (noviMeni.getRestoran() == null || noviMeni.getRestoran().getRestoranId() == null) {
+            throw new IllegalArgumentException("Restoran mora biti prosleđen u zahtevu.");
+        }
+
+        Long restoranId = noviMeni.getRestoran().getRestoranId();
+
+        Restoran restoran = restoranRepository.findById(restoranId)
+                .orElseThrow(() -> new EntityNotFoundException("Restoran sa ID-jem " + restoranId + " ne postoji."));
+
+        if (restoran.getMenadzer() == null || !restoran.getMenadzer().getKorisnikId().equals(trenutniKorisnikId)) {
+            throw new AccessDeniedException("Nemate ovlašćenje da kreirate meni za ovaj restoran jer niste njegov menadžer!");
+        }
+        noviMeni.setRestoran(restoran);
+
+        noviMeni.setVerzija("v1");
+        noviMeni.setAktivan(true);
+
+        return meniRepository.save(noviMeni);
     }
 }
