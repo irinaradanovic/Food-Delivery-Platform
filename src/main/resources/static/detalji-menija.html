@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <title>Detalji menija</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        nav {
+            background: white; border-bottom: 1px solid #e5e0d8;
+            padding: 0 40px; height: 68px; width: 100%;
+            display: flex; align-items: center; justify-content: space-between;
+            position: fixed; top: 0; left: 0; z-index: 100;
+        }
+        .nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .nav-logo-icon { width: 76px; height: 96px; display: flex; align-items: center; justify-content: center; }
+        .nav-logo-text { font-family: 'Playfair Display', serif; font-size: 20px; color: #1a1a1a; font-weight: 700; }
+        .nav-links { display: flex; align-items: center; gap: 4px; }
+        .nav-links a { padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 500; color: #6b7280; transition: all 0.15s; }
+        .nav-links a:hover { background: #f3f4f6; color: #1a1a1a; }
+        .nav-links a.active { background: #2d6a2d !important; color: white !important; }
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .nav-user { font-size: 13px; color: #6b7280; background: #f3f4f6; padding: 6px 12px; border-radius: 20px; font-family: sans-serif; }
+        .btn-odjava { background: none; border: 1.5px solid #e5e0d8; border-radius: 8px; padding: 7px 14px; font-size: 13px; font-weight: 500; color: #6b7280; cursor: pointer; transition: all 0.15s; }
+        .btn-odjava:hover { border-color: #dc2626; color: #dc2626; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen pt-24 p-8">
+
+<nav></nav>
+
+<div class="max-w-5xl mx-auto">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+
+        <div class="md:col-span-2 space-y-4">
+            <div>
+                <span id="prikaz-tip" class="text-xs font-bold uppercase px-3 py-1 bg-gray-200 text-gray-700 rounded-full tracking-wider hidden"></span>
+            </div>
+
+            <h1 id="prikaz-naziv" class="text-4xl font-extrabold text-gray-900"></h1>
+
+            <p id="prikaz-opis" class="text-gray-600 text-base leading-relaxed"></p>
+
+            <div id="kontejner-specificno" class="text-gray-700 font-medium space-y-1 pt-2 hidden">
+            </div>
+
+            <div class="pt-1">
+                <span id="prikaz-status" class="text-lg font-bold block"></span>
+            </div>
+        </div>
+
+        <div class="flex flex-col w-full justify-start md:pt-10">
+            <button onclick="otvoriModal()" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-semibold py-4 px-6 rounded-xl transition text-center shadow-sm cursor-pointer border border-transparent">
+                Izmeni osnovne informacije
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<div id="modal-azuriraj" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl space-y-4 mx-4">
+        <h2 class="text-2xl font-bold text-gray-800">Ažuriraj meni</h2>
+
+        <form id="forma-azuriraj" class="space-y-4" onsubmit="sacuvajIzmene(event)">
+            <div>
+                <label class="block text-sm font-semibold text-gray-600 mb-1">Naziv menija</label>
+                <input type="text" id="input-naziv" required class="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-emerald-500">
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-gray-600 mb-1">Opis</label>
+                <textarea id="input-opis" rows="3" class="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-emerald-500"></textarea>
+            </div>
+
+            <div id="modal-sekcija-sezonski" class="hidden grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600 mb-1">Početak sezone</label>
+                    <input type="date" id="input-pocetak-sezone" class="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600 mb-1">Kraj sezone</label>
+                    <input type="date" id="input-kraj-sezone" class="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-emerald-500">
+                </div>
+            </div>
+
+            <div id="modal-sekcija-vremenski" class="hidden grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600 mb-1">Vreme početka</label>
+                    <input type="time" id="input-vreme-od" class="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600 mb-1">Vreme kraja</label>
+                    <input type="time" id="input-vreme-do" class="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-emerald-500">
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-2">
+                <button type="button" onclick="zatvoriModal()" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium rounded-lg transition cursor-pointer">
+                    Otkaži
+                </button>
+                <button type="submit" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition shadow-sm cursor-pointer">
+                    Sačuvaj
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="./js/api.js"></script>
+<script src="./js/auth.js"></script>
+<script>
+    zastitiStranicu();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const meniId = urlParams.get('meniId');
+    let trenutniMeni = null;
+
+    async function ucitajDetaljeMenija() {
+        if (!meniId) {
+            alert("Meni ID nedostaje u URL-u!");
+            return;
+        }
+
+        try {
+            const meni = await apiFetch(`/meni/${meniId}`);
+            trenutniMeni = meni;
+
+            console.log("Preuzeti podaci o meniju:", meni);
+
+            document.getElementById('prikaz-naziv').textContent = meni.naziv;
+            document.getElementById('prikaz-opis').textContent = meni.opis || 'Nema opisa za ovaj meni.';
+
+            const tipEl = document.getElementById('prikaz-tip');
+            tipEl.textContent = meni.tipMenija || 'Nepoznat tip menija';
+            tipEl.classList.remove('hidden'); // Prikazujemo značku tek kad stigne podatak
+
+            const specKontejner = document.getElementById('kontejner-specificno');
+            specKontejner.innerHTML = '';
+
+            if (meni.tipMenija === 'SEZONSKI' && meni.pocetakSezone && meni.krajSezone) {
+                specKontejner.innerHTML = `
+                    <div class="text-gray-700"><span class="text-gray-400 font-normal">Datum početka sezone:</span> ${formatujDatum(meni.pocetakSezone)}</div>
+                    <div class="text-gray-700"><span class="text-gray-400 font-normal">Datum kraja sezone:</span> ${formatujDatum(meni.krajSezone)}</div>
+                `;
+                specKontejner.classList.remove('hidden');
+            }
+            else if (meni.tipMenija === 'VREMENSKI' && meni.vremeOd && meni.vremeDo) {
+                const odVreme = meni.vremeOd.length > 5 ? meni.vremeOd.substring(0,5) : meni.vremeOd;
+                const doVreme = meni.vremeDo.length > 5 ? meni.vremeDo.substring(0,5) : meni.vremeDo;
+
+                specKontejner.innerHTML = `
+                    <div class="text-gray-700"><span class="text-gray-400 font-normal">Vreme početka:</span> ${odVreme}h</div>
+                    <div class="text-gray-700"><span class="text-gray-400 font-normal">Vreme kraja:</span> ${doVreme}h</div>
+                `;
+                specKontejner.classList.remove('hidden');
+            }
+            else {
+                specKontejner.classList.add('hidden');
+            }
+
+            const statusEl = document.getElementById('prikaz-status');
+            if (meni.aktivan) {
+                statusEl.textContent = "Aktivan";
+                statusEl.className = "text-lg font-bold text-emerald-600 block";
+            } else {
+                statusEl.textContent = "Neaktivan";
+                statusEl.className = "text-lg font-bold text-red-500 block";
+            }
+
+        } catch (error) {
+            console.error("Greška pri učitavanju:", error);
+            document.getElementById('prikaz-opis').textContent = "Greška prilikom preuzimanja podataka sa servera.";
+            document.getElementById('prikaz-opis').className = "text-red-500 mt-2";
+        }
+    }
+
+    function formatujDatum(isoString) {
+        if (!isoString) return "";
+        const d = new Date(isoString);
+        return d.toLocaleDateString('sr-RS', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
+
+    function otvoriModal() {
+        if (!trenutniMeni) return;
+
+        document.getElementById('input-naziv').value = trenutniMeni.naziv;
+        document.getElementById('input-opis').value = trenutniMeni.opis || '';
+
+        const sekcijaSezonski = document.getElementById('modal-sekcija-sezonski');
+        const sekcijaVremenski = document.getElementById('modal-sekcija-vremenski');
+
+        sekcijaSezonski.classList.add('hidden');
+        sekcijaVremenski.classList.add('hidden');
+
+        if (trenutniMeni.tipMenija === 'SEZONSKI') {
+            sekcijaSezonski.classList.remove('hidden');
+            document.getElementById('input-pocetak-sezone').value = trenutniMeni.pocetakSezone || '';
+            document.getElementById('input-kraj-sezone').value = trenutniMeni.krajSezone || '';
+        }
+        else if (trenutniMeni.tipMenija === 'VREMENSKI') {
+            sekcijaVremenski.classList.remove('hidden');
+            document.getElementById('input-vreme-od').value = trenutniMeni.vremeOd ? trenutniMeni.vremeOd.substring(0,5) : '';
+            document.getElementById('input-vreme-do').value = trenutniMeni.vremeDo ? trenutniMeni.vremeDo.substring(0,5) : '';
+        }
+
+        document.getElementById('modal-azuriraj').classList.remove('hidden');
+    }
+
+    function zatvoriModal() {
+        document.getElementById('modal-azuriraj').classList.add('hidden');
+    }
+
+    async function sacuvajIzmene(event) {
+        event.preventDefault();
+
+        const ulogovaniKorisnikId = localStorage.getItem('korisnikId');
+        const finalniDto = {
+            naziv: document.getElementById('input-naziv').value,
+            opis: document.getElementById('input-opis').value,
+            pocetakSezone: null,
+            krajSezone: null,
+            vremeOd: null,
+            vremeDo: null
+        };
+        if (trenutniMeni.tipMenija === 'SEZONSKI') {
+            finalniDto.pocetakSezone = document.getElementById('input-pocetak-sezone').value || null;
+            finalniDto.krajSezone = document.getElementById('input-kraj-sezone').value || null;
+        }
+        else if (trenutniMeni.tipMenija === 'VREMENSKI') {
+            finalniDto.vremeOd = document.getElementById('input-vreme-od').value ? document.getElementById('input-vreme-od').value + ":00" : null;
+            finalniDto.vremeDo = document.getElementById('input-vreme-do').value ? document.getElementById('input-vreme-do').value + ":00" : null;
+        }
+
+        try {
+            await apiFetch(`/meni/${meniId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-User-Id': ulogovaniKorisnikId
+                },
+                body: JSON.stringify(finalniDto)
+            });
+
+            zatvoriModal();
+            
+            alert("Meni je uspešno ažuriran!");
+
+            await ucitajDetaljeMenija();
+
+        } catch (error) {
+            console.error("Greška pri čuvanju:", error);
+            alert("Nemate pravo pristupa ili je došlo do greške prilikom čuvanja.");
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', ucitajDetaljeMenija);
+</script>
+</body>
+</html>

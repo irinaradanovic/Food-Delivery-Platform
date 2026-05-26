@@ -12,7 +12,7 @@
             position: fixed; top: 0; left: 0; z-index: 100;
         }
         .nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
-        .nav-logo-icon { width: 76px; height: 76px; display: flex; align-items: center; justify-content: center; }
+        .nav-logo-icon { width: 76px; height: 96px; display: flex; align-items: center; justify-content: center; }
         .nav-logo-text { font-family: 'Playfair Display', serif; font-size: 20px; color: #1a1a1a; font-weight: 700; }
         .nav-links { display: flex; align-items: center; gap: 4px; }
         .nav-links a { padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 500; color: #6b7280; transition: all 0.15s; }
@@ -53,7 +53,7 @@
         }
 
         try {
-            const meniji = await apiFetch(`/menadzer/restorani/${restoranId}/meniji`);
+            const meniji = await apiFetch(`/meni/restorani/${restoranId}`);
             const kontejner = document.getElementById('meniji-kontejner');
             kontejner.innerHTML = '';
 
@@ -66,7 +66,6 @@
                     if (meni.tipMenija === 'VREMENSKI') slikaUrl = "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=400";
                     if (meni.tipMenija === 'SEZONSKI') slikaUrl = "https://images.unsplash.com/photo-1511690656952-34342bb7c2f2?w=400";
 
-                    // Prikazuje samo sliku, tip menija i naziv
                     kartica.innerHTML = `
                             <div>
                                 <img src="${slikaUrl}" alt="Meni slika" class="w-full h-40 object-cover">
@@ -76,11 +75,14 @@
                                 </div>
                             </div>
                         `;
+                    // odlazak na stranicu sa detaljima menija
+                    kartica.onclick = () => {
+                        window.location.href = `detalji-menija.html?meniId=${meni.meniId}`;
+                    };
                     kontejner.appendChild(kartica);
                 });
             }
 
-            // Novo puno zeleno dugme sa belim plusom i tekstom
             const dugmeDodaj = document.createElement('div');
             dugmeDodaj.className = "bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg flex flex-col justify-center items-center p-8 cursor-pointer min-h-[240px] shadow-md transition transform hover:-translate-y-1 text-center";
             dugmeDodaj.innerHTML = `
