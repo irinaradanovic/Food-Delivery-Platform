@@ -568,6 +568,11 @@
 <script>
     zastitiStranicu();
     const sesija = getSesija();
+
+    function jeKupac() {
+        return localStorage.getItem('uloga') === 'KUPAC';
+    }
+
     let omiljeniIds = new Set();
     // Korpa: [{id, naziv, emoji, cena, kolicina, napomena}]
     let korpa = JSON.parse(localStorage.getItem('korpa') || '[]');
@@ -649,7 +654,7 @@
         const stavka = korpa[idx];
         korpa[idx].kolicina += delta;
         if (korpa[idx].kolicina <= 0) {
-            try { api.zabeleziKlik(getKupacId(), stavka.id, 'UKLONI_IZ_KORPE'); } catch {}
+            if (jeKupac()) try { api.zabeleziKlik(getKupacId(), stavka.id, 'UKLONI_IZ_KORPE'); } catch {}
             korpa.splice(idx, 1);
         }
         sacuvajKorpu();
@@ -659,9 +664,11 @@
 
     function ocistiKorpu() {
         const kupacId = getKupacId();
-        korpa.forEach(stavka => {
-            try { api.zabeleziKlik(kupacId, stavka.id, 'UKLONI_IZ_KORPE'); } catch {}
-        });
+        if (jeKupac()) {
+            korpa.forEach(stavka => {
+                try { api.zabeleziKlik(kupacId, stavka.id, 'UKLONI_IZ_KORPE'); } catch {}
+            });
+        }
         korpa = [];
         sacuvajKorpu();
         renderKorpaPanel();
@@ -732,7 +739,7 @@
         if (!p) return;
         const napomena = document.getElementById('km-napomena').value.trim();
 
-        try { api.zabeleziKlik(getKupacId(), p.proizvodId, 'KORPA'); } catch {}
+        if (jeKupac()) try { api.zabeleziKlik(getKupacId(), p.proizvodId, 'KORPA'); } catch {}
 
         // Ako već postoji ista stavka (isti id + ista napomena) – povećaj količinu
         const postojeci = korpa.find(k => k.id === p.proizvodId && k.napomena === napomena);
@@ -785,8 +792,13 @@
     async function pretraziProizvode() {
         const upit = document.getElementById('pretraga').value.trim();
         if (!upit) { ucitajProizvode(); return; }
+
+        // Tracking je nebitan za pretragu — neka pada nezavisno
+        if (jeKupac()) {
+            api.zabeleziPretragu(getKupacId(), upit).catch(() => {});
+        }
+
         try {
-            await api.zabeleziPretragu(getKupacId(), upit);
             const lista = await api.searchProizvodi(upit);
             prikaziProizvode(lista);
         } catch {
@@ -849,7 +861,7 @@
 
     // ── Detalji modal ───────────────────────────────────
     async function otvoriDetalje(proizvodId) {
-        try { await api.zabeleziKlik(getKupacId(), proizvodId, 'DETALJI'); } catch {}
+        if (jeKupac()) try { await api.zabeleziKlik(getKupacId(), proizvodId, 'DETALJI'); } catch {}
         try {
             const p = await fetch(`http://localhost:8080/api/proizvodi/${proizvodId}`).then(r => r.json());
             aktivniProizvod = p;
@@ -901,11 +913,11 @@
             if (omiljeniIds.has(id)) {
                 await api.ukloniOmiljeni(getKupacId(), id);
                 omiljeniIds.delete(id); btn.textContent = '🤍';
-                try { api.zabeleziKlik(getKupacId(), id, 'UKLONI_OMILJENI'); } catch {}
+                if (jeKupac()) try { api.zabeleziKlik(getKupacId(), id, 'UKLONI_OMILJENI'); } catch {}
             } else {
                 await api.dodajOmiljeni(getKupacId(), id);
                 omiljeniIds.add(id); btn.textContent = '❤️';
-                try { api.zabeleziKlik(getKupacId(), id, 'DODAJ_OMILJENI'); } catch {}
+                if (jeKupac()) try { api.zabeleziKlik(getKupacId(), id, 'DODAJ_OMILJENI'); } catch {}
             }
         } catch { alert('Greška.'); }
     }
@@ -918,23 +930,24 @@
             if (omiljeniIds.has(id)) {
                 await api.ukloniOmiljeni(getKupacId(), id);
                 omiljeniIds.delete(id); btn.textContent = '🤍';
-                try { api.zabeleziKlik(getKupacId(), id, 'UKLONI_OMILJENI'); } catch {}
+                if (jeKupac()) try { api.zabeleziKlik(getKupacId(), id, 'UKLONI_OMILJENI'); } catch {}
             } else {
                 await api.dodajOmiljeni(getKupacId(), id);
                 omiljeniIds.add(id); btn.textContent = '❤️';
-                try { api.zabeleziKlik(getKupacId(), id, 'DODAJ_OMILJENI'); } catch {}
+                if (jeKupac()) try { api.zabeleziKlik(getKupacId(), id, 'DODAJ_OMILJENI'); } catch {}
             }
             const karticaFav = document.querySelector(`[onclick="toggleOmiljeni(${id}, this)"]`);
             if (karticaFav) karticaFav.textContent = omiljeniIds.has(id) ? '❤️' : '🤍';
         } catch { alert('Greška.'); }
     }
 
-    document.getElementById('pretraga').addEventListener('keydown', e => {
-        if (e.key === 'Enter') pretraziProizvode();
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('pretraga').addEventListener('keydown', e => {
+            if (e.key === 'Enter') pretraziProizvode();
+        });
+        azurirajKorpaBadge();
+        ucitajProizvode();
     });
-
-    azurirajKorpaBadge();
-    ucitajProizvode();
 </script>
 </body>
 </html>

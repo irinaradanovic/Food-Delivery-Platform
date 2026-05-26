@@ -1,8 +1,5 @@
 const API_BASE = 'http://localhost:8080/api';
 
-function getKupacId() {
-    return localStorage.getItem('kupacId');
-}
 
 async function apiFetch(url, options = {}) {
     const res = await fetch(`${API_BASE}${url}`, {
