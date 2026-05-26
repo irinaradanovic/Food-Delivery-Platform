@@ -6,16 +6,13 @@ INSERT INTO korisnici (korisnik_id, ime, prezime, telefon, lozinka, email, datum
 
 INSERT INTO menadzeri (korisnik_id) VALUES (1), (2), (3);
 
-<<<<<<< Updated upstream
 -- Kupci
 INSERT INTO korisnici (korisnik_id, ime, prezime, telefon, lozinka, email, datum_reg, uloga) VALUES (4, NULL, 'markovic@gmail.com', 'Marko', '123456', 'Markovic', '064235768', 'KUPAC');
 INSERT INTO korisnici (korisnik_id, ime, prezime, telefon, lozinka, email, datum_reg, uloga) VALUES (5, NULL, 'lalic@gmail.com', 'Nenad', '123456', 'Lalic', '06789256812', 'KUPAC');
 
 /*INSERT INTO kupci VALUES ('Narodnog fronta 16, Novi Sad', NULL, 4);
 INSERT INTO kupci VALUES ('Narodnog fronta 19, Novi Sad', NULL, 5); */
-=======
 -- Kupci su integrisani na kraju fajla (korisnik_id 4 i 5, zbog konflikta sa menadzerima 1-3)
->>>>>>> Stashed changes
 
 
 
@@ -152,14 +149,12 @@ INSERT INTO stavke_menija (stavka_id, meni_id, proizvod_id, cena, dostupno, vrem
 
 
 -- omiljene_kategorije
-<<<<<<< Updated upstream
 /*INSERT INTO omiljene_kategorije VALUES (1, '2026-05-24 12:19:57.447502', 3, 2);
 INSERT INTO omiljene_kategorije VALUES (2, '2026-05-24 12:32:55.337159', 5, 2);
 
 -- omiljeni_proizvodi
 INSERT INTO omiljeni_proizvodi VALUES (9, '2026-05-24 11:27:48.164161', 2, 1);
 INSERT INTO omiljeni_proizvodi VALUES (12, '2026-05-25 10:24:59.061989', 2, 25); */
-=======
 -- Napomena: korisnik 2 (iz kupac bloka) = korisnik_id 5 u integraciji
 -- kategorija 3 (Pasta) -> 9, kategorija 5 (Salate) -> 11
 INSERT INTO omiljene_kategorije VALUES (1, '2026-05-24 12:19:57.447502', 9, 5);
@@ -180,9 +175,11 @@ INSERT INTO omiljeni_proizvodi VALUES (12, '2026-05-25 10:24:59.061989', 5, 41);
 
 -- Kupci (korisnici)
 INSERT INTO korisnici (korisnik_id, datum_reg, email, ime, lozinka, prezime, telefon, uloga)
-VALUES (4, NULL, 'markovic@gmail.com', 'Marko', '123456', 'Markovic', '064235768', 'KUPAC');
+VALUES (4, NULL, 'markovic@gmail.com', 'Marko', '123456', 'Markovic', '064235768', 'KUPAC')
+ON CONFLICT (korisnik_id) DO NOTHING;
 INSERT INTO korisnici (korisnik_id, datum_reg, email, ime, lozinka, prezime, telefon, uloga)
-VALUES (5, NULL, 'lalic@gmail.com', 'Nenad', '123456', 'Lalic', '06789256812', 'KUPAC');
+VALUES (5, NULL, 'lalic@gmail.com', 'Nenad', '123456', 'Lalic', '06789256812', 'KUPAC')
+ON CONFLICT (korisnik_id) DO NOTHING;
 
 INSERT INTO kupci (korisnik_id, adresa, broj_kartice) VALUES (4, 'Narodnog fronta 16, Novi Sad', NULL);
 INSERT INTO kupci (korisnik_id, adresa, broj_kartice) VALUES (5, 'Narodnog fronta 19, Novi Sad', NULL);
@@ -234,18 +231,18 @@ INSERT INTO proizvodi (proizvod_id, naziv, opis, cena, kolicina, merna_jedinica,
                                                                                                                            (48, 'Mešano meso sa roštilja', 'Bogata porcija mešanog mesa sa roštilja', 890.00, 600.00, 'g', 890.00, 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=600&h=400&fit=crop&auto=format', 14);
 
 -- Porudzbine (korisnik_id: 2->5, porudzbina_id: 1-7 su slobodni)
-INSERT INTO porudzbine (porudzbinа_id, korisnik_id, adresa_dostave, datum_kreiranja, kupon_kod, napomena, status, tip_dostave, ukupna_cena)
+INSERT INTO porudzbine (porudzbina_id, korisnik_id, adresa_dostave, datum_kreiranja, kupon_id, napomena, status, ukupna_cena)
 VALUES
-    (1, 5, 'Narodnog Fronta 7, Novi Sad', '2026-05-25 09:08:06.068921', NULL, '',       'KREIRANA', 'STANDARDNA', 9.80),
-    (2, 5, 'Narodnog Fronta 7, Novi Sad', '2026-05-25 09:08:18.871066', NULL, '2. sprat', 'KREIRANA', 'STANDARDNA', 9.80),
-    (3, 5, 'Narodnog Fronta 7, Novi Sad', '2026-05-25 09:09:25.310633', NULL, '2. sprat', 'KREIRANA', 'STANDARDNA', 9.80),
-    (4, 5, 'Narodnog Fronta 7, Novi Sad', '2026-05-25 09:09:32.69165',  NULL, '2. sprat', 'KREIRANA', 'STANDARDNA', 9.80),
-    (5, 5, 'Narodnog Fronta 7, Novi Sad', '2026-05-25 09:10:02.493091', NULL, '2. sprat', 'KREIRANA', 'STANDARDNA', 9.80),
-    (6, 5, 'Narodnog Fronta 7, Novi Sad', '2026-05-25 09:10:14.984126', NULL, '2. sprat', 'KREIRANA', 'STANDARDNA', 9.80),
-    (7, 5, 'Narodnog Fronta 7, Novi Sad', '2026-05-25 09:10:29.991216', NULL, '2. sprat', 'KREIRANA', 'STANDARDNA', 9.80);
+    (1, 5, 'Narodnog Fronta 7, Novi Sad', '2026-05-25 09:08:06.068921', NULL, '',       'KREIRANA', 9.80),
+    (2, 5, 'Narodnog Fronta 7, Novi Sad', '2026-05-25 09:08:18.871066', NULL, '2. sprat', 'KREIRANA', 9.80),
+    (3, 5, 'Narodnog Fronta 7, Novi Sad', '2026-05-25 09:09:25.310633', NULL, '2. sprat', 'KREIRANA', 9.80),
+    (4, 5, 'Narodnog Fronta 7, Novi Sad', '2026-05-25 09:09:32.69165',  NULL, '2. sprat', 'KREIRANA', 9.80),
+    (5, 5, 'Narodnog Fronta 7, Novi Sad', '2026-05-25 09:10:02.493091', NULL, '2. sprat', 'KREIRANA', 9.80),
+    (6, 5, 'Narodnog Fronta 7, Novi Sad', '2026-05-25 09:10:14.984126', NULL, '2. sprat', 'KREIRANA', 9.80),
+    (7, 5, 'Narodnog Fronta 7, Novi Sad', '2026-05-25 09:10:29.991216', NULL, '2. sprat', 'KREIRANA', 9.80);
 
--- Stavke porudzbine (porudzbina_id: 1, proizvodi: stari 1-7 -> novi 17-23)
-INSERT INTO stavke_porudzbine (stavka_id, cena, porudzbina_id, kolicina, proizvod_id) VALUES
+-- Stavke porudzbine (porudzbina_id: 1, stavke_menija: 17-23)
+INSERT INTO stavke_porudzbine (stavka_id, cena, porudzbina_id, kolicina, stavka_menija_id) VALUES
                                                                                           (1, 9.80, 1, 1, 17),
                                                                                           (2, 9.80, 1, 2, 18),
                                                                                           (3, 9.80, 1, 3, 19),
@@ -321,7 +318,28 @@ INSERT INTO pretrage (pretraga_id, tekst_upita, tip_pretrage, vreme_pretrage, ko
                                                                                                (11, 'car',        'OPSTA', '2026-05-24 13:34:36.56451',  5),
                                                                                                (12, 'limunada',   'OPSTA', '2026-05-25 23:38:32.113215', 5),
                                                                                                (13, 'hygui',      'OPSTA', '2026-05-25 23:39:20.161768', 5);
->>>>>>> Stashed changes
+INSERT INTO stavke_menija (stavka_id, meni_id, proizvod_id, cena, dostupno, vreme_pripreme_min, vreme_pripreme_max, obrisan) VALUES
+(17, 2, 17, 850.00, true, 8, 12, false),
+(18, 2, 18, 980.00, true, 8, 12, false),
+(19, 2, 19, 1050.00, true, 10, 15, false),
+(20, 2, 20, 780.00, true, 8, 12, false),
+(21, 1, 21, 750.00, true, 10, 15, false),
+(22, 1, 22, 950.00, true, 12, 18, false),
+(23, 1, 23, 820.00, true, 10, 15, false);
+
+INSERT INTO kuponi (kupon_id, kod, popust_iznos, popust_procenat, vazi_od, vazi_do, aktivan, max_upotreba, upotrebljeno_puta, vlasnik_id) VALUES
+(1, 'WELCOME100', 100.00, NULL, '2026-05-01 00:00:00', '2028-12-31 23:59:59', true, 100, 0, 4),
+(2, 'SUMMER20', NULL, 20.00, '2026-06-01 00:00:00', '2026-08-31 23:59:59', true, 50, 0, 5);
+
+INSERT INTO statusi_porudzbine (status_istorija_id, porudzbina_id, status, vreme_promene, promenio_korisnik_id) VALUES
+(1, 1, 'KREIRANA', '2026-05-25 09:08:06.068921', 5),
+(2, 2, 'KREIRANA', '2026-05-25 09:08:18.871066', 5),
+(3, 3, 'KREIRANA', '2026-05-25 09:09:25.310633', 5),
+(4, 4, 'KREIRANA', '2026-05-25 09:09:32.691650', 5),
+(5, 5, 'KREIRANA', '2026-05-25 09:10:02.493091', 5),
+(6, 6, 'KREIRANA', '2026-05-25 09:10:14.984126', 5),
+(7, 7, 'KREIRANA', '2026-05-25 09:10:29.991216', 5);
+
 
 -- Sinhronizacija sekvenci za bazu
 SELECT setval(pg_get_serial_sequence('korisnici', 'korisnik_id'), MAX(korisnik_id)) FROM korisnici;
@@ -331,3 +349,7 @@ SELECT setval(pg_get_serial_sequence('sastojci', 'sastojak_id'), MAX(sastojak_id
 SELECT setval(pg_get_serial_sequence('proizvodi', 'proizvod_id'), MAX(proizvod_id)) FROM proizvodi;
 SELECT setval(pg_get_serial_sequence('meniji', 'meni_id'), MAX(meni_id)) FROM meniji;
 SELECT setval(pg_get_serial_sequence('stavke_menija', 'stavka_id'), MAX(stavka_id)) FROM stavke_menija;
+SELECT setval(pg_get_serial_sequence('stavke_menija', 'stavka_id'), MAX(stavka_id)) FROM stavke_menija;
+SELECT setval(pg_get_serial_sequence('kuponi', 'kupon_id'), MAX(kupon_id)) FROM kuponi;
+SELECT setval(pg_get_serial_sequence('porudzbine', 'porudzbina_id'), MAX(porudzbina_id)) FROM porudzbine;
+SELECT setval(pg_get_serial_sequence('statusi_porudzbine', 'status_istorija_id'), MAX(status_istorija_id)) FROM statusi_porudzbine;
