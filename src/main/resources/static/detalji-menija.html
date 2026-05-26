@@ -42,9 +42,12 @@
             </div>
         </div>
 
-        <div class="flex flex-col w-full justify-start md:pt-10">
+        <div class="flex flex-col w-full justify-start md:pt-10 gap-3">
             <button onclick="otvoriModal()" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-semibold py-4 px-6 rounded-xl transition text-center shadow-sm cursor-pointer border border-transparent">
                 Izmeni osnovne informacije
+            </button>
+            <button id="btn-deaktiviraj-meni" onclick="otvoriDeaktivaciju()" class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-4 px-6 rounded-xl transition text-center shadow-sm cursor-pointer border border-transparent hidden">
+                Deaktiviraj meni
             </button>
         </div>
     </div>
@@ -107,6 +110,19 @@
     </div>
 </div>
 
+<div id="modal-deaktiviraj" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl space-y-4 mx-4">
+        <h2 class="text-2xl font-bold text-gray-800">Potvrda deaktivacije</h2>
+        <p class="text-gray-600 text-sm leading-relaxed">
+            Da li ste sigurni da želite da deaktivirate ovaj meni? Meni više neće biti vidljiv gostima restorana.
+        </p>
+        <div class="flex justify-end gap-3 pt-2">
+            <button type="button" onclick="zatvoriDeaktivaciju()" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium rounded-lg transition cursor-pointer">Otkaži</button>
+            <button type="button" onclick="potvrdiDeaktivaciju()" class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition shadow-sm cursor-pointer">Da, deaktiviraj</button>
+        </div>
+    </div>
+</div>
+
 <script src="./js/api.js"></script>
 <script src="./js/auth.js"></script>
 <script>
@@ -157,12 +173,16 @@
             }
 
             const statusEl = document.getElementById('prikaz-status');
+            const btnDeaktiviraj = document.getElementById('btn-deaktiviraj-meni');
+
             if (meni.aktivan) {
                 statusEl.textContent = "Aktivan";
                 statusEl.className = "text-lg font-bold text-emerald-600 block";
+                btnDeaktiviraj.classList.remove('hidden'); // Prikaži dugme ako je meni aktivan
             } else {
                 statusEl.textContent = "Neaktivan";
                 statusEl.className = "text-lg font-bold text-red-500 block";
+                btnDeaktiviraj.classList.add('hidden'); // Sakrij ako je već deaktiviran
             }
         } catch (error) {
             console.error("Greška pri učitavanju:", error);
@@ -180,7 +200,6 @@
                 return;
             }
 
-            // Grupisanje stavki po nazivu kategorije
             const grupisano = {};
             stavke.forEach(s => {
                 const katNaziv = s.proizvod.kategorija ? s.proizvod.kategorija.naziv : 'Ostalo';
@@ -255,7 +274,6 @@
         }
     }
 
-
     function izmeniStavkuVisual(id) {
         alert("Kliknuta olovčica za stavku sa ID: " + id + ". Logiku za formu izmene radimo u sledećem koraku!");
     }
@@ -322,6 +340,36 @@
             await ucitajDetaljeMenija();
         } catch (error) {
             alert("Nemate pravo pristupa ili je došlo do greške prilikom čuvanja.");
+        }
+    }
+
+    // NOVE FUNKCIJE ZA UPRAVLJANJE DEAKTIVACIJOM MENIJA
+    function otvoriDeaktivaciju() {
+        document.getElementById('modal-deaktiviraj').classList.remove('hidden');
+    }
+
+    function zatvoriDeaktivaciju() {
+        document.getElementById('modal-deaktiviraj').classList.add('hidden');
+    }
+
+    async function potvrdiDeaktivaciju() {
+        const ulogovaniKorisnikId = localStorage.getItem('korisnikId');
+
+        try {
+            // Slanje PUT zahteva na api/meni/id/deaktiviraj uz prosleđivanje korisnikId-ja u headeru
+            await apiFetch(`/meni/${meniId}/deaktiviraj`, {
+                method: 'PUT',
+                headers: {
+                    'X-User-Id': ulogovaniKorisnikId
+                }
+            });
+
+            zatvoriDeaktivaciju();
+            alert("Meni je uspešno deaktiviran!");
+            await ucitajDetaljeMenija(); // Osvežava statuse i uklanja crveno dugme pošto je sada neaktivan
+        } catch (error) {
+            alert("Nemate pravo pristupa ili je došlo do greške prilikom deaktivacije.");
+            zatvoriDeaktivaciju();
         }
     }
 
