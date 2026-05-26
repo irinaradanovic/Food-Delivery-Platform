@@ -6,6 +6,16 @@ INSERT INTO korisnici (korisnik_id, ime, prezime, telefon, lozinka, email, datum
 
 INSERT INTO menadzeri (korisnik_id) VALUES (1), (2), (3);
 
+-- Kupci
+INSERT INTO korisnici VALUES (1, NULL, 'markovic@gmail.com', 'Marko', '123456', 'Markovic', '064235768', 'KUPAC');
+INSERT INTO korisnici VALUES (2, NULL, 'lalic@gmail.com', 'Nenad', '123456', 'Lalic', '06789256812', 'KUPAC');
+
+INSERT INTO kupci VALUES ('Narodnog fronta 16, Novi Sad', NULL, 1);
+INSERT INTO kupci VALUES ('Narodnog fronta 19, Novi Sad', NULL, 2);
+
+
+
+
 -- Restorani
 INSERT INTO restorani (restoran_id, naziv, adresa, kontakt, menadzer_id) VALUES
                                                                              (1, 'Big Bite Centar', 'Trg Slobode 4, Novi Sad', '021-555-333', 1),
@@ -135,6 +145,15 @@ INSERT INTO stavke_menija (stavka_id, meni_id, proizvod_id, cena, dostupno, vrem
 (12, 3, 7, 520.00, true, 5, 8, false),
 (13, 3, 16, 690.00, true, 15, 22, false),
 (14, 3, 11, 380.00, true, 2, 5, false);
+
+
+-- omiljene_kategorije
+INSERT INTO omiljene_kategorije VALUES (1, '2026-05-24 12:19:57.447502', 3, 2);
+INSERT INTO omiljene_kategorije VALUES (2, '2026-05-24 12:32:55.337159', 5, 2);
+
+-- omiljeni_proizvodi
+INSERT INTO omiljeni_proizvodi VALUES (9, '2026-05-24 11:27:48.164161', 2, 1);
+INSERT INTO omiljeni_proizvodi VALUES (12, '2026-05-25 10:24:59.061989', 2, 25);
 
 -- Sinhronizacija sekvenci za bazu
 SELECT setval(pg_get_serial_sequence('korisnici', 'korisnik_id'), MAX(korisnik_id)) FROM korisnici;
