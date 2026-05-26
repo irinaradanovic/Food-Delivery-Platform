@@ -1,5 +1,6 @@
 package fooddelivery.food_delivery_platform.controller;
 
+import fooddelivery.food_delivery_platform.dto.IzmenaStavkeMenijaDTO;
 import fooddelivery.food_delivery_platform.dto.NovaStavkaMenijaDTO;
 import fooddelivery.food_delivery_platform.model.StavkaMenija;
 import fooddelivery.food_delivery_platform.service.StavkaMenijaService;
@@ -24,6 +25,10 @@ public class StavkaMenijaController {
     @Autowired
     private StavkaMenijaService stavkaMenijaService;
 
+    @GetMapping("/{id}")
+    public StavkaMenija getStavkaMenija(@PathVariable Long id) {
+        return stavkaMenijaService.getItemById(id);
+    }
 
     @GetMapping("/meni/{meniId}")
     public ResponseEntity<List<StavkaMenija>> getItemsByMenu(@PathVariable Long meniId) {
@@ -57,6 +62,23 @@ public class StavkaMenijaController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Greška: " + e.getMessage());
+        }
+    }
+
+
+    @PutMapping("/meni/{meniId}/stavka/{stavkaId}")
+    public ResponseEntity<?> azurirajStavku(
+            @PathVariable("meniId") Long meniId,
+            @PathVariable Long stavkaId,
+            @RequestPart("podaci") IzmenaStavkeMenijaDTO dto,
+            @RequestPart(value = "slika", required = false) MultipartFile slika,
+            @RequestHeader("X-User-Id") Long korisnikId) {
+
+        try {
+            stavkaMenijaService.updateMenuItem(meniId, stavkaId, dto, slika, korisnikId);
+            return ResponseEntity.ok().body("Stavka je uspešno izmenjena.");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 

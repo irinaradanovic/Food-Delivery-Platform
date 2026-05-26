@@ -304,7 +304,7 @@
     }
 
     function izmeniStavkuVisual(id) {
-        alert("Kliknuta olovčica za stavku sa ID: " + id + ". Logiku za formu izmene radimo u sledećem koraku!");
+        window.location.href = `izmeni-stavku.html?meniId=${meniId}&stavkaId=${id}`;
     }
 
     function formatujDatum(isoString) {
