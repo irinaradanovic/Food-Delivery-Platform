@@ -136,4 +136,23 @@ public class StavkaMenijaService {
         stavkaMenijaRepository.save(stavkaMenija);
     }
 
+
+    @Transactional
+    public void deleteItem(Long meniId, Long stavkaId, Long trenutniKorisnikId) {
+        StavkaMenija stavka = stavkaMenijaRepository.findById(stavkaId)
+                .orElseThrow(() -> new EntityNotFoundException("Stavka menija ne postoji."));
+
+        if (!stavka.getMeni().getMeniId().equals(meniId)) {
+            throw new IllegalArgumentException("Ova stavka ne pripada izabranom meniju!");
+        }
+
+        Restoran restoran = stavka.getMeni().getRestoran();
+        if (restoran == null || !restoran.getMenadzer().getKorisnikId().equals(trenutniKorisnikId)) {
+            throw new AccessDeniedException("Nemate ovlašćenje da brišete stavke iz ovog menija!");
+        }
+
+        stavka.setObrisan(true);
+        stavkaMenijaRepository.save(stavka);
+    }
+
 }
