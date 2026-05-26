@@ -22,10 +22,14 @@ public class Klik {
     private Kupac kupac;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "proizvodId", nullable = false)
+    @JoinColumn(name = "proizvodId", nullable = true)
     private Proizvod proizvod;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "kategorijaId", nullable = true)
+    private Kategorija kategorija;
 
     private LocalDateTime vremeKlika;
 
-    private String tipAkcije; // "PREGLED", "DETALJI", itd.
+    private String tipAkcije;
 }

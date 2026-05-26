@@ -1,6 +1,5 @@
 const API_BASE = 'http://localhost:8080/api';
 
-
 async function apiFetch(url, options = {}) {
     const res = await fetch(`${API_BASE}${url}`, {
         headers: { 'Content-Type': 'application/json' },
@@ -17,13 +16,14 @@ const api = {
 
     // Proizvodi
     getProizvodi: () => apiFetch('/proizvodi'),
+    getProizvod: (id) => apiFetch(`/proizvodi/${id}`),
     searchProizvodi: (naziv) => apiFetch(`/proizvodi/search?naziv=${encodeURIComponent(naziv)}`),
     getProizvodiByKategorija: (id) => apiFetch(`/proizvodi/kategorija/${id}`),
 
     // Kategorije
     getKategorije: () => apiFetch('/kategorije'),
 
-    // Omiljeni proizvodi
+    // Omiljeni
     getOmiljeni: (kupacId) => apiFetch(`/omiljeni/${kupacId}`),
     dodajOmiljeni: (kupacId, proizvodId) =>
         apiFetch(`/omiljeni/${kupacId}/proizvodi/${proizvodId}`, { method: 'POST' }),
@@ -37,15 +37,37 @@ const api = {
     ukloniOmiljenuKategoriju: (kupacId, kategorijaId) =>
         apiFetch(`/omiljene-kategorije/${kupacId}/kategorije/${kategorijaId}`, { method: 'DELETE' }),
 
-    // Tracking
-    zabeleziKlik: (kupacId, proizvodId, tipAkcije = 'PREGLED') =>
-        apiFetch(`/tracking/klik/${kupacId}/proizvodi/${proizvodId}`, {
+    // Porudžbine
+    kreirajPorudzbinu: (payload) =>
+        apiFetch('/porudzbine', { method: 'POST', body: JSON.stringify(payload) }),
+    getPorudzbine: (kupacId) => apiFetch(`/porudzbine/kupac/${kupacId}`),
+
+    // ── Tracking ──────────────────────────────────────────
+    // Nikad ne baca grešku — tracking ne sme blokirati UI
+    zabeleziKlik: (kupacId, proizvodId, tipAkcije = 'PREGLED') => {
+        if (!kupacId || !proizvodId) return Promise.resolve();
+        return apiFetch(`/tracking/klik/${kupacId}/proizvodi/${proizvodId}`, {
             method: 'POST',
             body: JSON.stringify({ tipAkcije })
-        }),
-    zabeleziPretragu: (kupacId, tekst) =>
-        apiFetch(`/tracking/pretraga/${kupacId}`, {
+        }).catch(e => console.warn('Tracking klik greška:', e));
+    },
+
+    zabeleziKlikKategorija: (kupacId, kategorijaId, tipAkcije = 'PREGLED') => {
+        if (!kupacId || !kategorijaId) return Promise.resolve();
+        return apiFetch(`/tracking/klik/${kupacId}/kategorije/${kategorijaId}`, {
             method: 'POST',
-            body: JSON.stringify({ tekstUpita: tekst, tipPretrage: 'OPSTA' })
-        }),
+            body: JSON.stringify({ tipAkcije })
+        }).catch(e => console.warn('Tracking klik kategorija greška:', e));
+    },
+
+    zabeleziPretragu: (kupacId, tekstUpita) => {
+        if (!kupacId || !tekstUpita) return Promise.resolve();
+        return apiFetch(`/tracking/pretraga/${kupacId}`, {
+            method: 'POST',
+            body: JSON.stringify({
+                tekstUpita,
+                tipPretrage: 'OPSTA'
+            })
+        }).catch(e => console.warn('Tracking pretraga greška:', e));
+    },
 };

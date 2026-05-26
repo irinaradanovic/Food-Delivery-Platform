@@ -2,6 +2,7 @@ package fooddelivery.food_delivery_platform.service;
 
 import fooddelivery.food_delivery_platform.model.*;
 import fooddelivery.food_delivery_platform.repository.*;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
@@ -15,7 +16,9 @@ public class TrackingService {
     private final PretragaRepository pretragaRepo;
     private final KupacRepository kupacRepo;
     private final ProizvodRepository proizvodRepo;
+    private final KategorijaRepository kategorijaRepo;
 
+    @Transactional
     public Klik zabeleziKlik(Long kupacId, Long proizvodId, String tipAkcije) {
         Kupac kupac = kupacRepo.findById(kupacId)
                 .orElseThrow(() -> new RuntimeException("Kupac nije pronađen: " + kupacId));
@@ -25,11 +28,29 @@ public class TrackingService {
         return klikRepo.save(Klik.builder()
                 .kupac(kupac)
                 .proizvod(proizvod)
+                .kategorija(null)
                 .vremeKlika(LocalDateTime.now())
                 .tipAkcije(tipAkcije)
                 .build());
     }
 
+    @Transactional
+    public Klik zabeleziKlikKategorija(Long kupacId, Long kategorijaId, String tipAkcije) {
+        Kupac kupac = kupacRepo.findById(kupacId)
+                .orElseThrow(() -> new RuntimeException("Kupac nije pronađen: " + kupacId));
+        Kategorija kategorija = kategorijaRepo.findById(kategorijaId)
+                .orElseThrow(() -> new RuntimeException("Kategorija nije pronađena: " + kategorijaId));
+
+        return klikRepo.save(Klik.builder()
+                .kupac(kupac)
+                .proizvod(null)
+                .kategorija(kategorija)
+                .vremeKlika(LocalDateTime.now())
+                .tipAkcije(tipAkcije)
+                .build());
+    }
+
+    @Transactional
     public Pretraga zabeleziPretragu(Long kupacId, String tekstUpita, String tipPretrage) {
         Kupac kupac = kupacRepo.findById(kupacId)
                 .orElseThrow(() -> new RuntimeException("Kupac nije pronađen: " + kupacId));

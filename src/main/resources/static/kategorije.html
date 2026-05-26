@@ -204,10 +204,12 @@
                 await api.ukloniOmiljenuKategoriju(kupacId, katId);
                 omiljeneKatIds.delete(katId);
                 btn.textContent = '🤍';
+                try { api.zabeleziKlikKategorija(kupacId, katId, 'UKLONI_OMILJENI'); } catch {}
             } else {
                 await api.dodajOmiljenuKategoriju(kupacId, katId);
                 omiljeneKatIds.add(katId);
                 btn.textContent = '❤️';
+                try { api.zabeleziKlikKategorija(kupacId, katId, 'DODAJ_OMILJENI'); } catch {}
             }
         } catch { alert('Greška.'); }
     }
