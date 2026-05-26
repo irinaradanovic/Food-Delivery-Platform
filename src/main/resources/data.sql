@@ -159,37 +159,9 @@ INSERT INTO stavke_menija (stavka_id, meni_id, proizvod_id, cena, dostupno, vrem
 (14, 3, 11, 380.00, true, 2, 5, false);
 
 
--- omiljene_kategorije
-/*INSERT INTO omiljene_kategorije VALUES (1, '2026-05-24 12:19:57.447502', 3, 2);
-INSERT INTO omiljene_kategorije VALUES (2, '2026-05-24 12:32:55.337159', 5, 2);
 
--- omiljeni_proizvodi
-INSERT INTO omiljeni_proizvodi VALUES (9, '2026-05-24 11:27:48.164161', 2, 1);
-INSERT INTO omiljeni_proizvodi VALUES (12, '2026-05-25 10:24:59.061989', 2, 25); */
-
--- Napomena: korisnik 2 (iz kupac bloka) = korisnik_id 5 u integraciji
--- kategorija 3 (Pasta) -> 9, kategorija 5 (Salate) -> 11
-/*INSERT INTO omiljene_kategorije VALUES (1, '2026-05-24 12:19:57.447502', 9, 5);
-INSERT INTO omiljene_kategorije VALUES (2, '2026-05-24 12:32:55.337159', 11, 5);
-
--- omiljeni_proizvodi
--- korisnik 2 -> 5, proizvod 1 -> 17 (Margherita), proizvod 25 -> 41 (Pepsi)
-INSERT INTO omiljeni_proizvodi VALUES (9, '2026-05-24 11:27:48.164161', 5, 17);
-INSERT INTO omiljeni_proizvodi VALUES (12, '2026-05-25 10:24:59.061989', 5, 41);  */
-
--- =========================================================================
--- INTEGRISANI PODACI IZ KUPAC MODULA
--- Mapiranja:
---   korisnici: stari 1->4, stari 2->5
---   kategorije: stari 1-8 -> novi 7-14
---   proizvodi: stari 1-32 -> novi 17-48
--- =========================================================================
 
 -- Kupci (korisnici)
-INSERT INTO korisnici (korisnik_id, datum_reg, email, ime, lozinka, prezime, telefon, uloga)
-VALUES (4, NULL, 'markovic@gmail.com', 'Marko', '123456', 'Markovic', '064235768', 'KUPAC');
-INSERT INTO korisnici (korisnik_id, datum_reg, email, ime, lozinka, prezime, telefon, uloga)
-VALUES (5, NULL, 'lalic@gmail.com', 'Nenad', '123456', 'Lalic', '06789256812', 'KUPAC');
 
 INSERT INTO kupci (korisnik_id, adresa, broj_kartice) VALUES (4, 'Narodnog fronta 16, Novi Sad', NULL);
 INSERT INTO kupci (korisnik_id, adresa, broj_kartice) VALUES (5, 'Narodnog fronta 19, Novi Sad', NULL);
@@ -240,29 +212,7 @@ INSERT INTO proizvodi (proizvod_id, naziv, opis, cena, kolicina, merna_jedinica,
                                                                                                                            (47, 'Proja sa sirom', 'Domaća proja sa sitnim sirom', 260.00, 120.00, 'g', 260.00, 'https://png.pngtree.com/png-vector/20241102/ourmid/pngtree-classic-homemade-cornbread-slice-with-a-golden-crust-on-white-background-png-image_14232559.png', 14),
                                                                                                                            (48, 'Mešano meso sa roštilja', 'Bogata porcija mešanog mesa sa roštilja', 890.00, 600.00, 'g', 890.00, 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=600&h=400&fit=crop&auto=format', 14);
 
--- Porudzbine (korisnik_id: 2->5, porudzbina_id: 1-7 su slobodni)
-INSERT INTO porudzbine (porudzbinа_id, korisnik_id, adresa_dostave, datum_kreiranja, kupon_kod, napomena, status, tip_dostave, ukupna_cena)
-VALUES
-    (1, 5, 'Narodnog Fronta 7, Novi Sad', '2026-05-25 09:08:06.068921', NULL, '',       'KREIRANA', 'STANDARDNA', 9.80),
-    (2, 5, 'Narodnog Fronta 7, Novi Sad', '2026-05-25 09:08:18.871066', NULL, '2. sprat', 'KREIRANA', 'STANDARDNA', 9.80),
-    (3, 5, 'Narodnog Fronta 7, Novi Sad', '2026-05-25 09:09:25.310633', NULL, '2. sprat', 'KREIRANA', 'STANDARDNA', 9.80),
-    (4, 5, 'Narodnog Fronta 7, Novi Sad', '2026-05-25 09:09:32.69165',  NULL, '2. sprat', 'KREIRANA', 'STANDARDNA', 9.80),
-    (5, 5, 'Narodnog Fronta 7, Novi Sad', '2026-05-25 09:10:02.493091', NULL, '2. sprat', 'KREIRANA', 'STANDARDNA', 9.80),
-    (6, 5, 'Narodnog Fronta 7, Novi Sad', '2026-05-25 09:10:14.984126', NULL, '2. sprat', 'KREIRANA', 'STANDARDNA', 9.80),
-    (7, 5, 'Narodnog Fronta 7, Novi Sad', '2026-05-25 09:10:29.991216', NULL, '2. sprat', 'KREIRANA', 'STANDARDNA', 9.80);
-
--- Stavke porudzbine (porudzbina_id: 1, proizvodi: stari 1-7 -> novi 17-23)
-INSERT INTO stavke_porudzbine (stavka_id, cena, porudzbina_id, kolicina, proizvod_id) VALUES
-                                                                                          (1, 9.80, 1, 1, 17),
-                                                                                          (2, 9.80, 1, 2, 18),
-                                                                                          (3, 9.80, 1, 3, 19),
-                                                                                          (4, 9.80, 1, 4, 20),
-                                                                                          (5, 9.80, 1, 5, 21),
-                                                                                          (6, 9.80, 1, 6, 22),
-                                                                                          (7, 9.80, 1, 7, 23);
-
 -- Klikovi (korisnik_id: 2->5, proizvod_id: stari+16)
--- Napomena: uklonjena sintaksna greška u originalu (INSERT INTO resignation)
 INSERT INTO klikovi (klik_id, tip_akcije, vreme_klika, korisnik_id, proizvod_id) VALUES
                                                                                      (1,  'PREGLED',          '2026-05-24 11:18:19.77089',   5, 21),
                                                                                      (2,  'PREGLED',          '2026-05-24 11:18:20.970097',  5, 21),
