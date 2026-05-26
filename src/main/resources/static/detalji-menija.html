@@ -177,15 +177,36 @@
 
             const statusEl = document.getElementById('prikaz-status');
             const btnDeaktiviraj = document.getElementById('btn-deaktiviraj-meni');
+            const btnIzmeniOsnovno = document.querySelector('button[onclick="otvoriModal()"]');
+
+            const btnNovaStavka = document.querySelector('a[onclick*="dodaj-stavku.html"]');
 
             if (meni.aktivan) {
                 statusEl.textContent = "Aktivan";
                 statusEl.className = "text-lg font-bold text-emerald-600 block";
-                btnDeaktiviraj.classList.remove('hidden'); // Prikaži dugme ako je meni aktivan
+                btnDeaktiviraj.classList.remove('hidden');
+
+                btnIzmeniOsnovno.removeAttribute('disabled');
+                btnIzmeniOsnovno.className = "w-full bg-gray-600 hover:bg-gray-700 text-white font-semibold py-4 px-6 rounded-xl transition text-center shadow-sm cursor-pointer border border-transparent";
+
+                if (btnNovaStavka) {
+                    btnNovaStavka.classList.remove('hidden');
+                    btnNovaStavka.onclick = () => { window.location.href = `dodaj-stavku.html?meniId=${meniId}`; };
+                    btnNovaStavka.style.pointerEvents = "auto"; // Omogućava klik
+                }
             } else {
                 statusEl.textContent = "Neaktivan";
                 statusEl.className = "text-lg font-bold text-red-500 block";
-                btnDeaktiviraj.classList.add('hidden'); // Sakrij ako je već deaktiviran
+                btnDeaktiviraj.classList.add('hidden');
+
+                btnIzmeniOsnovno.setAttribute('disabled', 'true');
+                btnIzmeniOsnovno.className = "w-full bg-gray-300 text-gray-500 font-semibold py-4 px-6 rounded-xl text-center border border-transparent cursor-not-allowed opacity-60";
+
+                if (btnNovaStavka) {
+                    btnNovaStavka.classList.add('hidden'); 
+                    btnNovaStavka.onclick = (e) => { e.preventDefault(); return false; };
+                    btnNovaStavka.style.pointerEvents = "none";
+                }
             }
         } catch (error) {
             console.error("Greška pri učitavanju:", error);
@@ -253,6 +274,7 @@
                                 </div>
                             </div>
 
+                            ${trenutniMeni && trenutniMeni.aktivan ? `
                             <div class="absolute top-4 right-4 flex flex-col gap-2">
                                 <button onclick="izmeniStavkuVisual(${s.stavkaId})" class="text-gray-400 hover:text-blue-600 transition cursor-pointer p-1 rounded-md hover:bg-gray-50" title="Izmeni stavku">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
@@ -265,6 +287,7 @@
                                     </svg>
                                 </button>
                             </div>
+                            ` : ''}
                         </div>
                     `;
                 });
@@ -374,6 +397,36 @@
         } catch (error) {
             alert("Nemate pravo pristupa ili je došlo do greške prilikom deaktivacije.");
             zatvoriDeaktivaciju();
+        }
+    }
+
+    async function obrisiStavku(stavkaId) {
+        if (trenutniMeni && !trenutniMeni.aktivan) {
+            alert("Nije moguće brisati stavke iz deaktiviranog menija.");
+            return;
+        }
+
+        const ulogovaniKorisnikId = localStorage.getItem('korisnikId');
+
+        if (!confirm("Da li ste sigurni da želite da uklonite ovu stavku iz menija?")) {
+            return;
+        }
+
+        try {
+            await apiFetch(`/stavke-menija/meni/${meniId}/stavka/${stavkaId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-User-Id': ulogovaniKorisnikId
+                }
+            });
+
+            alert("Stavka je uspešno uklonjena sa menija.");
+
+            await ucitajStavkeMenija();
+
+        } catch (error) {
+            console.error("Greška prilikom brisanja stavke:", error);
+            alert(error.message || "Nemate pravo pristupa ili je došlo do greške.");
         }
     }
 
