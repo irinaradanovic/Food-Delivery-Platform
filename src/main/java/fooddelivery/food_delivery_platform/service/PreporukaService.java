@@ -5,6 +5,8 @@ import fooddelivery.food_delivery_platform.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -141,5 +143,44 @@ public class PreporukaService {
                         && p.getKategorija().getKategorijaId().equals(katId)
                         && (izuzetProizvodId == null || !p.getProizvodId().equals(izuzetProizvodId)))
                 .forEach(p -> skorovi.merge(p.getProizvodId(), bonus, Double::sum));
+    }
+
+    // Sezonske preporuke - proizvodi iz SezonskiMeni čija sezona je aktuelna
+    public List<Proizvod> getSezonskiProizvodi(int limit) {
+        return proizvodRepository.findSezonskiProizvodi(LocalDate.now())
+                .stream()
+                .limit(limit)
+                .collect(Collectors.toList());
+    }
+
+    // Trend preporuke - najklikavaniji proizvodi u poslednjih 7 dana (globalno)
+    public List<Proizvod> getTrendProizvodi(int limit) {
+        LocalDateTime od = LocalDateTime.now().minusDays(7);
+        List<Klik> klikovi = klikRepository.findKlikoviNaProizvodimaOd(od);
+
+        // Težinski skor po tipu akcije, isto kao personalizovane preporuke
+        Map<Long, Double> skorovi = new HashMap<>();
+        for (Klik k : klikovi) {
+            if (k.getProizvod() == null) continue;
+            double tezina = TEZINE_AKCIJA.getOrDefault(k.getTipAkcije(), 1.0);
+            skorovi.merge(k.getProizvod().getProizvodId(), tezina, Double::sum);
+        }
+
+        if (skorovi.isEmpty()) {
+            // Fallback: prvih N proizvoda iz baze
+            return proizvodRepository.findAll().stream().limit(limit).collect(Collectors.toList());
+        }
+
+        Map<Long, Proizvod> proizvodiMap = new HashMap<>();
+        klikovi.stream()
+                .filter(k -> k.getProizvod() != null)
+                .forEach(k -> proizvodiMap.put(k.getProizvod().getProizvodId(), k.getProizvod()));
+
+        return skorovi.entrySet().stream()
+                .sorted(Map.Entry.<Long, Double>comparingByValue().reversed())
+                .limit(limit)
+                .map(e -> proizvodiMap.get(e.getKey()))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 }

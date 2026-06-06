@@ -44,6 +44,31 @@
         .page-header h1 { font-family: 'Playfair Display', serif; font-size: 32px; color: var(--dark); }
         .page-header p { color: var(--gray); font-size: 15px; margin-top: 4px; }
 
+        /* SEKCIJA */
+        .sekcija { display: none; }
+        .sekcija.aktivna { display: block; }
+
+        /* TAB SWITCHER */
+        .tab-switcher {
+            display: flex; gap: 8px; margin-bottom: 32px;
+            background: white; padding: 6px; border-radius: 16px;
+            border: 1.5px solid var(--border); width: fit-content;
+        }
+        .tab-btn {
+            display: flex; align-items: center; gap: 8px;
+            padding: 10px 20px; border-radius: 10px; border: none;
+            font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s; color: var(--gray); background: transparent;
+        }
+        .tab-btn:hover { background: #f3f4f6; color: var(--dark); }
+        .tab-btn.aktivan { color: white; }
+        .tab-btn.tab-personalizovano.aktivan { background: var(--green); }
+        .tab-btn.tab-sezonski.aktivan { background: #c2620a; }
+        .tab-btn.tab-trend.aktivan { background: #b91c1c; }
+        .tab-ikona { font-size: 16px; }
+
+        .sekcija-opis { font-size: 14px; color: var(--gray); margin-bottom: 24px; }
+
         /* GRID */
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
 
@@ -337,10 +362,40 @@
         <p id="section-sub">Učitavanje preporuka...</p>
     </div>
 
-    <div id="grid" class="grid">
-        <div class="loading-state">
-            <div class="spinner"></div>
-            <p>Analiziramo tvoje navike...</p>
+    <!-- TAB SWITCHER -->
+    <div class="tab-switcher">
+        <button class="tab-btn tab-personalizovano aktivan" onclick="prebacíTab('personalizovano')">
+            <span class="tab-ikona">⭐</span> Za tebe
+        </button>
+        <button class="tab-btn tab-sezonski" onclick="prebacíTab('sezonski')">
+            <span class="tab-ikona">🌿</span> Sezonski
+        </button>
+        <button class="tab-btn tab-trend" onclick="prebacíTab('trend')">
+            <span class="tab-ikona">🔥</span> U trendu
+        </button>
+    </div>
+
+    <!-- SEKCIJA 1: Personalizovane preporuke -->
+    <div class="sekcija aktivna" id="sekcija-personalizovano">
+        <p class="sekcija-opis">Na osnovu tvojih navika i narudžbina</p>
+        <div id="grid-personalizovano" class="grid">
+            <div class="loading-state"><div class="spinner"></div><p>Analiziramo tvoje navike...</p></div>
+        </div>
+    </div>
+
+    <!-- SEKCIJA 2: Sezonske preporuke -->
+    <div class="sekcija" id="sekcija-sezonski">
+        <p class="sekcija-opis">Posebni obroci iz aktuelnih sezonskih menija</p>
+        <div id="grid-sezonski" class="grid">
+            <div class="loading-state"><div class="spinner"></div><p>Učitavanje sezonske ponude...</p></div>
+        </div>
+    </div>
+
+    <!-- SEKCIJA 3: Trend preporuke -->
+    <div class="sekcija" id="sekcija-trend">
+        <p class="sekcija-opis">Najpopularnije u poslednjih 7 dana</p>
+        <div id="grid-trend" class="grid">
+            <div class="loading-state"><div class="spinner"></div><p>Učitavanje trend proizvoda...</p></div>
         </div>
     </div>
 </main>
@@ -729,73 +784,98 @@
         }
     }
 
-    // ── Učitavanje preporuka ──────────────────────────────
-    async function ucitajPreporuke() {
-        const grid = document.getElementById('grid');
-        await ucitajOmiljene();
-        try {
-            const preporuke = await apiFetch(`/preporuke/kupac/${kupacId}?limit=12`);
+    // ── Tab switcher ──────────────────────────────────────
+    function prebacíTab(tip) {
+        // Sekcije
+        document.querySelectorAll('.sekcija').forEach(s => s.classList.remove('aktivna'));
+        document.getElementById('sekcija-' + tip).classList.add('aktivna');
+        // Tab dugmad
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('aktivan'));
+        document.querySelector('.tab-' + tip).classList.add('aktivan');
+    }
 
-            if (!preporuke || preporuke.length === 0) {
-                document.getElementById('section-sub').textContent = '';
-                grid.innerHTML = `
-                    <div class="empty-state">
-                        <div class="icon">🔍</div>
-                        <h3>Nema dovoljno podataka</h3>
-                        <p>Pregledaj i naruči nekoliko proizvoda da bismo mogli da ti damo personalizovane preporuke.</p>
-                    </div>
-                `;
-                return;
-            }
-
-            document.getElementById('section-sub').textContent =
-                `Pronašli smo proizvode koji bi ti se mogli svideti`;
-
-            const uKorpiIds = new Set(korpa.map(k => k.id));
-
-            grid.innerHTML = preporuke.map((p, idx) => `
-                <div class="card">
-                    ${idx < 3 ? '<div class="card-badge">⭐ Top preporuka</div>' : ''}
-                    <div class="card-img-placeholder">
-                        ${p.fotografija ? `<img src="${p.fotografija}" alt="${p.naziv}" loading="lazy">` : getEmoji(p.naziv)}
-                    </div>
-                    <div class="card-body">
-                        <div class="card-top">
-                            <div class="card-name">${p.naziv}</div>
-                            <button class="btn-fav" onclick="toggleOmiljeni(${p.proizvodId}, this)">
-                                ${omiljeniIds.has(p.proizvodId) ? '❤️' : '🤍'}
-                            </button>
-                        </div>
-                        <span class="card-kat">${p.kategorija?.naziv || 'Ostalo'}</span>
-                        <div class="card-cena-row">
-                            ${p.cena > 0
-                ? `<span class="card-cena">${p.cena.toLocaleString('sr-RS')} <small style="font-size:13px;font-weight:500;color:var(--gray)">RSD</small></span>`
-                : `<span class="card-cena-besplatno">Besplatno</span>`
-            }
-                            ${p.kolicina && p.mernaJedinica ? `<span class="card-cena-unit">/ ${p.kolicina} ${p.mernaJedinica}</span>` : ''}
-                        </div>
-                        <div class="card-actions">
-                            <button class="btn-detalji" onclick="otvoriDetalje(${p.proizvodId})">
-                                🔍 Detaljnije
-                            </button>
-                            <button class="btn-korpa ${uKorpiIds.has(p.proizvodId) ? 'dodato' : ''}"
-                                    id="btn-korpa-${p.proizvodId}"
-                                    onclick="otvoriKorpaModalZaId(${p.proizvodId})">
-                                ${uKorpiIds.has(p.proizvodId) ? '✓ Dodato' : '🛒 U korpu'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-
-        } catch (err) {
+    // ── Pomoćna funkcija: renderuje listu proizvoda u grid ──
+    function renderGrid(gridId, lista, badge) {
+        const grid = document.getElementById(gridId);
+        if (!lista || lista.length === 0) {
             grid.innerHTML = `
                 <div class="empty-state">
-                    <div class="icon">⚠️</div>
-                    <h3>Greška pri učitavanju</h3>
-                    <p>Pokušaj ponovo za nekoliko sekundi.</p>
+                    <div class="icon">🔍</div>
+                    <p>Nema dostupnih proizvoda u ovoj sekciji.</p>
                 </div>
             `;
+            return;
+        }
+        const uKorpiIds = new Set(korpa.map(k => k.id));
+        grid.innerHTML = lista.map((p, idx) => `
+            <div class="card">
+                ${idx < 3 && badge ? `<div class="card-badge">${badge}</div>` : ''}
+                <div class="card-img-placeholder">
+                    ${p.fotografija ? `<img src="${p.fotografija}" alt="${p.naziv}" loading="lazy">` : getEmoji(p.naziv)}
+                </div>
+                <div class="card-body">
+                    <div class="card-top">
+                        <div class="card-name">${p.naziv}</div>
+                        <button class="btn-fav" onclick="toggleOmiljeni(${p.proizvodId}, this)">
+                            ${omiljeniIds.has(p.proizvodId) ? '❤️' : '🤍'}
+                        </button>
+                    </div>
+                    <span class="card-kat">${p.kategorija?.naziv || 'Ostalo'}</span>
+                    <div class="card-cena-row">
+                        ${p.cena > 0
+            ? `<span class="card-cena">${p.cena.toLocaleString('sr-RS')} <small style="font-size:13px;font-weight:500;color:var(--gray)">RSD</small></span>`
+            : `<span class="card-cena-besplatno">Besplatno</span>`
+        }
+                        ${p.kolicina && p.mernaJedinica ? `<span class="card-cena-unit">/ ${p.kolicina} ${p.mernaJedinica}</span>` : ''}
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-detalji" onclick="otvoriDetalje(${p.proizvodId})">
+                            🔍 Detaljnije
+                        </button>
+                        <button class="btn-korpa ${uKorpiIds.has(p.proizvodId) ? 'dodato' : ''}"
+                                id="btn-korpa-${p.proizvodId}"
+                                onclick="otvoriKorpaModalZaId(${p.proizvodId})">
+                            ${uKorpiIds.has(p.proizvodId) ? '✓ Dodato' : '🛒 U korpu'}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // ── Učitavanje preporuka ──────────────────────────────
+    async function ucitajPreporuke() {
+        await ucitajOmiljene();
+
+        // Sva tri endpointa pozivamo paralelno
+        const [personalizovane, sezonske, trend] = await Promise.allSettled([
+            apiFetch(`/preporuke/kupac/${kupacId}?limit=8`),
+            apiFetch(`/preporuke/sezonske?limit=8`),
+            apiFetch(`/preporuke/trend?limit=8`)
+        ]);
+
+        // Personalizovane
+        if (personalizovane.status === 'fulfilled') {
+            renderGrid('grid-personalizovano', personalizovane.value, '⭐ Top za tebe');
+        } else {
+            document.getElementById('grid-personalizovano').innerHTML =
+                '<div class="empty-state"><div class="icon">⚠️</div><p>Greška pri učitavanju.</p></div>';
+        }
+
+        // Sezonske
+        if (sezonske.status === 'fulfilled') {
+            renderGrid('grid-sezonski', sezonske.value, '🌿 Sezonski');
+        } else {
+            document.getElementById('grid-sezonski').innerHTML =
+                '<div class="empty-state"><div class="icon">⚠️</div><p>Greška pri učitavanju.</p></div>';
+        }
+
+        // Trend
+        if (trend.status === 'fulfilled') {
+            renderGrid('grid-trend', trend.value, '🔥 Trending');
+        } else {
+            document.getElementById('grid-trend').innerHTML =
+                '<div class="empty-state"><div class="icon">⚠️</div><p>Greška pri učitavanju.</p></div>';
         }
     }
 

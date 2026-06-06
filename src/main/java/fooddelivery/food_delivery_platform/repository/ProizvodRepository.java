@@ -37,4 +37,14 @@ public interface ProizvodRepository extends JpaRepository<Proizvod, Long> {
             "AND sm.proizvod.kategorija.kategorijaId = :kategorijaId")
     List<Proizvod> findProizvodiIzAktivnihMenijaByKategorija(@Param("restoranId") Long restoranId,
                                                              @Param("kategorijaId") Long kategorijaId);
+
+    // Sezonske preporuke - proizvodi iz aktivnih SezonskiMeni čija sezona uključuje dati datum
+    @Query("SELECT DISTINCT sm.proizvod FROM StavkaMenija sm " +
+            "WHERE TYPE(sm.meni) = SezonskiMeni " +
+            "AND sm.meni.aktivan = true " +
+            "AND sm.obrisan = false " +
+            "AND sm.dostupno = true " +
+            "AND TREAT(sm.meni AS SezonskiMeni).pocetakSezone <= :danas " +
+            "AND TREAT(sm.meni AS SezonskiMeni).krajSezone >= :danas")
+    List<Proizvod> findSezonskiProizvodi(@Param("danas") java.time.LocalDate danas);
 }

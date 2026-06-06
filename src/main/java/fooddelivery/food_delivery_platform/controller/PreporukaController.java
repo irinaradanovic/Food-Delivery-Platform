@@ -23,4 +23,18 @@ public class PreporukaController {
             @RequestParam(defaultValue = "10") int limit) {
         return ResponseEntity.ok(preporukaService.getPersonalizovanePreporuke(kupacId, limit));
     }
+
+    // Sezonske preporuke - proizvodi iz aktivnih SezonskiMeni čija sezona je trenutna
+    @GetMapping("/sezonske")
+    public ResponseEntity<List<Proizvod>> getSezonskiProizvodi(
+            @RequestParam(defaultValue = "8") int limit) {
+        return ResponseEntity.ok(preporukaService.getSezonskiProizvodi(limit));
+    }
+
+    // Trend preporuke - najklikavaniji proizvodi u poslednjih 7 dana
+    @GetMapping("/trend")
+    public ResponseEntity<List<Proizvod>> getTrendProizvodi(
+            @RequestParam(defaultValue = "8") int limit) {
+        return ResponseEntity.ok(preporukaService.getTrendProizvodi(limit));
+    }
 }
