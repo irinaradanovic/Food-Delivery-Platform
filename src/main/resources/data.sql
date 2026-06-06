@@ -9,7 +9,7 @@ INSERT INTO menadzeri (korisnik_id) VALUES (1), (2), (3);
 -- Kupci
 INSERT INTO korisnici (korisnik_id, ime, prezime, telefon, lozinka, email, datum_reg, uloga) VALUES (4, NULL, 'markovic@gmail.com', 'Marko', '123456', 'Markovic', '064235768', 'KUPAC');
 INSERT INTO korisnici (korisnik_id, ime, prezime, telefon, lozinka, email, datum_reg, uloga) VALUES (5, NULL, 'lalic@gmail.com', 'Nenad', '123456', 'Lalic', '06789256812', 'KUPAC');
-INSERT INTO korisnici (korisnik_id, ime, prezime, telefon, lozinka, email, datum_reg, uloga) VALUES (6, NULL, 'dostava@gmail.com', 'Dosta', '123456', 'Dostava', '06789256812', 'DOSTAVLJAC');
+
 
 
 -- Dostavljaci
