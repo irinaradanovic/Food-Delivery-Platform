@@ -31,13 +31,22 @@ function zastitiStranicu() {
     }
 
     const trenutnaStranica = window.location.pathname;
-    if (uloga === 'MENADZER' && (trenutnaStranica.includes('kategorije') || trenutnaStranica.includes('omiljeni') || trenutnaStranica.includes('proizvodi'))) {
+
+    if (uloga === 'MENADZER' && (
+        trenutnaStranica.includes('kategorije') ||
+        trenutnaStranica.includes('omiljeni') ||
+        trenutnaStranica.includes('proizvodi') ||
+        trenutnaStranica.includes('preporuke')
+    )) {
         window.location.href = '/izbor-restorana.html';
     }
 
-    // Ako je kupac na stranici proizvoda ili kategorija, a nije izabrao restoran — vrati ga na izbor
+    // Ako je kupac na stranici proizvoda ili kategorija, a nije izabrao restoran
     if (uloga === 'KUPAC' && !localStorage.getItem('restoranId')) {
-        if (trenutnaStranica.includes('proizvodi') || trenutnaStranica.includes('kategorije')) {
+        if (
+            trenutnaStranica.includes('proizvodi') ||
+            trenutnaStranica.includes('kategorije')
+        ) {
             window.location.href = '/izbor-restorana.html';
         }
     }
@@ -61,7 +70,8 @@ function osveziNavigaciju() {
             <a href="/izbor-restorana.html" id="nav-restorani">Restorani</a>
             <a href="/proizvodi.html" id="nav-proizvodi">Proizvodi</a>
             <a href="/kategorije.html" id="nav-kategorije">Kategorije</a>
-            <a href="/omiljeni.html" id="nav-omiljeni" class="fav">♥ Omiljeni</a>
+            <a href="/omiljeni.html" id="nav-omiljeni" class="fav">Omiljeni</a>
+            <a href="/preporuke.html" id="nav-preporuke">Preporuke</a>
         `;
     }
 
@@ -88,7 +98,7 @@ function osveziNavigaciju() {
 
     const trenutnaStranica = window.location.pathname;
     document.querySelectorAll('.nav-links a').forEach(link => {
-        if (trenutnaStranica.includes(link.getAttribute('href'))) {
+        if (trenutnaStranica.includes(link.getAttribute('href').replace('/', ''))) {
             link.classList.add('active');
         }
     });
