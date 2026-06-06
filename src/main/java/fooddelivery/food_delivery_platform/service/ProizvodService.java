@@ -16,7 +16,7 @@ public class ProizvodService {
 
     public Proizvod getById(Long id) {
         return proizvodRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Proizvod nije pronađen: " + id));
+                .orElseThrow(() -> new RuntimeException("Proizvod nije pronadjen: " + id));
     }
 
     public List<Proizvod> getByKategorija(Long id) {
@@ -40,4 +40,19 @@ public class ProizvodService {
     }
 
     public void delete(Long id) { proizvodRepository.deleteById(id); }
+
+    // Kupac - svi proizvodi iz aktivnih menija restorana
+    public List<Proizvod> getProizvodiZaKupca(Long restoranId) {
+        return proizvodRepository.findProizvodiIzAktivnihMenija(restoranId);
+    }
+
+    // Kupac - pretraga po nazivu unutar aktivnih menija restorana
+    public List<Proizvod> searchProizvodiZaKupca(Long restoranId, String naziv) {
+        return proizvodRepository.searchProizvodiIzAktivnihMenija(restoranId, naziv);
+    }
+
+    // Kupac - filtriranje po kategoriji unutar aktivnih menija restorana
+    public List<Proizvod> getProizvodiZaKupcaByKategorija(Long restoranId, Long kategorijaId) {
+        return proizvodRepository.findProizvodiIzAktivnihMenijaByKategorija(restoranId, kategorijaId);
+    }
 }

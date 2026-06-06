@@ -18,4 +18,8 @@ public class KategorijaService {
     public List<Kategorija> getCategoriesForManager(Long trenutniKorisnikId) {
         return kategorijaRepository.findByKreiraoKorisnikIdIsNullOrKreiraoKorisnikId(trenutniKorisnikId);
     }
+
+    public List<Kategorija> getKategorijeZaKupca(Long restoranId) {
+        return kategorijaRepository.findKategorijeIzAktivnihMenija(restoranId);
+    }
 }

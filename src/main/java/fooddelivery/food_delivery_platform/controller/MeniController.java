@@ -3,8 +3,6 @@ package fooddelivery.food_delivery_platform.controller;
 import fooddelivery.food_delivery_platform.dto.MeniUpdateDTO;
 import fooddelivery.food_delivery_platform.model.Meni;
 import fooddelivery.food_delivery_platform.model.Restoran;
-import fooddelivery.food_delivery_platform.repository.MeniRepository;
-import fooddelivery.food_delivery_platform.repository.RestoranRepository;
 import fooddelivery.food_delivery_platform.service.MeniService;
 import fooddelivery.food_delivery_platform.service.RestoranService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,10 +35,16 @@ public class MeniController {
         return restoranService.findByMenadzerKorisnikId(menadzerId);
     }
 
-    // svi meniji za izabrani restoran
+    // svi meniji za izabrani restoran (menadzer - vidi sve)
     @GetMapping("/restorani/{restoranId}")
     public List<Meni> getMenusForRestaurant(@PathVariable Long restoranId) {
         return meniService.findByRestoranRestoranId(restoranId);
+    }
+
+    // samo aktivni meniji za izabrani restoran (kupac)
+    @GetMapping("/kupac/restorani/{restoranId}")
+    public List<Meni> getActiveMenusForKupac(@PathVariable Long restoranId) {
+        return meniService.findAktivniByRestoranRestoranId(restoranId);
     }
 
     // azuriranje menija (menadzer)
@@ -61,11 +65,10 @@ public class MeniController {
 
     // deaktiviranje menija (menadzer)
     @PutMapping("/{id}/deaktiviraj")
-    public ResponseEntity<Void> deactivateMenu(@PathVariable Long id,  @RequestHeader("X-User-Id") Long trenutniKorisnikId) {
+    public ResponseEntity<Void> deactivateMenu(@PathVariable Long id, @RequestHeader("X-User-Id") Long trenutniKorisnikId) {
         meniService.deactivateMenu(id, trenutniKorisnikId);
         return ResponseEntity.noContent().build();
     }
-
 
     @PostMapping
     public ResponseEntity<?> createNewMenu(
@@ -81,7 +84,7 @@ public class MeniController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Greška na serveru: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Greska na serveru: " + e.getMessage());
         }
     }
 }

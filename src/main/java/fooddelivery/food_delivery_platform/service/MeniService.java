@@ -33,6 +33,10 @@ public class MeniService {
         return meniRepository.findByRestoranRestoranId(restoranId);
     }
 
+    public List<Meni> findAktivniByRestoranRestoranId(Long restoranId) {
+        return meniRepository.findByRestoranRestoranIdAndAktivanTrue(restoranId);
+    }
+
     public Meni getById(Long id) {
         return meniRepository.findById(id).orElse(null);
     }
@@ -42,23 +46,19 @@ public class MeniService {
         Meni meni = meniRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Meni sa ID-jem " + id + " ne postoji u bazi."));
 
-        // sigurnosna validacija
         Restoran restoran = meni.getRestoran();
         if (restoran == null || !restoran.getMenadzer().getKorisnikId().equals(trenutniKorisnikId)) {
-            throw new AccessDeniedException("Nemate ovlašćenje da menjate meni ovog restorana!");
+            throw new AccessDeniedException("Nemate ovlascenje da menjate meni ovog restorana!");
         }
-        // azuriranje osnovnih informacija
+
         meni.setNaziv(dto.getNaziv());
         meni.setOpis(dto.getOpis());
 
-        // sezonski meni moze da menja datume
         if (meni instanceof SezonskiMeni) {
             SezonskiMeni sezonski = (SezonskiMeni) meni;
             sezonski.setPocetakSezone(dto.getPocetakSezone());
             sezonski.setKrajSezone(dto.getKrajSezone());
-        }
-        // za vremenski se moze promeniti sastnica
-        else if (meni instanceof VremenskiMeni) {
+        } else if (meni instanceof VremenskiMeni) {
             VremenskiMeni vremenski = (VremenskiMeni) meni;
             vremenski.setVremeOd(dto.getVremeOd());
             vremenski.setVremeDo(dto.getVremeDo());
@@ -67,18 +67,17 @@ public class MeniService {
         return meniRepository.save(meni);
     }
 
-
     @Transactional
     public void deactivateMenu(Long id, Long trenutniKorisnikId) {
         Meni meni = meniRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Meni sa ID-jem " + id + " nije pronađen."));
+                .orElseThrow(() -> new EntityNotFoundException("Meni sa ID-jem " + id + " nije pronadjen."));
 
         Restoran restoran = meni.getRestoran();
         if (restoran == null || !restoran.getMenadzer().getKorisnikId().equals(trenutniKorisnikId)) {
-            throw new AccessDeniedException("Nemate ovlašćenje da menjate meni ovog restorana!");
+            throw new AccessDeniedException("Nemate ovlascenje da menjate meni ovog restorana!");
         }
         meni.setAktivan(false);
-        meni.setDatumDo(LocalDate.now()); // Postavlja se datum kada je meni deaktiviran
+        meni.setDatumDo(LocalDate.now());
 
         meniRepository.save(meni);
     }
@@ -86,7 +85,7 @@ public class MeniService {
     @Transactional
     public Meni createMenu(Meni noviMeni, Long trenutniKorisnikId) {
         if (noviMeni.getRestoran() == null || noviMeni.getRestoran().getRestoranId() == null) {
-            throw new IllegalArgumentException("Restoran mora biti prosleđen u zahtevu.");
+            throw new IllegalArgumentException("Restoran mora biti prosleden u zahtevu.");
         }
 
         Long restoranId = noviMeni.getRestoran().getRestoranId();
@@ -95,10 +94,9 @@ public class MeniService {
                 .orElseThrow(() -> new EntityNotFoundException("Restoran sa ID-jem " + restoranId + " ne postoji."));
 
         if (restoran.getMenadzer() == null || !restoran.getMenadzer().getKorisnikId().equals(trenutniKorisnikId)) {
-            throw new AccessDeniedException("Nemate ovlašćenje da kreirate meni za ovaj restoran jer niste njegov menadžer!");
+            throw new AccessDeniedException("Nemate ovlascenje da kreirate meni za ovaj restoran jer niste njegov menadzer!");
         }
         noviMeni.setRestoran(restoran);
-
         noviMeni.setVerzija("v1");
         noviMeni.setAktivan(true);
 

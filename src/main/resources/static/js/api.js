@@ -14,14 +14,29 @@ const api = {
     // Kupci
     getKupciByEmail: (email) => apiFetch(`/kupci?email=${encodeURIComponent(email)}`),
 
-    // Proizvodi
-    getProizvodi: () => apiFetch('/proizvodi'),
+    getProizvodi: () => {
+        const restoranId = localStorage.getItem('restoranId');
+        if (restoranId) return apiFetch(`/proizvodi/kupac/restoran/${restoranId}`);
+        return apiFetch('/proizvodi');
+    },
     getProizvod: (id) => apiFetch(`/proizvodi/${id}`),
-    searchProizvodi: (naziv) => apiFetch(`/proizvodi/search?naziv=${encodeURIComponent(naziv)}`),
-    getProizvodiByKategorija: (id) => apiFetch(`/proizvodi/kategorija/${id}`),
+    searchProizvodi: (naziv) => {
+        const restoranId = localStorage.getItem('restoranId');
+        if (restoranId) return apiFetch(`/proizvodi/kupac/restoran/${restoranId}/search?naziv=${encodeURIComponent(naziv)}`);
+        return apiFetch(`/proizvodi/search?naziv=${encodeURIComponent(naziv)}`);
+    },
+    getProizvodiByKategorija: (id) => {
+        const restoranId = localStorage.getItem('restoranId');
+        if (restoranId) return apiFetch(`/proizvodi/kupac/restoran/${restoranId}/kategorija/${id}`);
+        return apiFetch(`/proizvodi/kategorija/${id}`);
+    },
 
-    // Kategorije
-    getKategorije: () => apiFetch('/kategorije'),
+// Kategorije
+    getKategorije: () => {
+        const restoranId = localStorage.getItem('restoranId');
+        if (restoranId) return apiFetch(`/kategorije/kupac/restoran/${restoranId}`);
+        return apiFetch('/kategorije');
+    },
 
     // Omiljeni
     getOmiljeni: (kupacId) => apiFetch(`/omiljeni/${kupacId}`),
