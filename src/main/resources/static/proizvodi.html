@@ -72,6 +72,91 @@
         .btn-reset { background: white; color: var(--gray); border: 1.5px solid var(--border); border-radius: 12px; padding: 13px 18px; font-family: 'DM Sans', sans-serif; font-size: 14px; cursor: pointer; transition: all 0.2s; }
         .btn-reset:hover { border-color: var(--dark); color: var(--dark); }
 
+        /* FILTERI DUGME */
+        .btn-filteri {
+            background: white; border: 1.5px solid var(--border); border-radius: 12px;
+            padding: 13px 18px; font-family: 'DM Sans', sans-serif; font-size: 14px;
+            font-weight: 500; color: var(--dark); cursor: pointer; transition: all 0.2s;
+            display: flex; align-items: center; gap: 8px; white-space: nowrap; flex-shrink: 0;
+        }
+        .btn-filteri:hover { border-color: var(--green); color: var(--green); }
+        .btn-filteri.aktivan { border-color: var(--green); background: #f0f7f0; color: var(--green); }
+        .filteri-badge {
+            background: var(--green); color: white; border-radius: 50%;
+            width: 18px; height: 18px; font-size: 11px; font-weight: 700;
+            display: none; align-items: center; justify-content: center;
+        }
+        .filteri-badge.visible { display: flex; }
+
+        /* FILTER MODAL */
+        .filter-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+            z-index: 1200; display: flex; align-items: center; justify-content: center;
+            padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+        }
+        .filter-overlay.open { opacity: 1; pointer-events: all; }
+        .filter-modal {
+            background: white; border-radius: 24px; width: 100%; max-width: 480px;
+            transform: translateY(20px); transition: transform 0.25s;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.18); overflow: hidden;
+        }
+        .filter-overlay.open .filter-modal { transform: translateY(0); }
+        .filter-header {
+            padding: 24px 28px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+        .filter-title { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--dark); }
+        .filter-close {
+            background: #f3f4f6; border: none; border-radius: 50%;
+            width: 36px; height: 36px; font-size: 18px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; transition: background 0.15s;
+        }
+        .filter-close:hover { background: #e5e7eb; }
+        .filter-body { padding: 24px 28px; display: flex; flex-direction: column; gap: 20px; }
+        .filter-group { display: flex; flex-direction: column; gap: 8px; }
+        .filter-label { font-size: 12px; font-weight: 600; color: var(--gray); text-transform: uppercase; letter-spacing: 0.5px; }
+        .filter-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .filter-input {
+            width: 100%; border: 1.5px solid var(--border); border-radius: 12px;
+            padding: 11px 14px; font-family: 'DM Sans', sans-serif; font-size: 14px;
+            color: var(--dark); background: white; outline: none; transition: border-color 0.2s;
+        }
+        .filter-input:focus { border-color: var(--green); }
+        .filter-select {
+            width: 100%; border: 1.5px solid var(--border); border-radius: 12px;
+            padding: 11px 14px; font-family: 'DM Sans', sans-serif; font-size: 14px;
+            color: var(--dark); background: white; outline: none; transition: border-color 0.2s;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 14px center; cursor: pointer;
+        }
+        .filter-select:focus { border-color: var(--green); }
+        .filter-footer { padding: 16px 28px 24px; display: flex; gap: 12px; border-top: 1px solid var(--border); }
+        .btn-filteri-otkazati {
+            flex: 1; background: #f3f4f6; color: var(--gray);
+            border: none; border-radius: 12px; padding: 13px;
+            font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
+            cursor: pointer; transition: all 0.15s;
+        }
+        .btn-filteri-otkazati:hover { background: #e5e7eb; color: var(--dark); }
+        .btn-filteri-sacuvati {
+            flex: 2; background: var(--green); color: white;
+            border: none; border-radius: 12px; padding: 13px;
+            font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700;
+            cursor: pointer; transition: background 0.15s;
+        }
+        .btn-filteri-sacuvati:hover { background: var(--green-lt); }
+        .aktivni-filteri { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+        .filter-tag {
+            background: #f0f7f0; color: var(--green); border: 1px solid #c3e6c3;
+            border-radius: 20px; padding: 4px 10px 4px 12px;
+            font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 6px;
+        }
+        .filter-tag-x { cursor: pointer; font-size: 15px; color: var(--gray); line-height: 1; }
+        .filter-tag-x:hover { color: #dc2626; }
+
+
         /* GRID */
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
 
@@ -441,17 +526,74 @@
     </div>
 
     <div class="search-bar">
+        <button class="btn-filteri" id="btn-filteri" onclick="otvoriFilterModal()">
+            <svg width="16" height="14" viewBox="0 0 16 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1 1h14M3 7h10M5 13h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+            Filteri
+            <span class="filteri-badge" id="filteri-badge">0</span>
+        </button>
         <div class="search-wrap">
             <span class="search-icon">🔍</span>
-            <input id="pretraga" type="text" placeholder="Pretraži">
+            <input id="pretraga" type="text" placeholder="Pretraži proizvode...">
         </div>
         <button class="btn-search" onclick="pretraziProizvode()">Pretraži</button>
-        <button class="btn-reset" onclick="ucitajProizvode()">Poništi</button>
+        <button class="btn-reset" onclick="resetujSve()">Poništi</button>
     </div>
+    <div class="aktivni-filteri" id="aktivni-filteri"></div>
 
     <div id="grid" class="grid">
         <div class="empty-state"><div class="icon">⏳</div><p>Učitavanje...</p></div>
     </div>
+
+    <!-- FILTER MODAL -->
+    <div class="filter-overlay" id="filter-overlay" onclick="zatvoriFilterModal(event)">
+        <div class="filter-modal">
+            <div class="filter-header">
+                <div class="filter-title">Filtriraj</div>
+                <button class="filter-close" onclick="zatvoriFilterModal()">✕</button>
+            </div>
+            <div class="filter-body">
+                <div class="filter-group">
+                    <span class="filter-label">Raspon cene (RSD)</span>
+                    <div class="filter-row">
+                        <input class="filter-input" type="number" id="f-cena-min" placeholder="Min cena" min="0">
+                        <input class="filter-input" type="number" id="f-cena-max" placeholder="Max cena" min="0">
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <span class="filter-label">Kategorija</span>
+                    <select class="filter-select" id="f-kategorija">
+                        <option value="">Sve kategorije</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <span class="filter-label">Alergeni (isključi)</span>
+                    <select class="filter-select" id="f-alergen">
+                        <option value="">Bez filtera alergena</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <span class="filter-label">Tip obroka</span>
+                    <select class="filter-select" id="f-tip">
+                        <option value="">Svi tipovi</option>
+                        <option value="hrana">🍽️ Hrana</option>
+                        <option value="pice">🥤 Piće</option>
+                        <option value="desert">🍰 Desert</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <span class="filter-label">Kalorije (max)</span>
+                    <input class="filter-input" type="number" id="f-kalorije" placeholder="npr. 800 kcal" min="0">
+                </div>
+            </div>
+            <div class="filter-footer">
+                <button class="btn-filteri-otkazati" onclick="resetujFiltre()">Otkaži filtere</button>
+                <button class="btn-filteri-sacuvati" onclick="primeniFiltre()">Primeni filtere</button>
+            </div>
+        </div>
+    </div>
+
 </main>
 
 <!-- DETALJI MODAL -->
@@ -568,6 +710,12 @@
 <script>
     zastitiStranicu();
     const sesija = getSesija();
+
+    // Filter state - globalne varijable
+    let aktivniFilteri = {};
+    let sviProizvodiCache = [];
+    let sveKategorije = [];
+    let sviAlergeni = [];
 
     function jeKupac() {
         return localStorage.getItem('uloga') === 'KUPAC';
@@ -783,7 +931,11 @@
         await ucitajOmiljene();
         try {
             const lista = await api.getProizvodiZaKupca();
-            prikaziProizvode(lista);
+            sviProizvodiCache = lista || [];
+            aktivniFilteri = {};
+            azurirajFilterBadge();
+            renderAktivneFilterTagove();
+            prikaziProizvode(sviProizvodiCache);
         } catch {
             grid.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><p>Greška pri učitavanju.</p></div>';
         }
@@ -800,7 +952,13 @@
 
         try {
             const lista = await api.searchProizvodiZaKupca(upit);
-            prikaziProizvode(lista);
+            sviProizvodiCache = lista || [];
+            // Primeni i aktivne filtere na rezultate pretrage
+            if (Object.keys(aktivniFilteri).length > 0) {
+                primeniFiltriranjeFrontend();
+            } else {
+                prikaziProizvode(sviProizvodiCache);
+            }
         } catch {
             document.getElementById('grid').innerHTML =
                 '<div class="empty-state"><div class="icon">⚠️</div><p>Greška pri pretrazi.</p></div>';
@@ -946,8 +1104,206 @@
             if (e.key === 'Enter') pretraziProizvode();
         });
         azurirajKorpaBadge();
+        ucitajFilterPodatke();
         ucitajProizvode();
     });
+
+    // ── Filter state ─────────────────────────────────────
+
+
+    async function ucitajFilterPodatke() {
+        try {
+            const [kat, aler] = await Promise.all([
+                apiFetch('/kategorije'),
+                apiFetch('/alergeni')
+            ]);
+            sveKategorije = kat || [];
+            sviAlergeni = aler || [];
+
+            const selKat = document.getElementById('f-kategorija');
+            sveKategorije.forEach(k => {
+                const opt = document.createElement('option');
+                opt.value = k.kategorijaId;
+                opt.textContent = k.naziv;
+                selKat.appendChild(opt);
+            });
+
+            const selAler = document.getElementById('f-alergen');
+            sviAlergeni.forEach(a => {
+                const opt = document.createElement('option');
+                opt.value = a.alergenId;
+                opt.textContent = a.naziv;
+                selAler.appendChild(opt);
+            });
+        } catch(e) { console.warn('Filter podaci greška', e); }
+    }
+
+    function otvoriFilterModal() {
+        // Popuni polja trenutnim filterima
+        document.getElementById('f-cena-min').value = aktivniFilteri.cenaMin || '';
+        document.getElementById('f-cena-max').value = aktivniFilteri.cenaMax || '';
+        document.getElementById('f-kategorija').value = aktivniFilteri.kategorijaId || '';
+        document.getElementById('f-alergen').value = aktivniFilteri.alergenId || '';
+        document.getElementById('f-tip').value = aktivniFilteri.tip || '';
+        document.getElementById('f-kalorije').value = aktivniFilteri.maxKalorije || '';
+        document.getElementById('filter-overlay').classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function zatvoriFilterModal(event) {
+        if (event && !event.target.classList.contains('filter-overlay')) return;
+        document.getElementById('filter-overlay').classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    function primeniFiltre() {
+        const cenaMin = document.getElementById('f-cena-min').value;
+        const cenaMax = document.getElementById('f-cena-max').value;
+        const kategorijaId = document.getElementById('f-kategorija').value;
+        const alergenId = document.getElementById('f-alergen').value;
+        const tip = document.getElementById('f-tip').value;
+        const maxKalorije = document.getElementById('f-kalorije').value;
+
+        aktivniFilteri = {};
+        if (cenaMin) aktivniFilteri.cenaMin = parseFloat(cenaMin);
+        if (cenaMax) aktivniFilteri.cenaMax = parseFloat(cenaMax);
+        if (kategorijaId) aktivniFilteri.kategorijaId = parseInt(kategorijaId);
+        if (alergenId) aktivniFilteri.alergenId = parseInt(alergenId);
+        if (tip) aktivniFilteri.tip = tip;
+        if (maxKalorije) aktivniFilteri.maxKalorije = parseFloat(maxKalorije);
+
+        document.getElementById('filter-overlay').classList.remove('open');
+        document.body.style.overflow = '';
+        primeniFiltriranjeFrontend();
+        azurirajFilterBadge();
+        renderAktivneFilterTagove();
+    }
+
+    function resetujFiltre() {
+        document.getElementById('f-cena-min').value = '';
+        document.getElementById('f-cena-max').value = '';
+        document.getElementById('f-kategorija').value = '';
+        document.getElementById('f-alergen').value = '';
+        document.getElementById('f-tip').value = '';
+        document.getElementById('f-kalorije').value = '';
+        aktivniFilteri = {};
+        document.getElementById('filter-overlay').classList.remove('open');
+        document.body.style.overflow = '';
+        prikaziProizvode(sviProizvodiCache);
+        azurirajFilterBadge();
+        renderAktivneFilterTagove();
+    }
+
+    function resetujSve() {
+        document.getElementById('pretraga').value = '';
+        aktivniFilteri = {};
+        azurirajFilterBadge();
+        renderAktivneFilterTagove();
+        ucitajProizvode();
+    }
+
+    // Kategorije za tip obroka
+    const TIP_KATEGORIJE = {
+        pice: ['drinks', 'pića', 'pi', 'beverage', 'drink'],
+        desert: ['desert', 'deserti', 'dessert', 'kolač', 'torta', 'slatko'],
+        hrana: [] // sve ostalo
+    };
+
+    function primeniFiltriranjeFrontend() {
+        let lista = [...sviProizvodiCache];
+
+        if (aktivniFilteri.cenaMin !== undefined) {
+            lista = lista.filter(p => (p.cena || 0) >= aktivniFilteri.cenaMin);
+        }
+        if (aktivniFilteri.cenaMax !== undefined) {
+            lista = lista.filter(p => (p.cena || 0) <= aktivniFilteri.cenaMax);
+        }
+        if (aktivniFilteri.kategorijaId) {
+            lista = lista.filter(p => p.kategorija?.kategorijaId === aktivniFilteri.kategorijaId);
+        }
+        if (aktivniFilteri.alergenId) {
+            lista = lista.filter(p => {
+                const alerSpisak = p.alergeni || [];
+                return !alerSpisak.some(a => a.alergenId === aktivniFilteri.alergenId);
+            });
+        }
+        if (aktivniFilteri.tip) {
+            const kljucevi = TIP_KATEGORIJE[aktivniFilteri.tip] || [];
+            lista = lista.filter(p => {
+                const katNaziv = (p.kategorija?.naziv || '').toLowerCase();
+                if (aktivniFilteri.tip === 'hrana') {
+                    const sveTecnosti = [...TIP_KATEGORIJE.pice, ...TIP_KATEGORIJE.desert];
+                    return !sveTecnosti.some(k => katNaziv.includes(k));
+                }
+                return kljucevi.some(k => katNaziv.includes(k));
+            });
+        }
+        if (aktivniFilteri.maxKalorije !== undefined) {
+            lista = lista.filter(p => !p.kalorije || p.kalorije <= aktivniFilteri.maxKalorije);
+        }
+
+        prikaziProizvode(lista);
+    }
+
+    function azurirajFilterBadge() {
+        const broj = Object.keys(aktivniFilteri).length;
+        const badge = document.getElementById('filteri-badge');
+        const btn = document.getElementById('btn-filteri');
+        badge.textContent = broj;
+        badge.classList.toggle('visible', broj > 0);
+        btn.classList.toggle('aktivan', broj > 0);
+    }
+
+    function renderAktivneFilterTagove() {
+        const kontejner = document.getElementById('aktivni-filteri');
+        const tagovi = [];
+
+        if (aktivniFilteri.cenaMin !== undefined || aktivniFilteri.cenaMax !== undefined) {
+            const min = aktivniFilteri.cenaMin !== undefined ? aktivniFilteri.cenaMin + ' RSD' : '0';
+            const max = aktivniFilteri.cenaMax !== undefined ? aktivniFilteri.cenaMax + ' RSD' : '∞';
+            tagovi.push({ label: `Cena: ${min} – ${max}`, kljuc: ['cenaMin', 'cenaMax'] });
+        }
+        if (aktivniFilteri.kategorijaId) {
+            const kat = sveKategorije.find(k => k.kategorijaId === aktivniFilteri.kategorijaId);
+            tagovi.push({ label: `Kategorija: ${kat?.naziv || aktivniFilteri.kategorijaId}`, kljuc: ['kategorijaId'] });
+        }
+        if (aktivniFilteri.alergenId) {
+            const aler = sviAlergeni.find(a => a.alergenId === aktivniFilteri.alergenId);
+            tagovi.push({ label: `Bez: ${aler?.naziv || 'alergena'}`, kljuc: ['alergenId'] });
+        }
+        if (aktivniFilteri.tip) {
+            const tipNazivi = { hrana: '🍽️ Hrana', pice: '🥤 Piće', desert: '🍰 Desert' };
+            tagovi.push({ label: tipNazivi[aktivniFilteri.tip], kljuc: ['tip'] });
+        }
+        if (aktivniFilteri.maxKalorije !== undefined) {
+            tagovi.push({ label: `Max ${aktivniFilteri.maxKalorije} kcal`, kljuc: ['maxKalorije'] });
+        }
+
+        kontejner.innerHTML = tagovi.map((tag, idx) => `
+            <div class="filter-tag">
+                ${tag.label}
+                <span class="filter-tag-x" onclick="ukloniFilterTag(${idx})">✕</span>
+            </div>
+        `).join('');
+    }
+
+    function ukloniFilterTag(idx) {
+        const tagovi = [];
+        if (aktivniFilteri.cenaMin !== undefined || aktivniFilteri.cenaMax !== undefined)
+            tagovi.push(['cenaMin', 'cenaMax']);
+        if (aktivniFilteri.kategorijaId) tagovi.push(['kategorijaId']);
+        if (aktivniFilteri.alergenId) tagovi.push(['alergenId']);
+        if (aktivniFilteri.tip) tagovi.push(['tip']);
+        if (aktivniFilteri.maxKalorije !== undefined) tagovi.push(['maxKalorije']);
+
+        if (tagovi[idx]) {
+            tagovi[idx].forEach(k => delete aktivniFilteri[k]);
+        }
+        primeniFiltriranjeFrontend();
+        azurirajFilterBadge();
+        renderAktivneFilterTagove();
+    }
+
 </script>
 </body>
 </html>
