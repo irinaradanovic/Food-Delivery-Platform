@@ -30,9 +30,22 @@ public class StavkaMenijaController {
         return stavkaMenijaService.getItemById(id);
     }
 
+    // menadzer - vidi sve stavke menija
     @GetMapping("/meni/{meniId}")
     public ResponseEntity<List<StavkaMenija>> getItemsByMenu(@PathVariable Long meniId) {
         return ResponseEntity.ok(stavkaMenijaService.getItemsByMenu(meniId));
+    }
+
+    // kupac - stavke menija samo iz aktivnog menija
+    @GetMapping("/kupac/meni/{meniId}")
+    public ResponseEntity<?> getItemsByMenuForKupac(@PathVariable Long meniId) {
+        try {
+            return ResponseEntity.ok(stavkaMenijaService.getItemsByMenuForKupac(meniId));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        }
     }
 
     @PostMapping("/meni/{meniId}")
@@ -61,10 +74,9 @@ public class StavkaMenijaController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Greška: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Greska: " + e.getMessage());
         }
     }
-
 
     @PutMapping("/meni/{meniId}/stavka/{stavkaId}")
     public ResponseEntity<?> azurirajStavku(
@@ -76,10 +88,9 @@ public class StavkaMenijaController {
 
         try {
             stavkaMenijaService.updateMenuItem(meniId, stavkaId, dto, slika, korisnikId);
-            return ResponseEntity.ok().body("Stavka je uspešno izmenjena.");
+            return ResponseEntity.ok().body("Stavka je uspesno izmenjena.");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
 }

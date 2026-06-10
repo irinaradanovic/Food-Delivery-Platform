@@ -23,7 +23,6 @@ function odjavi() {
     window.location.href = '/login.html';
 }
 
-
 function zastitiStranicu() {
     const uloga = localStorage.getItem('uloga');
     if (!uloga) {
@@ -32,11 +31,26 @@ function zastitiStranicu() {
     }
 
     const trenutnaStranica = window.location.pathname;
-    if (uloga === 'MENADZER' && (trenutnaStranica.includes('kategorije') || trenutnaStranica.includes('omiljeni') || trenutnaStranica.includes('proizvodi'))) {
+
+    if (uloga === 'MENADZER' && (
+        trenutnaStranica.includes('kategorije') ||
+        trenutnaStranica.includes('omiljeni') ||
+        trenutnaStranica.includes('proizvodi') ||
+        trenutnaStranica.includes('preporuke')
+    )) {
         window.location.href = '/izbor-restorana.html';
     }
-}
 
+    // Ako je kupac na stranici proizvoda ili kategorija, a nije izabrao restoran
+    if (uloga === 'KUPAC' && !localStorage.getItem('restoranId')) {
+        if (
+            trenutnaStranica.includes('proizvodi') ||
+            trenutnaStranica.includes('kategorije')
+        ) {
+            window.location.href = '/izbor-restorana.html';
+        }
+    }
+}
 
 function osveziNavigaciju() {
     const navElement = document.querySelector('nav');
@@ -45,24 +59,19 @@ function osveziNavigaciju() {
     const sesija = getSesija();
     const uloga = sesija.uloga || 'KUPAC';
 
-    // Postavljanje imena korisnika
-    const navUser = document.getElementById('nav-user');
-    if (navUser) navUser.textContent = sesija.ime || '';
-
     let linkoviHtml = '';
 
     if (uloga === 'MENADZER') {
         linkoviHtml = `
             <a href="/izbor-restorana.html" id="nav-restorani">Moji restorani</a>
-            <!--a href="/moji-meniji.html" id="nav-meniji">Moji meniji</a> -->
-            <!--a href="/analitika.html" id="nav-analitika">Analitika</a> -->
-            <!--a href="/profil.html" id="nav-profil">Profil</a> -->
         `;
     } else {
         linkoviHtml = `
+            <a href="/izbor-restorana.html" id="nav-restorani">Restorani</a>
             <a href="/proizvodi.html" id="nav-proizvodi">Proizvodi</a>
             <a href="/kategorije.html" id="nav-kategorije">Kategorije</a>
-            <a href="/omiljeni.html" id="nav-omiljeni" class="fav">♥ Omiljeni</a>
+            <a href="/omiljeni.html" id="nav-omiljeni" class="fav">Omiljeni</a>
+            <a href="/preporuke.html" id="nav-preporuke">Preporuke</a>
         `;
     }
 
@@ -89,7 +98,7 @@ function osveziNavigaciju() {
 
     const trenutnaStranica = window.location.pathname;
     document.querySelectorAll('.nav-links a').forEach(link => {
-        if (trenutnaStranica.includes(link.getAttribute('href'))) {
+        if (trenutnaStranica.includes(link.getAttribute('href').replace('/', ''))) {
             link.classList.add('active');
         }
     });

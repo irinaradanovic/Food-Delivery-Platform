@@ -12,7 +12,7 @@
             position: fixed; top: 0; left: 0; z-index: 100;
         }
         .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-        .nav-logo-icon { width: 76px; height: 96px;  border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .nav-logo-icon { width: 76px; height: 96px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
         .nav-logo-text { font-family: 'Playfair Display', serif; font-size: 20px; color: #1a1a1a; font-weight: 700; }
         .nav-links { display: flex; align-items: center; gap: 4px; }
         .nav-links a { padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 500; color: #6b7280; transition: all 0.15s; }
@@ -38,17 +38,27 @@
 <script src="./js/auth.js"></script>
 <script>
     zastitiStranicu();
-    const ulogovanMenadzerId = getKupacId();
+
+    const uloga = localStorage.getItem('uloga');
+    const korisnikId = localStorage.getItem('korisnikId');
 
     async function ucitajRestorane() {
         try {
-            const restorani = await apiFetch(`/meni/restorani?menadzerId=${ulogovanMenadzerId}`);
+            let restorani;
+
+            if (uloga === 'MENADZER') {
+                // Menadzer vidi samo svoje restorane
+                restorani = await apiFetch(`/meni/restorani?menadzerId=${korisnikId}`);
+            } else {
+                // Kupac vidi sve restorane
+                restorani = await apiFetch('/restorani');
+            }
 
             const kontejner = document.getElementById('restorani-kontejner');
             kontejner.innerHTML = '';
 
             if (!restorani || restorani.length === 0) {
-                kontejner.innerHTML = '<p class="text-red-500 text-center col-span-3">Nemate dodeljenih restorana.</p>';
+                kontejner.innerHTML = '<p class="text-red-500 text-center col-span-3">Nema dostupnih restorana.</p>';
                 return;
             }
 
@@ -57,12 +67,20 @@
                 kartica.className = "bg-emerald-600 hover:bg-emerald-700 text-white font-semibold p-8 rounded-xl shadow-lg cursor-pointer transition transform hover:-translate-y-1 text-center flex flex-col justify-center items-center h-40";
 
                 kartica.innerHTML = `
-                        <h2 class="text-2xl font-bold mb-2">${restoran.naziv}</h2>
-                        <p class="text-emerald-100 text-sm">${restoran.adresa}</p>
-                    `;
+                    <h2 class="text-2xl font-bold mb-2">${restoran.naziv}</h2>
+                    <p class="text-emerald-100 text-sm">${restoran.adresa}</p>
+                `;
 
                 kartica.onclick = () => {
-                    window.location.href = `lista-menija.html?restoranId=${restoran.restoranId}`;
+                    // Sacuvaj izabrani restoran u localStorage
+                    localStorage.setItem('restoranId', restoran.restoranId);
+                    localStorage.setItem('restoranNaziv', restoran.naziv);
+
+                    if (uloga === 'MENADZER') {
+                        window.location.href = `lista-menija.html?restoranId=${restoran.restoranId}`;
+                    } else {
+                        window.location.href = '/proizvodi.html';
+                    }
                 };
 
                 kontejner.appendChild(kartica);

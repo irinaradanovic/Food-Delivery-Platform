@@ -28,7 +28,7 @@ public class KategorijaController {
     @GetMapping("/{id}")
     public ResponseEntity<Kategorija> getById(@PathVariable Long id) {
         return ResponseEntity.ok(kategorijaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Kategorija nije pronađena")));
+                .orElseThrow(() -> new RuntimeException("Kategorija nije pronadjena")));
     }
 
     @PostMapping
@@ -45,6 +45,12 @@ public class KategorijaController {
     @GetMapping("/menadzer")
     public ResponseEntity<List<Kategorija>> getCategoriesForManager(@RequestHeader("X-User-Id") Long trenutniKorisnikId) {
         List<Kategorija> kategorije = kategorijaService.getCategoriesForManager(trenutniKorisnikId);
+        return ResponseEntity.ok(kategorije);
+    }
+
+    @GetMapping("/kupac/restoran/{restoranId}")
+    public ResponseEntity<List<Kategorija>> getKategorijeZaKupca(@PathVariable Long restoranId) {
+        List<Kategorija> kategorije = kategorijaService.getKategorijeZaKupca(restoranId);
         return ResponseEntity.ok(kategorije);
     }
 }

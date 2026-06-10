@@ -49,4 +49,26 @@ public class ProizvodController {
     public ResponseEntity<List<Proizvod>> getByKategorija(@PathVariable Long kategorijaId) {
         return ResponseEntity.ok(proizvodService.getByKategorija(kategorijaId));
     }
+
+    // Kupac - svi proizvodi iz aktivnih menija restorana
+    @GetMapping("/kupac/restoran/{restoranId}")
+    public ResponseEntity<List<Proizvod>> getProizvodiZaKupca(@PathVariable Long restoranId) {
+        return ResponseEntity.ok(proizvodService.getProizvodiZaKupca(restoranId));
+    }
+
+    // Kupac - pretraga po nazivu unutar aktivnih menija restorana
+    @GetMapping("/kupac/restoran/{restoranId}/search")
+    public ResponseEntity<List<Proizvod>> searchProizvodiZaKupca(
+            @PathVariable Long restoranId,
+            @RequestParam String naziv) {
+        return ResponseEntity.ok(proizvodService.searchProizvodiZaKupca(restoranId, naziv));
+    }
+
+    // Kupac - filtriranje po kategoriji unutar aktivnih menija restorana
+    @GetMapping("/kupac/restoran/{restoranId}/kategorija/{kategorijaId}")
+    public ResponseEntity<List<Proizvod>> getProizvodiZaKupcaByKategorija(
+            @PathVariable Long restoranId,
+            @PathVariable Long kategorijaId) {
+        return ResponseEntity.ok(proizvodService.getProizvodiZaKupcaByKategorija(restoranId, kategorijaId));
+    }
 }

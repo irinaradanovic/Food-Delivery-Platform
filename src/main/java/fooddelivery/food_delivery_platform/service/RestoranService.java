@@ -19,5 +19,7 @@ public class RestoranService {
         return restoranRepo.findByMenadzerKorisnikId(menadzerId);
     }
 
-
+    public List<Restoran> getSviRestorani() {
+        return restoranRepo.findAll();
+    }
 }

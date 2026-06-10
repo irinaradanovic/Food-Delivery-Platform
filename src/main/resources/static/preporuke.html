@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Big Bite – Preporuke za tebe</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --green: #2d6a2d; --green-lt: #3a8a3a;
+            --cream: #faf7f2; --dark: #1a1a1a;
+            --gray: #6b7280; --border: #e5e0d8;
+        }
+        body { font-family: 'DM Sans', sans-serif; background: var(--cream); min-height: 100vh; }
+
+        nav {
+            background: white; border-bottom: 1px solid var(--border);
+            padding: 0 40px; height: 68px;
+            display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 100;
+        }
+        .nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .nav-logo-icon { width: 76px; height: 96px; display: flex; align-items: center; justify-content: center; }
+        .nav-logo-text { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--dark); }
+        .nav-links { display: flex; align-items: center; gap: 4px; }
+        .nav-links a { padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 500; color: var(--gray); transition: all 0.15s; }
+        .nav-links a:hover { background: #f3f4f6; color: var(--dark); }
+        .nav-links a.active { background: var(--green) !important; color: white !important; }
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .nav-user { font-size: 13px; color: var(--gray); background: #f3f4f6; padding: 6px 12px; border-radius: 20px; }
+        .btn-odjava { background: none; border: 1.5px solid var(--border); border-radius: 8px; padding: 7px 14px; font-size: 13px; font-weight: 500; color: var(--gray); cursor: pointer; transition: all 0.15s; }
+        .btn-odjava:hover { border-color: #dc2626; color: #dc2626; }
+        .nav-korpa { position: relative; background: none; border: 1.5px solid var(--border); border-radius: 8px; padding: 7px 14px; font-size: 13px; font-weight: 500; color: var(--gray); cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 6px; }
+        .nav-korpa:hover { border-color: var(--green); color: var(--green); }
+        .korpa-badge { background: var(--green); color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 11px; font-weight: 700; align-items: center; justify-content: center; display: none; }
+        .korpa-badge.visible { display: flex; }
+
+        /* MAIN */
+        main { max-width: 1200px; margin: 0 auto; padding: 40px 24px; }
+
+        /* PAGE HEADER — isti kao u proizvodi.html */
+        .page-header { margin-bottom: 32px; }
+        .page-header h1 { font-family: 'Playfair Display', serif; font-size: 32px; color: var(--dark); }
+        .page-header p { color: var(--gray); font-size: 15px; margin-top: 4px; }
+
+        /* SEKCIJA */
+        .sekcija { display: none; }
+        .sekcija.aktivna { display: block; }
+
+        /* TAB SWITCHER */
+        .tab-switcher {
+            display: flex; gap: 8px; margin-bottom: 32px;
+            background: white; padding: 6px; border-radius: 16px;
+            border: 1.5px solid var(--border); width: fit-content;
+        }
+        .tab-btn {
+            display: flex; align-items: center; gap: 8px;
+            padding: 10px 20px; border-radius: 10px; border: none;
+            font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s; color: var(--gray); background: transparent;
+        }
+        .tab-btn:hover { background: #f3f4f6; color: var(--dark); }
+        .tab-btn.aktivan { color: white; }
+        .tab-btn.tab-personalizovano.aktivan { background: var(--green); }
+        .tab-btn.tab-sezonski.aktivan { background: #c2620a; }
+        .tab-btn.tab-trend.aktivan { background: #b91c1c; }
+        .tab-ikona { font-size: 16px; }
+
+        .sekcija-opis { font-size: 14px; color: var(--gray); margin-bottom: 24px; }
+
+        /* GRID */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+
+        /* CARD — isti kao u proizvodi.html */
+        .card {
+            background: white; border-radius: 20px; border: 1px solid var(--border);
+            overflow: hidden; transition: transform 0.2s, box-shadow 0.2s;
+            display: flex; flex-direction: column; position: relative;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.1); }
+
+        .card-badge {
+            position: absolute; top: 12px; left: 12px; z-index: 2;
+            background: var(--green); color: white;
+            font-size: 11px; font-weight: 700; padding: 4px 10px;
+            border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+
+        .card-img-placeholder {
+            width: 100%; height: 180px;
+            background: linear-gradient(135deg, #f0ede8, #e8e4dc);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 64px; overflow: hidden; position: relative; flex-shrink: 0;
+        }
+        .card-img-placeholder img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+
+        .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+        .card-name { font-family: 'Playfair Display', serif; font-size: 17px; color: var(--dark); flex: 1; line-height: 1.3; }
+        .btn-fav { background: none; border: none; cursor: pointer; font-size: 20px; padding: 2px 0 2px 8px; transition: transform 0.15s; flex-shrink: 0; }
+        .btn-fav:hover { transform: scale(1.2); }
+
+        .card-kat { font-size: 12px; background: #f0f7f0; color: var(--green); padding: 3px 10px; border-radius: 20px; font-weight: 500; display: inline-block; margin-bottom: 8px; }
+
+        .card-cena-row {
+            display: flex; align-items: baseline; gap: 6px;
+            margin-bottom: 14px;
+        }
+        .card-cena {
+            font-size: 20px; font-weight: 700; color: var(--dark);
+            font-family: 'Playfair Display', serif; letter-spacing: -0.3px;
+        }
+        .card-cena-besplatno { font-size: 14px; font-weight: 600; color: #4b9b4b; }
+        .card-cena-unit { font-size: 12px; color: var(--gray); }
+
+        .card-actions { display: flex; gap: 8px; margin-top: auto; }
+
+        .btn-detalji {
+            flex: 1; background: white; color: var(--dark);
+            border: 1.5px solid var(--border); border-radius: 10px;
+            padding: 9px 12px; font-family: 'DM Sans', sans-serif;
+            font-size: 13px; font-weight: 600; cursor: pointer;
+            transition: all 0.15s; display: flex; align-items: center;
+            justify-content: center; gap: 6px;
+        }
+        .btn-detalji:hover { border-color: var(--green); color: var(--green); background: #f0f7f0; }
+
+        .btn-korpa {
+            flex: 1; background: var(--green); color: white;
+            border: none; border-radius: 10px;
+            padding: 9px 12px; font-family: 'DM Sans', sans-serif;
+            font-size: 13px; font-weight: 600; cursor: pointer;
+            transition: all 0.15s; display: flex; align-items: center;
+            justify-content: center; gap: 6px;
+        }
+        .btn-korpa:hover { background: var(--green-lt); transform: scale(1.02); }
+        .btn-korpa.dodato { background: #4b9b4b; }
+
+        .empty-state { grid-column: 1/-1; text-align: center; padding: 80px 0; color: var(--gray); }
+        .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+
+        .loading-state { grid-column: 1/-1; text-align: center; padding: 60px; color: var(--gray); font-size: 15px; }
+        .spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--green); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ===== DETALJI MODAL ===== */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+            z-index: 1000; display: flex; align-items: center; justify-content: center;
+            padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+        }
+        .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+        .modal {
+            background: white; border-radius: 24px; width: 100%; max-width: 560px;
+            max-height: 90vh; overflow-y: auto;
+            transform: translateY(20px); transition: transform 0.25s;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.2);
+        }
+        .modal-overlay.open .modal { transform: translateY(0); }
+
+        .modal-img {
+            width: 100%; height: 240px;
+            background: linear-gradient(135deg, #f0ede8, #e8e4dc);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 80px; border-radius: 24px 24px 0 0;
+            overflow: hidden; position: relative;
+        }
+        .modal-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+        .modal-body { padding: 28px; }
+
+        .modal-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+        .modal-naziv { font-family: 'Playfair Display', serif; font-size: 26px; color: var(--dark); flex: 1; }
+        .modal-close {
+            background: #f3f4f6; border: none; border-radius: 50%;
+            width: 36px; height: 36px; font-size: 18px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.15s; flex-shrink: 0; margin-left: 12px;
+        }
+        .modal-close:hover { background: #e5e7eb; }
+
+        .modal-kat { font-size: 12px; background: #f0f7f0; color: var(--green); padding: 4px 12px; border-radius: 20px; font-weight: 600; display: inline-block; margin-bottom: 16px; }
+
+        .modal-opis { font-size: 15px; color: var(--gray); line-height: 1.7; margin-bottom: 24px; }
+
+        .modal-info {
+            display: grid; grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px; margin-bottom: 28px;
+        }
+        .info-box {
+            background: var(--cream); border-radius: 14px;
+            padding: 14px; text-align: center;
+        }
+        .info-box .info-icon { font-size: 22px; margin-bottom: 4px; }
+        .info-box .info-val { font-size: 16px; font-weight: 700; color: var(--dark); }
+        .info-box .info-label { font-size: 11px; color: var(--gray); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .modal-actions { display: flex; gap: 10px; }
+
+        .modal-btn-fav {
+            background: white; border: 1.5px solid var(--border);
+            border-radius: 12px; padding: 13px 18px;
+            font-size: 20px; cursor: pointer; transition: all 0.15s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .modal-btn-fav:hover { border-color: #e8721c; transform: scale(1.05); }
+
+        .modal-btn-korpa {
+            flex: 1; background: var(--green); color: white;
+            border: none; border-radius: 12px; padding: 14px;
+            font-family: 'DM Sans', sans-serif; font-size: 15px;
+            font-weight: 700; cursor: pointer; transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .modal-btn-korpa:hover { background: var(--green-lt); }
+        .modal-btn-korpa.dodato { background: #4b9b4b; }
+
+        /* ===== MODAL ZA DODAVANJE U KORPU ===== */
+        .korpa-modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+            z-index: 2000; display: flex; align-items: center; justify-content: center;
+            padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+        }
+        .korpa-modal-overlay.open { opacity: 1; pointer-events: all; }
+
+        .korpa-modal {
+            background: white; border-radius: 24px; width: 100%; max-width: 440px;
+            transform: translateY(20px); transition: transform 0.25s;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.25); overflow: hidden;
+        }
+        .korpa-modal-overlay.open .korpa-modal { transform: translateY(0); }
+
+        .korpa-modal-header {
+            padding: 22px 24px 0;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .korpa-modal-title { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--dark); }
+        .korpa-modal-close {
+            background: #f3f4f6; border: none; border-radius: 50%;
+            width: 34px; height: 34px; font-size: 16px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.15s;
+        }
+        .korpa-modal-close:hover { background: #e5e7eb; }
+
+        .korpa-modal-proizvod {
+            display: flex; align-items: center; gap: 14px;
+            padding: 16px 24px; border-bottom: 1px solid var(--border);
+        }
+        .korpa-modal-emoji { font-size: 38px; flex-shrink: 0; }
+        .korpa-modal-naziv { font-weight: 600; font-size: 16px; color: var(--dark); margin: 0 0 2px; }
+        .korpa-modal-cena { font-size: 14px; color: var(--gray); margin: 0; }
+
+        .korpa-modal-body { padding: 20px 24px 24px; }
+
+        .km-cena-prikaz {
+            background: #f0f7f0; border-radius: 12px;
+            padding: 12px 16px; margin-bottom: 16px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .km-cena-po-kom { font-size: 13px; color: var(--gray); }
+        .km-cena-vrednost { font-size: 16px; font-weight: 700; color: var(--green); }
+
+        .km-label {
+            font-size: 12px; font-weight: 600; color: var(--gray);
+            text-transform: uppercase; letter-spacing: 0.5px;
+            margin-bottom: 10px; display: block;
+        }
+
+        .kolicina-ctrl {
+            display: flex; align-items: center;
+            border: 1.5px solid var(--border); border-radius: 12px;
+            overflow: hidden; width: fit-content; margin-bottom: 20px;
+        }
+        .kol-btn {
+            background: #f9f9f7; border: none; width: 46px; height: 46px;
+            font-size: 20px; cursor: pointer; color: var(--dark);
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.1s; flex-shrink: 0;
+        }
+        .kol-btn:hover { background: #f0ede8; }
+        .kol-btn:disabled { opacity: 0.35; cursor: default; }
+        .kol-num {
+            width: 56px; text-align: center; font-size: 18px; font-weight: 700;
+            color: var(--dark); border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border); height: 46px;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .napomena-input {
+            width: 100%; border: 1.5px solid var(--border); border-radius: 12px;
+            padding: 12px 14px; font-family: 'DM Sans', sans-serif; font-size: 14px;
+            color: var(--dark); background: white; outline: none; resize: none;
+            height: 80px; transition: border-color 0.2s; margin-bottom: 20px;
+        }
+        .napomena-input:focus { border-color: var(--green); }
+        .napomena-input::placeholder { color: #b0b7c3; }
+
+        .km-footer-row {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 14px;
+        }
+        .km-ukupno-label { font-size: 14px; color: var(--gray); }
+        .km-ukupno-iznos { font-size: 22px; font-weight: 700; color: var(--dark); }
+
+        .km-dodaj-btn {
+            width: 100%;
+            background: var(--green); color: white;
+            border: none; border-radius: 12px; padding: 14px;
+            font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700;
+            cursor: pointer; transition: background 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .km-dodaj-btn:hover { background: var(--green-lt); }
+
+        /* ===== KORPA PANEL ===== */
+        .korpa-panel-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1500; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+        .korpa-panel-overlay.open { opacity: 1; pointer-events: all; }
+        .korpa-panel { position: fixed; top: 0; right: 0; bottom: 0; width: 420px; max-width: 100vw; background: white; z-index: 1501; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s ease; box-shadow: -8px 0 40px rgba(0,0,0,0.15); }
+        .korpa-panel-overlay.open .korpa-panel { transform: translateX(0); }
+        .kp-header { padding: 22px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+        .kp-title { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--dark); display: flex; align-items: center; gap: 10px; }
+        .kp-count { font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; background: var(--green); color: white; padding: 2px 9px; border-radius: 20px; }
+        .kp-close { background: #f3f4f6; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .kp-lista { flex: 1; overflow-y: auto; padding: 16px 24px; }
+        .kp-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 200px; color: var(--gray); gap: 12px; }
+        .kp-empty-icon { font-size: 48px; }
+        .kp-empty-text { font-size: 15px; }
+        .kp-stavka { display: flex; align-items: flex-start; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+        .kp-stavka:last-child { border-bottom: none; }
+        .kp-stavka-emoji { font-size: 30px; flex-shrink: 0; padding-top: 3px; }
+        .kp-stavka-info { flex: 1; min-width: 0; }
+        .kp-stavka-naziv { font-weight: 600; font-size: 15px; color: var(--dark); margin: 0 0 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .kp-stavka-napomena { font-size: 12px; color: var(--gray); margin: 0 0 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .kp-stavka-cena { font-size: 14px; font-weight: 700; color: var(--dark); margin: 0; }
+        .kp-stavka-cena small { font-weight: 400; color: var(--gray); font-size: 12px; }
+        .kp-qty-ctrl { display: flex; align-items: center; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; flex-shrink: 0; align-self: center; }
+        .kp-qty-btn { background: #f9f9f7; border: none; width: 30px; height: 30px; font-size: 15px; cursor: pointer; color: var(--dark); display: flex; align-items: center; justify-content: center; transition: background 0.1s; }
+        .kp-qty-btn:hover { background: #f0ede8; }
+        .kp-qty-num { width: 32px; text-align: center; font-size: 14px; font-weight: 700; color: var(--dark); border-left: 1px solid var(--border); border-right: 1px solid var(--border); height: 30px; display: flex; align-items: center; justify-content: center; }
+        .kp-footer { padding: 20px 24px; border-top: 1px solid var(--border); flex-shrink: 0; }
+        .kp-total-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px; }
+        .kp-total-label { font-size: 15px; color: var(--gray); }
+        .kp-total-iznos { font-size: 26px; font-weight: 700; color: var(--dark); }
+        .kp-ocisti-btn { width: 100%; background: none; border: 1.5px solid var(--border); border-radius: 12px; padding: 11px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; color: var(--gray); cursor: pointer; transition: all 0.15s; }
+        .kp-ocisti-btn:hover { border-color: #dc2626; color: #dc2626; }
+        .kp-placanje-btn { width: 100%; background: var(--green); color: white; border: none; border-radius: 12px; padding: 14px 18px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; }
+        .kp-placanje-btn:hover { background: var(--green-lt); }
+    </style>
+</head>
+<body>
+
+<nav></nav>
+
+<main>
+    <!-- PAGE HEADER — isti stil kao u proizvodi.html -->
+    <div class="page-header">
+        <h1>Preporuke za tebe</h1>
+        <p id="section-sub">Učitavanje preporuka...</p>
+    </div>
+
+    <!-- TAB SWITCHER -->
+    <div class="tab-switcher">
+        <button class="tab-btn tab-personalizovano aktivan" onclick="prebacíTab('personalizovano')">
+            <span class="tab-ikona">⭐</span> Za tebe
+        </button>
+        <button class="tab-btn tab-sezonski" onclick="prebacíTab('sezonski')">
+            <span class="tab-ikona">🌿</span> Sezonski
+        </button>
+        <button class="tab-btn tab-trend" onclick="prebacíTab('trend')">
+            <span class="tab-ikona">🔥</span> U trendu
+        </button>
+    </div>
+
+    <!-- SEKCIJA 1: Personalizovane preporuke -->
+    <div class="sekcija aktivna" id="sekcija-personalizovano">
+        <p class="sekcija-opis">Na osnovu tvojih navika i narudžbina</p>
+        <div id="grid-personalizovano" class="grid">
+            <div class="loading-state"><div class="spinner"></div><p>Analiziramo tvoje navike...</p></div>
+        </div>
+    </div>
+
+    <!-- SEKCIJA 2: Sezonske preporuke -->
+    <div class="sekcija" id="sekcija-sezonski">
+        <p class="sekcija-opis">Posebni obroci iz aktuelnih sezonskih menija</p>
+        <div id="grid-sezonski" class="grid">
+            <div class="loading-state"><div class="spinner"></div><p>Učitavanje sezonske ponude...</p></div>
+        </div>
+    </div>
+
+    <!-- SEKCIJA 3: Trend preporuke -->
+    <div class="sekcija" id="sekcija-trend">
+        <p class="sekcija-opis">Najpopularnije u poslednjih 7 dana</p>
+        <div id="grid-trend" class="grid">
+            <div class="loading-state"><div class="spinner"></div><p>Učitavanje trend proizvoda...</p></div>
+        </div>
+    </div>
+</main>
+
+<!-- DETALJI MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="zatvoriDetaljiModal(event)">
+    <div class="modal" id="modal">
+        <div class="modal-img" id="modal-img"></div>
+        <div class="modal-body">
+            <div class="modal-top">
+                <div class="modal-naziv" id="modal-naziv"></div>
+                <button class="modal-close" onclick="zatvoriDetaljiModal()">✕</button>
+            </div>
+            <span class="modal-kat" id="modal-kat"></span>
+            <p class="modal-opis" id="modal-opis"></p>
+            <div class="modal-info">
+                <div class="info-box">
+                    <div class="info-icon">🔥</div>
+                    <div class="info-val" id="modal-kcal">—</div>
+                    <div class="info-label">Kalorije</div>
+                </div>
+                <div class="info-box">
+                    <div class="info-icon">⚖️</div>
+                    <div class="info-val" id="modal-kolicina">—</div>
+                    <div class="info-label">Gramaza</div>
+                </div>
+                <div class="info-box">
+                    <div class="info-icon">📦</div>
+                    <div class="info-val" id="modal-jedinica">—</div>
+                    <div class="info-label">Jedinica</div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn-fav" id="modal-btn-fav" onclick="toggleOmiljeniModal()">🤍</button>
+                <button class="modal-btn-korpa" id="modal-btn-korpa" onclick="otvoriKorpaModal(aktivniProizvod)">
+                    🛒 Dodaj u korpu
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL ZA DODAVANJE U KORPU (količina + napomena) -->
+<div class="korpa-modal-overlay" id="korpa-modal-overlay" onclick="zatvoriKorpaModal(event)">
+    <div class="korpa-modal" id="korpa-modal">
+        <div class="korpa-modal-header">
+            <span class="korpa-modal-title">Dodaj u korpu</span>
+            <button class="korpa-modal-close" onclick="zatvoriKorpaModal()">✕</button>
+        </div>
+        <div class="korpa-modal-proizvod">
+            <span class="korpa-modal-emoji" id="km-emoji"></span>
+            <div>
+                <p class="korpa-modal-naziv" id="km-naziv"></p>
+                <p class="korpa-modal-cena" id="km-cena"></p>
+            </div>
+        </div>
+        <div class="korpa-modal-body">
+            <div class="km-cena-prikaz" id="km-cena-prikaz" style="display:none">
+                <span class="km-cena-po-kom" id="km-cena-po-kom"></span>
+                <span class="km-cena-vrednost" id="km-cena-vrednost"></span>
+            </div>
+            <span class="km-label">Količina</span>
+            <div class="kolicina-ctrl">
+                <button class="kol-btn" id="km-minus" onclick="promeniKolicinu(-1)" disabled>−</button>
+                <span class="kol-num" id="km-kolicina">1</span>
+                <button class="kol-btn" onclick="promeniKolicinu(1)">+</button>
+            </div>
+
+            <span class="km-label">Napomena</span>
+            <textarea
+                    class="napomena-input"
+                    id="km-napomena"
+                    placeholder="npr. bez luka, extra ljuto, bez sosa..."></textarea>
+
+            <div class="km-footer-row">
+                <span class="km-ukupno-label">Ukupno za stavku</span>
+                <span class="km-ukupno-iznos" id="km-ukupno">—</span>
+            </div>
+            <button class="km-dodaj-btn" onclick="potvrdiDodavanjeUKorpu()">
+                🛒 Potvrdi
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- PANEL KORPE -->
+<div class="korpa-panel-overlay" id="korpa-panel-overlay" onclick="zatvoriKorpuPanel(event)">
+    <div class="korpa-panel" id="korpa-panel">
+        <div class="kp-header">
+            <div class="kp-title">
+                🛒 Korpa
+                <span class="kp-count" id="kp-count">0</span>
+            </div>
+            <button class="kp-close" onclick="zatvoriKorpuPanel()">✕</button>
+        </div>
+        <div class="kp-lista" id="kp-lista"></div>
+        <div class="kp-footer" id="kp-footer" style="display:none">
+            <div class="kp-total-row">
+                <span class="kp-total-label">Ukupno</span>
+                <span class="kp-total-iznos" id="kp-total">0 RSD</span>
+            </div>
+            <button class="kp-placanje-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                    <line x1="1" y1="10" x2="23" y2="10"/>
+                </svg>
+                Nastavi sa plaćanjem
+            </button>
+            <button class="kp-ocisti-btn" onclick="ocistiKorpu()">🗑 Isprazni korpu</button>
+        </div>
+    </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+    zastitiStranicu();
+    const kupacId = getKupacId();
+
+    let omiljeniIds = new Set();
+    let korpa = JSON.parse(localStorage.getItem('korpa') || '[]');
+    let aktivniProizvod = null;
+    let korpaModalProizvod = null;
+    let korpaModalKolicina = 1;
+
+    const hrana = {'pizza':'🍕','burger':'🍔','pasta':'🍝','piletina':'🍗','salata':'🥗','tiramisu':'🍰','cheesecake':'🍰','torta':'🍰','palačink':'🥞','coca':'🥤','pepsi':'🥤','limunad':'🍋','sok':'🧃','voda':'💧','nuggets':'🍗','wings':'🍗','meso':'🥩','riba':'🐟','supa':'🍲','čorba':'🍲'};
+    function getEmoji(naziv) {
+        const n = naziv.toLowerCase();
+        for (const [k, v] of Object.entries(hrana)) if (n.includes(k)) return v;
+        return '🍽️';
+    }
+
+    // ── Korpa badge ──────────────────────────────────────
+    function azurirajKorpaBadge() {
+        const ukupnoKom = korpa.reduce((s, st) => s + st.kolicina, 0);
+        const badge = document.getElementById('korpa-badge');
+        if (badge) { badge.textContent = ukupnoKom; badge.classList.toggle('visible', ukupnoKom > 0); }
+    }
+
+    function sacuvajKorpu() {
+        localStorage.setItem('korpa', JSON.stringify(korpa));
+        azurirajKorpaBadge();
+    }
+
+    // ── Panel korpe ──────────────────────────────────────
+    function prikaziKorpu() {
+        renderKorpaPanel();
+        document.getElementById('korpa-panel-overlay').classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function zatvoriKorpuPanel(event) {
+        if (event && !event.target.classList.contains('korpa-panel-overlay')) return;
+        document.getElementById('korpa-panel-overlay').classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    function renderKorpaPanel() {
+        const lista = document.getElementById('kp-lista');
+        const footer = document.getElementById('kp-footer');
+        const count = korpa.reduce((s, st) => s + st.kolicina, 0);
+        document.getElementById('kp-count').textContent = count;
+
+        if (korpa.length === 0) {
+            lista.innerHTML = '<div class="kp-empty"><div class="kp-empty-icon">🛒</div><div class="kp-empty-text">Korpa je prazna</div></div>';
+            footer.style.display = 'none';
+            return;
+        }
+
+        const ukupno = korpa.reduce((s, st) => s + (st.cena || 0) * st.kolicina, 0);
+        document.getElementById('kp-total').textContent = ukupno.toLocaleString('sr-RS') + ' RSD';
+        footer.style.display = 'block';
+
+        lista.innerHTML = korpa.map((st, idx) => `
+            <div class="kp-stavka">
+                <span class="kp-stavka-emoji">${st.emoji || getEmoji(st.naziv)}</span>
+                <div class="kp-stavka-info">
+                    <p class="kp-stavka-naziv">${st.naziv}</p>
+                    ${st.napomena ? `<p class="kp-stavka-napomena">📝 ${st.napomena}</p>` : ''}
+                    ${st.cena && st.cena > 0
+            ? `<p class="kp-stavka-cena">${(st.cena * st.kolicina).toLocaleString('sr-RS')} RSD <small>(${st.cena.toLocaleString('sr-RS')} × ${st.kolicina})</small></p>`
+            : `<p style="font-size:13px;color:var(--gray);margin:0">Količina: ${st.kolicina}</p>`
+        }
+                </div>
+                <div class="kp-qty-ctrl">
+                    <button class="kp-qty-btn" onclick="promeniKolicinuUKorpi(${idx}, -1)">−</button>
+                    <span class="kp-qty-num">${st.kolicina}</span>
+                    <button class="kp-qty-btn" onclick="promeniKolicinuUKorpi(${idx}, 1)">+</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function promeniKolicinuUKorpi(idx, delta) {
+        korpa[idx].kolicina += delta;
+        if (korpa[idx].kolicina <= 0) korpa.splice(idx, 1);
+        sacuvajKorpu();
+        renderKorpaPanel();
+        osvjeziKarticeDugmad();
+    }
+
+    function ocistiKorpu() {
+        korpa = [];
+        sacuvajKorpu();
+        renderKorpaPanel();
+        osvjeziKarticeDugmad();
+    }
+
+    function osvjeziKarticeDugmad() {
+        const uKorpiIds = new Set(korpa.map(k => k.id));
+        document.querySelectorAll('[id^="btn-korpa-"]').forEach(btn => {
+            const id = parseInt(btn.id.replace('btn-korpa-', ''));
+            const uKorpi = uKorpiIds.has(id);
+            btn.textContent = uKorpi ? '✓ Dodato' : '🛒 U korpu';
+            btn.className = 'btn-korpa' + (uKorpi ? ' dodato' : '');
+        });
+    }
+
+    // ── Korpa modal (količina + napomena) ────────────────
+    function otvoriKorpaModal(p) {
+        if (!p) return;
+        korpaModalProizvod = p;
+        korpaModalKolicina = 1;
+
+        document.getElementById('km-emoji').textContent = getEmoji(p.naziv);
+        document.getElementById('km-naziv').textContent = p.naziv;
+        document.getElementById('km-cena').textContent = p.cena ? p.cena + ' RSD / kom' : '';
+        document.getElementById('km-napomena').value = '';
+        azurirajKorpaModalUI();
+
+        document.getElementById('modal-overlay').classList.remove('open');
+        document.getElementById('korpa-modal-overlay').classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function zatvoriKorpaModal(event) {
+        if (event && !event.target.classList.contains('korpa-modal-overlay')) return;
+        document.getElementById('korpa-modal-overlay').classList.remove('open');
+        document.body.style.overflow = '';
+        korpaModalProizvod = null;
+    }
+
+    function promeniKolicinu(delta) {
+        korpaModalKolicina = Math.max(1, korpaModalKolicina + delta);
+        azurirajKorpaModalUI();
+    }
+
+    function azurirajKorpaModalUI() {
+        document.getElementById('km-kolicina').textContent = korpaModalKolicina;
+        document.getElementById('km-minus').disabled = korpaModalKolicina <= 1;
+        const p = korpaModalProizvod;
+        const cenaPrikaz = document.getElementById('km-cena-prikaz');
+        if (p && p.cena && p.cena > 0) {
+            const ukupno = p.cena * korpaModalKolicina;
+            document.getElementById('km-cena-po-kom').textContent = `${p.cena.toLocaleString('sr-RS')} RSD × ${korpaModalKolicina}`;
+            document.getElementById('km-cena-vrednost').textContent = `= ${ukupno.toLocaleString('sr-RS')} RSD`;
+            cenaPrikaz.style.display = 'flex';
+            document.getElementById('km-ukupno').textContent = ukupno.toLocaleString('sr-RS') + ' RSD';
+        } else {
+            cenaPrikaz.style.display = 'none';
+            document.getElementById('km-ukupno').textContent = '—';
+        }
+    }
+
+    function potvrdiDodavanjeUKorpu() {
+        const p = korpaModalProizvod;
+        if (!p) return;
+        const napomena = document.getElementById('km-napomena').value.trim();
+
+        try { api.zabeleziKlik(kupacId, p.proizvodId, 'KORPA'); } catch {}
+
+        const postojeci = korpa.find(k => k.id === p.proizvodId && k.napomena === napomena);
+        if (postojeci) {
+            postojeci.kolicina += korpaModalKolicina;
+        } else {
+            korpa.push({
+                id: p.proizvodId,
+                naziv: p.naziv,
+                emoji: getEmoji(p.naziv),
+                cena: p.cena || null,
+                kolicina: korpaModalKolicina,
+                napomena: napomena
+            });
+        }
+
+        sacuvajKorpu();
+        zatvoriKorpaModal();
+        osvjeziKarticeDugmad();
+
+        const navBtn = document.querySelector('.nav-korpa');
+        if (navBtn) {
+            navBtn.style.borderColor = 'var(--green)';
+            navBtn.style.color = 'var(--green)';
+            setTimeout(() => { navBtn.style.borderColor = ''; navBtn.style.color = ''; }, 1200);
+        }
+    }
+
+    // ── Omiljeni ─────────────────────────────────────────
+    async function ucitajOmiljene() {
+        try {
+            const lista = await api.getOmiljeni(kupacId);
+            omiljeniIds = new Set(lista.map(o => o.proizvod.proizvodId));
+        } catch {}
+    }
+
+    async function toggleOmiljeni(id, btn) {
+        try {
+            if (omiljeniIds.has(id)) {
+                await api.ukloniOmiljeni(kupacId, id);
+                omiljeniIds.delete(id); btn.textContent = '🤍';
+                try { api.zabeleziKlik(kupacId, id, 'UKLONI_OMILJENI'); } catch {}
+            } else {
+                await api.dodajOmiljeni(kupacId, id);
+                omiljeniIds.add(id); btn.textContent = '❤️';
+                try { api.zabeleziKlik(kupacId, id, 'DODAJ_OMILJENI'); } catch {}
+            }
+        } catch { alert('Greška.'); }
+    }
+
+    async function toggleOmiljeniModal() {
+        if (!aktivniProizvod) return;
+        const id = aktivniProizvod.proizvodId;
+        const btn = document.getElementById('modal-btn-fav');
+        try {
+            if (omiljeniIds.has(id)) {
+                await api.ukloniOmiljeni(kupacId, id);
+                omiljeniIds.delete(id); btn.textContent = '🤍';
+                try { api.zabeleziKlik(kupacId, id, 'UKLONI_OMILJENI'); } catch {}
+            } else {
+                await api.dodajOmiljeni(kupacId, id);
+                omiljeniIds.add(id); btn.textContent = '❤️';
+                try { api.zabeleziKlik(kupacId, id, 'DODAJ_OMILJENI'); } catch {}
+            }
+            const karticaFav = document.querySelector(`[onclick="toggleOmiljeni(${id}, this)"]`);
+            if (karticaFav) karticaFav.textContent = omiljeniIds.has(id) ? '❤️' : '🤍';
+        } catch { alert('Greška.'); }
+    }
+
+    // ── Detalji modal ────────────────────────────────────
+    async function otvoriDetalje(proizvodId) {
+        try { await api.zabeleziKlik(kupacId, proizvodId, 'DETALJI'); } catch {}
+        try {
+            const p = await fetch(`http://localhost:8080/api/proizvodi/${proizvodId}`).then(r => r.json());
+            aktivniProizvod = p;
+
+            document.getElementById('modal-img').innerHTML = p.fotografija
+                ? `<img src="${p.fotografija}" alt="${p.naziv}">`
+                : getEmoji(p.naziv);
+
+            document.getElementById('modal-naziv').textContent = p.naziv;
+            document.getElementById('modal-kat').textContent = p.kategorija?.naziv || 'Ostalo';
+            document.getElementById('modal-opis').textContent = p.opis || 'Bez opisa';
+            document.getElementById('modal-kcal').textContent = p.kalorije ? p.kalorije + ' kcal' : '—';
+            document.getElementById('modal-kolicina').textContent = p.kolicina || '—';
+            document.getElementById('modal-jedinica').textContent = p.mernaJedinica || '—';
+
+            const favBtn = document.getElementById('modal-btn-fav');
+            favBtn.textContent = omiljeniIds.has(p.proizvodId) ? '❤️' : '🤍';
+
+            const korpaBtn = document.getElementById('modal-btn-korpa');
+            const uKorpi = korpa.some(k => k.id === p.proizvodId);
+            korpaBtn.textContent = uKorpi ? '✓ U korpi' : '🛒 Dodaj u korpu';
+            korpaBtn.className = 'modal-btn-korpa' + (uKorpi ? ' dodato' : '');
+
+            document.getElementById('modal-overlay').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        } catch {
+            alert('Greška pri učitavanju detalja.');
+        }
+    }
+
+    function zatvoriDetaljiModal(event) {
+        if (event && event.target !== document.getElementById('modal-overlay')) return;
+        document.getElementById('modal-overlay').classList.remove('open');
+        document.body.style.overflow = '';
+        aktivniProizvod = null;
+    }
+
+    // ── Direktno dodavanje u korpu sa kartice (fetch) ────
+    async function otvoriKorpaModalZaId(proizvodId) {
+        try {
+            const p = await fetch(`http://localhost:8080/api/proizvodi/${proizvodId}`).then(r => r.json());
+            otvoriKorpaModal(p);
+        } catch {
+            alert('Greška pri učitavanju proizvoda.');
+        }
+    }
+
+    // ── Tab switcher ──────────────────────────────────────
+    function prebacíTab(tip) {
+        // Sekcije
+        document.querySelectorAll('.sekcija').forEach(s => s.classList.remove('aktivna'));
+        document.getElementById('sekcija-' + tip).classList.add('aktivna');
+        // Tab dugmad
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('aktivan'));
+        document.querySelector('.tab-' + tip).classList.add('aktivan');
+    }
+
+    // ── Pomoćna funkcija: renderuje listu proizvoda u grid ──
+    function renderGrid(gridId, lista, badge) {
+        const grid = document.getElementById(gridId);
+        if (!lista || lista.length === 0) {
+            grid.innerHTML = `
+                <div class="empty-state">
+                    <div class="icon">🔍</div>
+                    <p>Nema dostupnih proizvoda u ovoj sekciji.</p>
+                </div>
+            `;
+            return;
+        }
+        const uKorpiIds = new Set(korpa.map(k => k.id));
+        grid.innerHTML = lista.map((p, idx) => `
+            <div class="card">
+                ${idx < 3 && badge ? `<div class="card-badge">${badge}</div>` : ''}
+                <div class="card-img-placeholder">
+                    ${p.fotografija ? `<img src="${p.fotografija}" alt="${p.naziv}" loading="lazy">` : getEmoji(p.naziv)}
+                </div>
+                <div class="card-body">
+                    <div class="card-top">
+                        <div class="card-name">${p.naziv}</div>
+                        <button class="btn-fav" onclick="toggleOmiljeni(${p.proizvodId}, this)">
+                            ${omiljeniIds.has(p.proizvodId) ? '❤️' : '🤍'}
+                        </button>
+                    </div>
+                    <span class="card-kat">${p.kategorija?.naziv || 'Ostalo'}</span>
+                    <div class="card-cena-row">
+                        ${p.cena > 0
+            ? `<span class="card-cena">${p.cena.toLocaleString('sr-RS')} <small style="font-size:13px;font-weight:500;color:var(--gray)">RSD</small></span>`
+            : `<span class="card-cena-besplatno">Besplatno</span>`
+        }
+                        ${p.kolicina && p.mernaJedinica ? `<span class="card-cena-unit">/ ${p.kolicina} ${p.mernaJedinica}</span>` : ''}
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-detalji" onclick="otvoriDetalje(${p.proizvodId})">
+                            🔍 Detaljnije
+                        </button>
+                        <button class="btn-korpa ${uKorpiIds.has(p.proizvodId) ? 'dodato' : ''}"
+                                id="btn-korpa-${p.proizvodId}"
+                                onclick="otvoriKorpaModalZaId(${p.proizvodId})">
+                            ${uKorpiIds.has(p.proizvodId) ? '✓ Dodato' : '🛒 U korpu'}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // ── Učitavanje preporuka ──────────────────────────────
+    async function ucitajPreporuke() {
+        await ucitajOmiljene();
+
+        // Sva tri endpointa pozivamo paralelno
+        const [personalizovane, sezonske, trend] = await Promise.allSettled([
+            apiFetch(`/preporuke/kupac/${kupacId}?limit=8`),
+            apiFetch(`/preporuke/sezonske?limit=8`),
+            apiFetch(`/preporuke/trend?limit=8`)
+        ]);
+
+        // Personalizovane
+        if (personalizovane.status === 'fulfilled') {
+            renderGrid('grid-personalizovano', personalizovane.value, '⭐ Top za tebe');
+        } else {
+            document.getElementById('grid-personalizovano').innerHTML =
+                '<div class="empty-state"><div class="icon">⚠️</div><p>Greška pri učitavanju.</p></div>';
+        }
+
+        // Sezonske
+        if (sezonske.status === 'fulfilled') {
+            renderGrid('grid-sezonski', sezonske.value, '🌿 Sezonski');
+        } else {
+            document.getElementById('grid-sezonski').innerHTML =
+                '<div class="empty-state"><div class="icon">⚠️</div><p>Greška pri učitavanju.</p></div>';
+        }
+
+        // Trend
+        if (trend.status === 'fulfilled') {
+            renderGrid('grid-trend', trend.value, '🔥 Trending');
+        } else {
+            document.getElementById('grid-trend').innerHTML =
+                '<div class="empty-state"><div class="icon">⚠️</div><p>Greška pri učitavanju.</p></div>';
+        }
+    }
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+            zatvoriDetaljiModal();
+            zatvoriKorpaModal();
+            zatvoriKorpuPanel();
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        azurirajKorpaBadge();
+        ucitajPreporuke();
+    });
+</script>
+</body>
+</html>

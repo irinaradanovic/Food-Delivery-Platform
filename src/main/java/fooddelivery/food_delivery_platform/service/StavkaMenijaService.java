@@ -58,6 +58,14 @@ public class StavkaMenijaService {
     }
 
 
+    public List<StavkaMenija> getItemsByMenuForKupac(Long meniId) {
+        Meni meni = meniRepository.findById(meniId)
+                .orElseThrow(() -> new EntityNotFoundException("Meni sa ID-jem " + meniId + " ne postoji."));
+        if (!meni.isAktivan()) {
+            throw new AccessDeniedException("Trazeni meni nije aktivan.");
+        }
+        return stavkaMenijaRepository.findByMeniMeniIdAndObrisanFalse(meniId);
+    }
 
     @Transactional
     public void addMenuItem(Long meniId, Long trenutniKorisnikId, NovaStavkaMenijaDTO request, MultipartFile slika) throws IOException {
