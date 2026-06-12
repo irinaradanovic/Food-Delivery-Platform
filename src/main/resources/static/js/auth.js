@@ -70,7 +70,7 @@ function osveziNavigaciju() {
             <a href="/izbor-restorana.html" id="nav-restorani">Restorani</a>
             <a href="/proizvodi.html" id="nav-proizvodi">Proizvodi</a>
             <a href="/kategorije.html" id="nav-kategorije">Kategorije</a>
-            <a href="/omiljeni.html" id="nav-omiljeni" class="fav">Omiljeni</a>
+            <a href="/omiljeni.html" id="nav-omiljeni">Omiljeni</a>
             <a href="/preporuke.html" id="nav-preporuke">Preporuke</a>
         `;
     }
