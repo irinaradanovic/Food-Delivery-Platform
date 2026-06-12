@@ -132,6 +132,42 @@
             background-repeat: no-repeat; background-position: right 14px center; cursor: pointer;
         }
         .filter-select:focus { border-color: var(--green); }
+        /* Custom multiselect dropdown */
+        .ms-wrapper { position: relative; width: 100%; }
+        .ms-trigger {
+            width: 100%; border: 1.5px solid var(--border); border-radius: 12px;
+            padding: 11px 14px; font-family: 'DM Sans', sans-serif; font-size: 14px;
+            color: var(--dark); background: white; outline: none; cursor: pointer;
+            display: flex; justify-content: space-between; align-items: center;
+            box-sizing: border-box; transition: border-color 0.2s; user-select: none;
+        }
+        .ms-trigger.open, .ms-trigger:focus { border-color: var(--green); }
+        .ms-trigger-arrow { font-size: 10px; color: var(--gray); transition: transform 0.2s; }
+        .ms-trigger.open .ms-trigger-arrow { transform: rotate(180deg); }
+        .ms-dropdown {
+            display: none; position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+            background: white; border: 1.5px solid var(--border); border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.10); z-index: 999;
+            max-height: 220px; overflow-y: auto;
+        }
+        .ms-wrapper.open .ms-dropdown { display: block; }
+        .ms-option {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 14px; cursor: pointer; font-size: 14px; color: var(--dark);
+            transition: background 0.12s;
+        }
+        .ms-option:first-child { border-radius: 10px 10px 0 0; }
+        .ms-option:last-child  { border-radius: 0 0 10px 10px; }
+        .ms-option:hover { background: #f9fdf9; }
+        .ms-option.izabran { background: #f0f7f0; color: var(--green); font-weight: 600; }
+        .ms-check {
+            width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            font-size: 11px; transition: all 0.15s; background: white; color: transparent;
+        }
+        .ms-option.izabran .ms-check {
+            background: var(--green); border-color: var(--green); color: white;
+        }
         .filter-footer { padding: 16px 28px 24px; display: flex; gap: 12px; border-top: 1px solid var(--border); }
         .btn-filteri-otkazati {
             flex: 1; background: #f3f4f6; color: var(--gray);
@@ -155,33 +191,6 @@
         }
         .filter-tag-x { cursor: pointer; font-size: 15px; color: var(--gray); line-height: 1; }
         .filter-tag-x:hover { color: #dc2626; }
-
-        /* TIPOVI OBROKA - višestruki izbor */
-        .tipovi-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
-        }
-        .tip-checkbox-label {
-            display: flex; align-items: center; gap: 10px;
-            border: 1.5px solid var(--border); border-radius: 12px;
-            padding: 10px 14px; cursor: pointer; transition: all 0.15s;
-            font-size: 14px; font-weight: 500; color: var(--dark);
-            user-select: none;
-        }
-        .tip-checkbox-label:hover { border-color: var(--green); background: #f9fdf9; }
-        .tip-checkbox-label.izabran { border-color: var(--green); background: #f0f7f0; color: var(--green); }
-        .tip-checkbox-label input[type="checkbox"] { display: none; }
-        .tip-checkbox-icon { font-size: 18px; flex-shrink: 0; }
-        .tip-check-indikator {
-            margin-left: auto; width: 18px; height: 18px;
-            border: 1.5px solid var(--border); border-radius: 5px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 11px; transition: all 0.15s; flex-shrink: 0;
-        }
-        .tip-checkbox-label.izabran .tip-check-indikator {
-            background: var(--green); border-color: var(--green); color: white;
-        }
-
-
 
         /* GRID */
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
@@ -540,7 +549,7 @@
         .kp-placanje-btn svg { flex-shrink: 0; }
 
 
-        /* ── KOMBO REZULTAT (prikazan unutar grida) ── */
+        /*  KOMBO REZULTAT (prikazan unutar grida)  */
         .kombo-result-banner {
             grid-column: 1 / -1;
             background: linear-gradient(135deg, #f0f7f0 0%, #e8f3e8 100%);
@@ -621,6 +630,73 @@
             display: flex; align-items: center; gap: 8px; margin-bottom: 4px;
         }
 
+
+        /*  KORPA PREPORUKE PANEL  */
+        .kp-preporuke-sekcija {
+            border-top: 1px solid var(--border); padding-top: 16px; margin-top: 4px;
+        }
+        .kp-preporuke-poruka {
+            background: #f0f7f0; border: 1px solid #c3e6c3; border-radius: 10px;
+            padding: 10px 14px; font-size: 13px; font-weight: 600; color: var(--green);
+            margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+        }
+        .kp-preporuke-title {
+            font-size: 12px; font-weight: 600; color: var(--gray);
+            text-transform: uppercase; letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+        .kp-preporuke-scroll {
+            display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px;
+            scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+        }
+        .kp-preporuke-scroll::-webkit-scrollbar { height: 4px; }
+        .kp-preporuke-scroll::-webkit-scrollbar-track { background: transparent; }
+        .kp-preporuke-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+        .kp-preporuka-card {
+            flex-shrink: 0; width: 150px; background: var(--cream);
+            border: 1px solid var(--border); border-radius: 14px;
+            overflow: hidden; transition: all 0.15s; cursor: default;
+        }
+        .kp-preporuka-card:hover { border-color: var(--green); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .kp-preporuka-img {
+            width: 100%; height: 90px; object-fit: cover;
+            background: linear-gradient(135deg, #f0ede8, #e8e4dc);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 32px; overflow: hidden; position: relative;
+        }
+        .kp-preporuka-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+        .kp-preporuka-body { padding: 9px 10px 10px; }
+        .kp-preporuka-naziv {
+            font-size: 12px; font-weight: 600; color: var(--dark);
+            margin-bottom: 2px; line-height: 1.3;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .kp-preporuka-razlog {
+            font-size: 10px; color: var(--green); margin-bottom: 6px;
+            font-weight: 500; line-height: 1.3;
+        }
+        .kp-preporuka-cena {
+            font-size: 13px; font-weight: 700; color: var(--dark); margin-bottom: 8px;
+        }
+        .kp-preporuka-dodaj {
+            width: 100%; background: var(--green); color: white; border: none;
+            border-radius: 8px; padding: 7px 0; font-family: 'DM Sans', sans-serif;
+            font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s;
+        }
+        .kp-preporuka-dodaj:hover { background: var(--green-lt); }
+        .kp-preporuka-dodaj.dodato { background: #4b9b4b; }
+        .kp-preporuke-loader {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 13px; color: var(--gray); padding: 8px 0;
+        }
+        .kp-mini-spinner {
+            width: 16px; height: 16px; border: 2px solid var(--border);
+            border-top-color: var(--green); border-radius: 50%;
+            animation: spin 0.8s linear infinite; flex-shrink: 0;
+        }
+
     </style>
 </head>
 <body>
@@ -643,7 +719,7 @@
             <span class="filteri-badge" id="filteri-badge">0</span>
         </button>
         <div class="search-wrap">
-            <span class="search-icon">🔍</span>
+            <span class="search-icon"></span>
             <input id="pretraga" type="text" placeholder="Pretraži proizvode...">
         </div>
         <button class="btn-search" onclick="pretraziProizvode()">Pretraži</button>
@@ -652,7 +728,7 @@
     <div class="aktivni-filteri" id="aktivni-filteri"></div>
 
     <div id="grid" class="grid">
-        <div class="empty-state"><div class="icon">⏳</div><p>Učitavanje...</p></div>
+        <div class="empty-state"><div class="icon"></div><p>Učitavanje...</p></div>
     </div>
 
     <!-- FILTER MODAL -->
@@ -660,7 +736,7 @@
         <div class="filter-modal">
             <div class="filter-header">
                 <div class="filter-title">Filtriraj</div>
-                <button class="filter-close" onclick="zatvoriFilterModal()">✕</button>
+                <button class="filter-close" onclick="zatvoriFilterModal()"></button>
             </div>
             <div class="filter-body">
                 <div class="filter-group">
@@ -671,51 +747,22 @@
                     </div>
                 </div>
                 <div class="filter-group">
-                    <span class="filter-label">Kategorija</span>
-                    <select class="filter-select" id="f-kategorija">
-                        <option value="">Sve kategorije</option>
-                    </select>
+                    <span class="filter-label">Tip obroka</span>
+                    <div class="ms-wrapper" id="ms-kategorija-wrapper">
+                        <div class="ms-trigger" id="ms-trigger" onclick="toggleMsDropdown()">
+                            <span id="ms-trigger-text">Sve kategorije</span>
+                            <span class="ms-trigger-arrow">&#9660;</span>
+                        </div>
+                        <div class="ms-dropdown" id="ms-dropdown">
+                            <!-- Dinamički popunjeno -->
+                        </div>
+                    </div>
                 </div>
                 <div class="filter-group">
                     <span class="filter-label">Alergeni (isključi)</span>
                     <select class="filter-select" id="f-alergen">
                         <option value="">Bez filtera alergena</option>
                     </select>
-                </div>
-                <div class="filter-group">
-                    <span class="filter-label">Tip obroka <small style="font-weight:400;text-transform:none;letter-spacing:0;color:#9ca3af">(možeš izabrati više)</small></span>
-                    <div class="tipovi-grid">
-                        <div class="tip-checkbox-label" id="lbl-predjelo" onclick="toggleTipObroka('predjelo', this)">
-                            <span class="tip-checkbox-icon">🥗</span>
-                            Predjelo
-                            <span class="tip-check-indikator">✓</span>
-                        </div>
-                        <div class="tip-checkbox-label" id="lbl-glavno" onclick="toggleTipObroka('glavno', this)">
-                            <span class="tip-checkbox-icon">🍽️</span>
-                            Glavno jelo
-                            <span class="tip-check-indikator">✓</span>
-                        </div>
-                        <div class="tip-checkbox-label" id="lbl-desert" onclick="toggleTipObroka('desert', this)">
-                            <span class="tip-checkbox-icon">🍰</span>
-                            Desert
-                            <span class="tip-check-indikator">✓</span>
-                        </div>
-                        <div class="tip-checkbox-label" id="lbl-pice" onclick="toggleTipObroka('pice', this)">
-                            <span class="tip-checkbox-icon">🥤</span>
-                            Piće
-                            <span class="tip-check-indikator">✓</span>
-                        </div>
-                        <div class="tip-checkbox-label" id="lbl-brza" onclick="toggleTipObroka('brza', this)">
-                            <span class="tip-checkbox-icon">🍔</span>
-                            Brza hrana
-                            <span class="tip-check-indikator">✓</span>
-                        </div>
-                        <div class="tip-checkbox-label" id="lbl-pasta" onclick="toggleTipObroka('pasta', this)">
-                            <span class="tip-checkbox-icon">🍝</span>
-                            Pasta & Pizza
-                            <span class="tip-check-indikator">✓</span>
-                        </div>
-                    </div>
                 </div>
                 <div class="filter-group">
                     <span class="filter-label">Kalorije (kcal)</span>
@@ -742,31 +789,31 @@
         <div class="modal-body">
             <div class="modal-top">
                 <div class="modal-naziv" id="modal-naziv"></div>
-                <button class="modal-close" onclick="zatvoriDetaljiModal()">✕</button>
+                <button class="modal-close" onclick="zatvoriDetaljiModal()"></button>
             </div>
             <span class="modal-kat" id="modal-kat"></span>
             <p class="modal-opis" id="modal-opis"></p>
             <div class="modal-info">
                 <div class="info-box">
-                    <div class="info-icon">🔥</div>
+                    <div class="info-icon"></div>
                     <div class="info-val" id="modal-kcal">—</div>
                     <div class="info-label">Kalorije</div>
                 </div>
                 <div class="info-box">
-                    <div class="info-icon">⚖️</div>
+                    <div class="info-icon"></div>
                     <div class="info-val" id="modal-kolicina">—</div>
                     <div class="info-label">Gramaza</div>
                 </div>
                 <div class="info-box">
-                    <div class="info-icon">📦</div>
+                    <div class="info-icon"></div>
                     <div class="info-val" id="modal-jedinica">—</div>
                     <div class="info-label">Jedinica</div>
                 </div>
             </div>
             <div class="modal-actions">
-                <button class="modal-btn-fav" id="modal-btn-fav" onclick="toggleOmiljeniModal()">🤍</button>
+                <button class="modal-btn-fav" id="modal-btn-fav" onclick="toggleOmiljeniModal()"></button>
                 <button class="modal-btn-korpa" id="modal-btn-korpa" onclick="otvoriKorpaModal(aktivniProizvod)">
-                    🛒 Dodaj u korpu
+                    Dodaj u korpu
                 </button>
             </div>
         </div>
@@ -778,7 +825,7 @@
     <div class="korpa-modal" id="korpa-modal">
         <div class="korpa-modal-header">
             <span class="korpa-modal-title">Dodaj u korpu</span>
-            <button class="korpa-modal-close" onclick="zatvoriKorpaModal()">✕</button>
+            <button class="korpa-modal-close" onclick="zatvoriKorpaModal()"></button>
         </div>
         <div class="korpa-modal-proizvod">
             <span class="korpa-modal-emoji" id="km-emoji"></span>
@@ -810,7 +857,7 @@
                 <span class="km-ukupno-iznos" id="km-ukupno">—</span>
             </div>
             <button class="km-dodaj-btn" onclick="potvrdiDodavanjeUKorpu()">
-                🛒 Potvrdi
+                Potvrdi
             </button>
         </div>
     </div>
@@ -821,12 +868,21 @@
     <div class="korpa-panel" id="korpa-panel">
         <div class="kp-header">
             <div class="kp-title">
-                🛒 Korpa
+                Korpa
                 <span class="kp-count" id="kp-count">0</span>
             </div>
-            <button class="kp-close" onclick="zatvoriKorpuPanel()">✕</button>
+            <button class="kp-close" onclick="zatvoriKorpuPanel()"></button>
         </div>
         <div class="kp-lista" id="kp-lista"></div>
+        <div class="kp-preporuke-sekcija" id="kp-preporuke-sekcija" style="display:none; padding: 0 24px 12px;">
+            <div class="kp-preporuke-poruka" id="kp-preporuke-poruka" style="display:none"></div>
+            <div class="kp-preporuke-title">Možda te zanima</div>
+            <div class="kp-preporuke-scroll" id="kp-preporuke-scroll">
+                <div class="kp-preporuke-loader">
+                    <div class="kp-mini-spinner"></div> Učitavanje preporuka...
+                </div>
+            </div>
+        </div>
         <div class="kp-footer" id="kp-footer" style="display:none">
             <div class="kp-total-row">
                 <span class="kp-total-label">Ukupno</span>
@@ -839,7 +895,7 @@
                 </svg>
                 Nastavi sa plaćanjem
             </button>
-            <button class="kp-ocisti-btn" onclick="ocistiKorpu()">🗑 Isprazni korpu</button>
+            <button class="kp-ocisti-btn" onclick="ocistiKorpu()"> Isprazni korpu</button>
         </div>
     </div>
 </div>
@@ -868,14 +924,14 @@
     let korpaModalKolicina = 1;
 
     // Emoji mapa
-    const hrana = {'pizza':'🍕','burger':'🍔','pasta':'🍝','piletina':'🍗','piće':'🥤','supa':'🍲','salata':'🥗','tiramisu':'🍰','cheesecake':'🍰','torta':'🍰','palačinke':'🥞','coca':'🥤','pepsi':'🥤','limunad':'🍋','sok':'🧃','voda':'💧','nuggets':'🍗','wings':'🍗'};
+    const hrana = {'pizza':'','burger':'','pasta':'','piletina':'','piće':'','supa':'','salata':'','tiramisu':'','cheesecake':'','torta':'','palačinke':'','coca':'','pepsi':'','limunad':'','sok':'','voda':'','nuggets':'','wings':''};
     function getEmoji(naziv) {
         const n = naziv.toLowerCase();
         for (const [k, v] of Object.entries(hrana)) if (n.includes(k)) return v;
-        return '🍽️';
+        return '';
     }
 
-    // ── Korpa badge u navu ──────────────────────────────
+    //  Korpa badge u navu
     function azurirajKorpaBadge() {
         const ukupnoKom = korpa.reduce((s, st) => s + st.kolicina, 0);
         const badge = document.getElementById('korpa-badge');
@@ -888,11 +944,12 @@
         azurirajKorpaBadge();
     }
 
-    // ── Panel korpe ─────────────────────────────────────
+    //  Panel korpe
     function prikaziKorpu() {
         renderKorpaPanel();
         document.getElementById('korpa-panel-overlay').classList.add('open');
         document.body.style.overflow = 'hidden';
+        ucitajKorpaPreporuke();
     }
 
     function zatvoriKorpuPanel(event) {
@@ -908,7 +965,7 @@
         document.getElementById('kp-count').textContent = count;
 
         if (korpa.length === 0) {
-            lista.innerHTML = '<div class="kp-empty"><div class="kp-empty-icon">🛒</div><div class="kp-empty-text">Korpa je prazna</div></div>';
+            lista.innerHTML = '<div class="kp-empty"><div class="kp-empty-icon"></div><div class="kp-empty-text">Korpa je prazna</div></div>';
             footer.style.display = 'none';
             return;
         }
@@ -922,7 +979,7 @@
                 <span class="kp-stavka-emoji">${st.emoji || getEmoji(st.naziv)}</span>
                 <div class="kp-stavka-info">
                     <p class="kp-stavka-naziv">${st.naziv}</p>
-                    ${st.napomena ? `<p class="kp-stavka-napomena">📝 ${st.napomena}</p>` : ''}
+                    ${st.napomena ? `<p class="kp-stavka-napomena"> ${st.napomena}</p>` : ''}
                     ${st.cena && st.cena > 0
             ? `<p class="kp-stavka-cena">${(st.cena * st.kolicina).toLocaleString('sr-RS')} RSD <small>(${st.cena.toLocaleString('sr-RS')} × ${st.kolicina})</small></p>`
             : `<p class="kp-stavka-subtotal">Količina: ${st.kolicina}</p>`
@@ -947,6 +1004,7 @@
         sacuvajKorpu();
         renderKorpaPanel();
         osvjeziKarticeDugmad();
+        osvjeziKorpaPreporuke();
     }
 
     function ocistiKorpu() {
@@ -960,6 +1018,7 @@
         sacuvajKorpu();
         renderKorpaPanel();
         osvjeziKarticeDugmad();
+        document.getElementById('kp-preporuke-sekcija').style.display = 'none';
     }
 
     function osvjeziKarticeDugmad() {
@@ -967,12 +1026,12 @@
         document.querySelectorAll('[id^="btn-korpa-"]').forEach(btn => {
             const id = parseInt(btn.id.replace('btn-korpa-', ''));
             const uKorpi = uKorpiIds.has(id);
-            btn.textContent = uKorpi ? '✓ Dodato' : '🛒 U korpu';
+            btn.textContent = uKorpi ? ' Dodato' : ' U korpu';
             btn.className = 'btn-korpa' + (uKorpi ? ' dodato' : '');
         });
     }
 
-    // ── Korpa modal (količina + napomena) ───────────────
+    //  Korpa modal (količina + napomena)
     function otvoriKorpaModal(p) {
         if (!p) return;
         korpaModalProizvod = p;
@@ -1044,7 +1103,8 @@
         }
 
         sacuvajKorpu();
-        zatvoriKorpaModal();
+        osvjeziKarticeDugmad();
+        osvjeziKorpaPreporuke();
         osvjeziKarticeDugmad();
 
         // Kratka vizuelna potvrda na nav dugmetu
@@ -1054,7 +1114,7 @@
         setTimeout(() => { navBtn.style.borderColor = ''; navBtn.style.color = ''; }, 1200);
     }
 
-    // ── Omiljeni ────────────────────────────────────────
+    //  Omiljeni
     async function ucitajOmiljene() {
         try {
             const lista = await api.getOmiljeni(getKupacId());
@@ -1062,11 +1122,11 @@
         } catch {}
     }
 
-    // ── Učitavanje proizvoda ────────────────────────────
+    //  Učitavanje proizvoda
     async function ucitajProizvode() {
         document.getElementById('pretraga').value = '';
         const grid = document.getElementById('grid');
-        grid.innerHTML = '<div class="empty-state"><div class="icon">⏳</div><p>Učitavanje...</p></div>';
+        grid.innerHTML = '<div class="empty-state"><div class="icon"></div><p>Učitavanje...</p></div>';
         await ucitajOmiljene();
         try {
             const lista = await api.getProizvodiZaKupca();
@@ -1076,7 +1136,7 @@
             renderAktivneFilterTagove();
             prikaziProizvode(sviProizvodiCache);
         } catch {
-            grid.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><p>Greška pri učitavanju.</p></div>';
+            grid.innerHTML = '<div class="empty-state"><div class="icon"></div><p>Greška pri učitavanju.</p></div>';
         }
     }
 
@@ -1100,14 +1160,14 @@
             }
         } catch {
             document.getElementById('grid').innerHTML =
-                '<div class="empty-state"><div class="icon">⚠️</div><p>Greška pri pretrazi.</p></div>';
+                '<div class="empty-state"><div class="icon"></div><p>Greška pri pretrazi.</p></div>';
         }
     }
 
     function prikaziProizvode(lista) {
         const grid = document.getElementById('grid');
         if (!lista.length) {
-            grid.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><p>Nema rezultata.</p></div>';
+            grid.innerHTML = '<div class="empty-state"><div class="icon"></div><p>Nema rezultata.</p></div>';
             return;
         }
         const uKorpiIds = new Set(korpa.map(k => k.id));
@@ -1120,7 +1180,7 @@
                     <div class="card-top">
                         <div class="card-name">${p.naziv}</div>
                         <button class="btn-fav" onclick="toggleOmiljeni(${p.proizvodId}, this)">
-                            ${omiljeniIds.has(p.proizvodId) ? '❤️' : '🤍'}
+                            ${omiljeniIds.has(p.proizvodId) ? '' : ''}
                         </button>
                     </div>
                     <span class="card-kat">${p.kategorija?.naziv || 'Ostalo'}</span>
@@ -1133,12 +1193,12 @@
                     </div>
                     <div class="card-actions">
                         <button class="btn-detalji" onclick="otvoriDetalje(${p.proizvodId})">
-                            🔍 Detaljnije
+                             Detaljnije
                         </button>
                         <button class="btn-korpa ${uKorpiIds.has(p.proizvodId) ? 'dodato' : ''}"
                                 id="btn-korpa-${p.proizvodId}"
                                 onclick="otvoriKorpaModalZaId(${p.proizvodId})">
-                            ${uKorpiIds.has(p.proizvodId) ? '✓ Dodato' : '🛒 U korpu'}
+                            ${uKorpiIds.has(p.proizvodId) ? ' Dodato' : ' U korpu'}
                         </button>
                     </div>
                 </div>
@@ -1156,7 +1216,7 @@
         }
     }
 
-    // ── Detalji modal ───────────────────────────────────
+    //  Detalji modal
     async function otvoriDetalje(proizvodId) {
         if (jeKupac()) try { await api.zabeleziKlik(getKupacId(), proizvodId, 'DETALJI'); } catch {}
         try {
@@ -1175,11 +1235,11 @@
             document.getElementById('modal-jedinica').textContent = p.mernaJedinica || '—';
 
             const favBtn = document.getElementById('modal-btn-fav');
-            favBtn.textContent = omiljeniIds.has(p.proizvodId) ? '❤️' : '🤍';
+            favBtn.textContent = omiljeniIds.has(p.proizvodId) ? '' : '';
 
             const korpaBtn = document.getElementById('modal-btn-korpa');
             const uKorpi = korpa.some(k => k.id === p.proizvodId);
-            korpaBtn.textContent = uKorpi ? '✓ U korpi' : '🛒 Dodaj u korpu';
+            korpaBtn.textContent = uKorpi ? ' U korpi' : ' Dodaj u korpu';
             korpaBtn.className = 'modal-btn-korpa' + (uKorpi ? ' dodato' : '');
 
             document.getElementById('modal-overlay').classList.add('open');
@@ -1204,16 +1264,16 @@
         }
     });
 
-    // ── Omiljeni ────────────────────────────────────────
+    //  Omiljeni
     async function toggleOmiljeni(id, btn) {
         try {
             if (omiljeniIds.has(id)) {
                 await api.ukloniOmiljeni(getKupacId(), id);
-                omiljeniIds.delete(id); btn.textContent = '🤍';
+                omiljeniIds.delete(id); btn.textContent = '';
                 if (jeKupac()) try { api.zabeleziKlik(getKupacId(), id, 'UKLONI_OMILJENI'); } catch {}
             } else {
                 await api.dodajOmiljeni(getKupacId(), id);
-                omiljeniIds.add(id); btn.textContent = '❤️';
+                omiljeniIds.add(id); btn.textContent = '';
                 if (jeKupac()) try { api.zabeleziKlik(getKupacId(), id, 'DODAJ_OMILJENI'); } catch {}
             }
         } catch { alert('Greška.'); }
@@ -1226,15 +1286,15 @@
         try {
             if (omiljeniIds.has(id)) {
                 await api.ukloniOmiljeni(getKupacId(), id);
-                omiljeniIds.delete(id); btn.textContent = '🤍';
+                omiljeniIds.delete(id); btn.textContent = '';
                 if (jeKupac()) try { api.zabeleziKlik(getKupacId(), id, 'UKLONI_OMILJENI'); } catch {}
             } else {
                 await api.dodajOmiljeni(getKupacId(), id);
-                omiljeniIds.add(id); btn.textContent = '❤️';
+                omiljeniIds.add(id); btn.textContent = '';
                 if (jeKupac()) try { api.zabeleziKlik(getKupacId(), id, 'DODAJ_OMILJENI'); } catch {}
             }
             const karticaFav = document.querySelector(`[onclick="toggleOmiljeni(${id}, this)"]`);
-            if (karticaFav) karticaFav.textContent = omiljeniIds.has(id) ? '❤️' : '🤍';
+            if (karticaFav) karticaFav.textContent = omiljeniIds.has(id) ? '' : '';
         } catch { alert('Greška.'); }
     }
 
@@ -1247,8 +1307,18 @@
         ucitajProizvode();
     });
 
-    // ── Filter state ─────────────────────────────────────
+    //  Filter state
 
+
+    // Mapa emoji-ja po nazivu kategorije
+    const KAT_EMOJI_MAP = {
+        'burgers':  '',
+        'pizzas':   '',
+        'salads':   '',
+        'drinks':   '',
+        'deserts':  '',
+        'chicken':  ''
+    };
 
     async function ucitajFilterPodatke() {
         try {
@@ -1259,13 +1329,19 @@
             sveKategorije = kat || [];
             sviAlergeni = aler || [];
 
-            const selKat = document.getElementById('f-kategorija');
-            sveKategorije.forEach(k => {
-                const opt = document.createElement('option');
-                opt.value = k.kategorijaId;
-                opt.textContent = k.naziv;
-                selKat.appendChild(opt);
-            });
+            // Popuni custom multiselect dropdown
+            const msDropdown = document.getElementById('ms-dropdown');
+            if (msDropdown) {
+                msDropdown.innerHTML = '';
+                sveKategorije.forEach(k => {
+                    const div = document.createElement('div');
+                    div.className = 'ms-option';
+                    div.dataset.id = k.kategorijaId;
+                    div.innerHTML = `<span>${k.naziv}</span><span class="ms-check">&#10003;</span>`;
+                    div.onclick = () => toggleMsOpcija(div, k.kategorijaId);
+                    msDropdown.appendChild(div);
+                });
+            }
 
             const selAler = document.getElementById('f-alergen');
             sviAlergeni.forEach(a => {
@@ -1281,15 +1357,15 @@
         // Popuni polja trenutnim filterima
         document.getElementById('f-cena-min').value = aktivniFilteri.cenaMin || '';
         document.getElementById('f-cena-max').value = aktivniFilteri.cenaMax || '';
-        document.getElementById('f-kategorija').value = aktivniFilteri.kategorijaId || '';
         document.getElementById('f-alergen').value = aktivniFilteri.alergenId || '';
         document.getElementById('f-kalorije-min').value = aktivniFilteri.minKalorije || '';
         document.getElementById('f-kalorije-max').value = aktivniFilteri.maxKalorije || '';
-        // Obnovi stanje checkbox-ova
-        ['predjelo', 'glavno', 'desert', 'pice', 'brza', 'pasta'].forEach(tip => {
-            const lbl = document.getElementById('lbl-' + tip);
-            if (lbl) lbl.classList.toggle('izabran', aktivniTipovi.has(tip));
+        // Obnovi custom multiselect
+        document.querySelectorAll('#ms-dropdown .ms-option').forEach(div => {
+            const id = parseInt(div.dataset.id);
+            div.classList.toggle('izabran', aktivneKategorije.has(id));
         });
+        azurirajMsTriggerText();
         document.getElementById('filter-overlay').classList.add('open');
         document.body.style.overflow = 'hidden';
     }
@@ -1303,7 +1379,6 @@
     function primeniFiltre() {
         const cenaMin = document.getElementById('f-cena-min').value;
         const cenaMax = document.getElementById('f-cena-max').value;
-        const kategorijaId = document.getElementById('f-kategorija').value;
         const alergenId = document.getElementById('f-alergen').value;
 
         const minKalorije = document.getElementById('f-kalorije-min').value;
@@ -1312,9 +1387,8 @@
         aktivniFilteri = {};
         if (cenaMin) aktivniFilteri.cenaMin = parseFloat(cenaMin);
         if (cenaMax) aktivniFilteri.cenaMax = parseFloat(cenaMax);
-        if (kategorijaId) aktivniFilteri.kategorijaId = parseInt(kategorijaId);
         if (alergenId) aktivniFilteri.alergenId = parseInt(alergenId);
-        if (aktivniTipovi.size > 0) aktivniFilteri.tipovi = new Set(aktivniTipovi);
+        if (aktivneKategorije.size > 0) aktivniFilteri.kategorije = new Set(aktivneKategorije);
         if (minKalorije) aktivniFilteri.minKalorije = parseFloat(minKalorije);
         if (maxKalorije) aktivniFilteri.maxKalorije = parseFloat(maxKalorije);
 
@@ -1328,16 +1402,13 @@
     function resetujFiltre() {
         document.getElementById('f-cena-min').value = '';
         document.getElementById('f-cena-max').value = '';
-        document.getElementById('f-kategorija').value = '';
         document.getElementById('f-alergen').value = '';
         document.getElementById('f-kalorije-min').value = '';
         document.getElementById('f-kalorije-max').value = '';
-        // Resetuj checkbox-ove
-        aktivniTipovi.clear();
-        ['predjelo', 'glavno', 'desert', 'pice', 'brza', 'pasta'].forEach(tip => {
-            const lbl = document.getElementById('lbl-' + tip);
-            if (lbl) lbl.classList.remove('izabran');
-        });
+        // Resetuj checkbox-ove kategorija
+        aktivneKategorije.clear();
+        document.querySelectorAll('#ms-dropdown .ms-option').forEach(div => div.classList.remove('izabran'));
+        azurirajMsTriggerText();
         aktivniFilteri = {};
         document.getElementById('filter-overlay').classList.remove('open');
         document.body.style.overflow = '';
@@ -1354,28 +1425,7 @@
         ucitajProizvode();
     }
 
-    // Mapa ključnih reči po tipu obroka za filtriranje po kategoriji
-    const TIP_KATEGORIJE = {
-        predjelo:  ['salat', 'predjelo', 'čorb', 'soup', 'appetizer', 'salad'],
-        glavno:    ['glavno', 'meso', 'piletina', 'riba', 'chicken', 'meat', 'fish', 'ostalo'],
-        desert:    ['desert', 'deserti', 'dessert', 'kolač', 'torta', 'slatko', 'palačink'],
-        pice:      ['piće', 'pića', 'drinks', 'beverages', 'drink', 'pi\u010da'],
-        brza:      ['burger', 'burgeri', 'pizza', 'brza', 'nugget', 'wings', 'krilca', 'fast'],
-        pasta:     ['pasta', 'tjestenina', 'pizza', 'pica', 'pizzas']
-    };
 
-    // Aktivni tipovi obroka (Set za višestruki izbor)
-    let aktivniTipovi = new Set();
-
-    function toggleTipObroka(tip, labelEl) {
-        if (aktivniTipovi.has(tip)) {
-            aktivniTipovi.delete(tip);
-            labelEl.classList.remove('izabran');
-        } else {
-            aktivniTipovi.add(tip);
-            labelEl.classList.add('izabran');
-        }
-    }
 
     function primeniFiltriranjeFrontend() {
         let lista = [...sviProizvodiCache];
@@ -1386,10 +1436,6 @@
         }
         if (aktivniFilteri.cenaMax !== undefined) {
             lista = lista.filter(p => (p.cena || 0) <= aktivniFilteri.cenaMax);
-        }
-        // Kategorija
-        if (aktivniFilteri.kategorijaId) {
-            lista = lista.filter(p => p.kategorija?.kategorijaId === aktivniFilteri.kategorijaId);
         }
         // Alergeni
         if (aktivniFilteri.alergenId) {
@@ -1406,28 +1452,14 @@
             lista = lista.filter(p => !p.kalorije || p.kalorije <= aktivniFilteri.maxKalorije);
         }
 
-        // TIP OBROKA — ključna logika:
-        // 1 tip → standardni filter
-        // 2+ tipova → kombo mode: pozovi backend i prikaži kombo u gridu
-        if (aktivniFilteri.tipovi && aktivniFilteri.tipovi.size > 0) {
-            if (aktivniFilteri.tipovi.size === 1) {
-                // Jedan tip — regularni filter
-                lista = lista.filter(p => {
-                    const tekst = (p.kategorija?.naziv || '').toLowerCase() + ' ' + (p.naziv || '').toLowerCase();
-                    const tip = [...aktivniFilteri.tipovi][0];
-                    return (TIP_KATEGORIJE[tip] || []).some(k => tekst.includes(k));
-                });
+        // KATEGORIJE — višestruki izbor
+        if (aktivniFilteri.kategorije && aktivniFilteri.kategorije.size > 0) {
+            if (aktivniFilteri.kategorije.size === 1) {
+                const katId = [...aktivniFilteri.kategorije][0];
+                lista = lista.filter(p => p.kategorija?.kategorijaId === katId);
                 prikaziProizvode(lista);
             } else {
-                // Više tipova → kombo mode
-                // Prikaži filtered listu po svim izabranim tipovima + pokreni kombo
-                lista = lista.filter(p => {
-                    const tekst = (p.kategorija?.naziv || '').toLowerCase() + ' ' + (p.naziv || '').toLowerCase();
-                    for (const tip of aktivniFilteri.tipovi) {
-                        if ((TIP_KATEGORIJE[tip] || []).some(k => tekst.includes(k))) return true;
-                    }
-                    return false;
-                });
+                lista = lista.filter(p => aktivniFilteri.kategorije.has(p.kategorija?.kategorijaId));
                 prikaziProizvode(lista);
                 pokreniKomboMode();
             }
@@ -1454,33 +1486,29 @@
             const max = aktivniFilteri.cenaMax !== undefined ? aktivniFilteri.cenaMax + ' RSD' : '∞';
             tagovi.push({ label: `Cena: ${min} – ${max}`, kljuc: ['cenaMin', 'cenaMax'] });
         }
-        if (aktivniFilteri.kategorijaId) {
-            const kat = sveKategorije.find(k => k.kategorijaId === aktivniFilteri.kategorijaId);
-            tagovi.push({ label: `Kategorija: ${kat?.naziv || aktivniFilteri.kategorijaId}`, kljuc: ['kategorijaId'] });
+        if (aktivniFilteri.kategorije && aktivniFilteri.kategorije.size > 0) {
+            const lista = [...aktivniFilteri.kategorije]
+                .map(id => {
+                    const kat = sveKategorije.find(k => k.kategorijaId === id);
+                    const emoji = KAT_EMOJI_MAP[(kat?.naziv || '').toLowerCase()] || '';
+                    return `${emoji} ${kat?.naziv || id}`;
+                }).join(', ');
+            tagovi.push({ label: lista, kljuc: ['kategorije'] });
         }
         if (aktivniFilteri.alergenId) {
             const aler = sviAlergeni.find(a => a.alergenId === aktivniFilteri.alergenId);
             tagovi.push({ label: `Bez: ${aler?.naziv || 'alergena'}`, kljuc: ['alergenId'] });
         }
-        if (aktivniFilteri.tipovi && aktivniFilteri.tipovi.size > 0) {
-            const tipNazivi = {
-                predjelo: '🥗 Predjelo', glavno: '🍽️ Glavno jelo',
-                desert: '🍰 Desert', pice: '🥤 Piće',
-                brza: '🍔 Brza hrana', pasta: '🍝 Pasta & Pizza'
-            };
-            const lista = [...aktivniFilteri.tipovi].map(t => tipNazivi[t] || t).join(', ');
-            tagovi.push({ label: lista, kljuc: ['tipovi'] });
-        }
         if (aktivniFilteri.minKalorije !== undefined || aktivniFilteri.maxKalorije !== undefined) {
             const minK = aktivniFilteri.minKalorije !== undefined ? aktivniFilteri.minKalorije + ' kcal' : '0';
             const maxK = aktivniFilteri.maxKalorije !== undefined ? aktivniFilteri.maxKalorije + ' kcal' : '∞';
-            tagovi.push({ label: `🔥 Kcal: ${minK} – ${maxK}`, kljuc: ['minKalorije', 'maxKalorije'] });
+            tagovi.push({ label: ` Kcal: ${minK} – ${maxK}`, kljuc: ['minKalorije', 'maxKalorije'] });
         }
 
         kontejner.innerHTML = tagovi.map((tag, idx) => `
             <div class="filter-tag">
                 ${tag.label}
-                <span class="filter-tag-x" onclick="ukloniFilterTag(${idx})">✕</span>
+                <span class="filter-tag-x" onclick="ukloniFilterTag(${idx})"></span>
             </div>
         `).join('');
     }
@@ -1489,20 +1517,17 @@
         const tagovi = [];
         if (aktivniFilteri.cenaMin !== undefined || aktivniFilteri.cenaMax !== undefined)
             tagovi.push(['cenaMin', 'cenaMax']);
-        if (aktivniFilteri.kategorijaId) tagovi.push(['kategorijaId']);
+        if (aktivniFilteri.kategorije && aktivniFilteri.kategorije.size > 0) tagovi.push(['kategorije']);
         if (aktivniFilteri.alergenId) tagovi.push(['alergenId']);
-        if (aktivniFilteri.tipovi && aktivniFilteri.tipovi.size > 0) tagovi.push(['tipovi']);
         if (aktivniFilteri.minKalorije !== undefined || aktivniFilteri.maxKalorije !== undefined) tagovi.push(['minKalorije', 'maxKalorije']);
 
         if (tagovi[idx]) {
             tagovi[idx].forEach(k => {
                 delete aktivniFilteri[k];
-                if (k === 'tipovi') {
-                    aktivniTipovi.clear();
-                    ['predjelo', 'glavno', 'desert', 'pice', 'brza', 'pasta'].forEach(t => {
-                        const lbl = document.getElementById('lbl-' + t);
-                        if (lbl) lbl.classList.remove('izabran');
-                    });
+                if (k === 'kategorije') {
+                    aktivneKategorije.clear();
+                    document.querySelectorAll('#ms-dropdown .ms-option').forEach(div => div.classList.remove('izabran'));
+                    azurirajMsTriggerText();
                 }
             });
         }
@@ -1514,16 +1539,29 @@
 
 
 
-    // ── KOMBO MODE (integrisano u filter) ───────────────
+    //  KOMBO MODE (integrisano u filter)
     const TIP_EMOJI_MAP = {
-        predjelo: '🥗', glavno: '🍽️', desert: '🍰',
-        pice: '🥤', brza: '🍔', pasta: '🍝', ostalo: '🍽️'
+        burgers:  '',
+        pizzas:   '',
+        salads:   '',
+        drinks:   '',
+        deserts:  '',
+        chicken:  '',
+        predjelo: '', glavno: '', desert: '',
+        pice: '', brza: '', pasta: '', ostalo: ''
     };
     const TIP_NAZIV_MAP = {
+        burgers:  'Burgers',
+        pizzas:   'Pizzas',
+        salads:   'Salads',
+        drinks:   'Drinks',
+        deserts:  'Deserts',
+        chicken:  'Chicken',
         predjelo: 'Predjelo', glavno: 'Glavno jelo', desert: 'Desert',
         pice: 'Piće', brza: 'Brza hrana', pasta: 'Pasta & Pizza', ostalo: 'Ostalo'
     };
 
+    let aktivneKategorije = new Set();
     let komboRezultatiCache = [];
     let aktivniKomboIdx = 0;
 
@@ -1538,8 +1576,8 @@
         infoTraka.className = 'kombo-info-traka';
         infoTraka.id = 'kombo-info-traka';
         infoTraka.innerHTML = `
-            <span>🍱</span>
-            <span>Izabrao si više tipova obroka — tražimo komboe koji sadrže <strong>sve izabrane tipove</strong> u okviru zadatih ograničenja...</span>
+            <span></span>
+            <span>Izabrao si više kategorija — tražimo komboe koji sadrže <strong>sve izabrane kategorije</strong> u okviru zadatih ograničenja...</span>
         `;
         grid.prepend(infoTraka);
 
@@ -1547,8 +1585,8 @@
             const payload = {
                 restoranId: parseInt(restoranId),
                 maxUkupnaCena: aktivniFilteri.cenaMax || 999999,
-                brojStavki: aktivniFilteri.tipovi.size,
-                tipovi: [...aktivniFilteri.tipovi],
+                brojStavki: aktivniFilteri.kategorije.size,
+                kategorijaIds: [...aktivniFilteri.kategorije],
                 maxRezultata: 5,
                 // Prosledi kalorije i alergene iz aktivnih filtera
                 minUkupneKalorije: aktivniFilteri.minKalorije || null,
@@ -1573,7 +1611,7 @@
                 nema.style.background = '#fff3cd';
                 nema.style.borderColor = '#ffc107';
                 nema.style.color = '#856404';
-                nema.innerHTML = `<span>⚠️</span><span>Nema komboa koji sadrže sve izabrane tipove u zadatim ograničenjima. Prikazani su proizvodi koji odgovaraju barem jednom tipu.</span>`;
+                nema.innerHTML = `<span></span><span>Nema komboa koji sadrže sve izabrane kategorije u zadatim ograničenjima. Prikazani su proizvodi koji odgovaraju barem jednoj kategoriji.</span>`;
                 grid.prepend(nema);
                 return;
             }
@@ -1617,7 +1655,7 @@
 
 
         const stavkeHtml = kombo.stavke.map((s, si) => {
-            const emoji = TIP_EMOJI_MAP[s.tipObroka] || '🍽️';
+            const emoji = TIP_EMOJI_MAP[s.tipObroka] || '';
             const plus = si < kombo.stavke.length - 1
                 ? '<div class="kombo-plus">+</div>' : '';
             return `
@@ -1629,7 +1667,7 @@
                     </div>
                     <div class="kombo-stavka-chip-info">
                         <div class="kombo-stavka-chip-naziv" title="${s.nazivProizvoda}">${s.nazivProizvoda}</div>
-                        <div class="kombo-stavka-chip-tip">${emoji} ${TIP_NAZIV_MAP[s.tipObroka] || 'Ostalo'}</div>
+                        <div class="kombo-stavka-chip-tip">${s.kategorija || ''}</div>
                     </div>
                     <div class="kombo-stavka-chip-cena">${parseFloat(s.cena).toLocaleString('sr-RS')} RSD</div>
                 </div>
@@ -1642,7 +1680,7 @@
         banner.id = 'kombo-result-banner';
         banner.innerHTML = `
             <div class="kombo-result-banner-header">
-                <div class="kombo-result-banner-title">🍱 Predloženi kombo</div>
+                <div class="kombo-result-banner-title"> Predloženi kombo</div>
                 <div class="kombo-result-banner-meta">
                     <span class="kombo-ukupna-cena">${parseFloat(kombo.ukupnaCena).toLocaleString('sr-RS')} RSD</span>
                 </div>
@@ -1651,7 +1689,7 @@
             <div class="kombo-result-footer">
                 <button class="btn-dodaj-kombo" id="btn-dodaj-kombo-banner"
                         onclick="dodajKomboBannerUKorpu(this)">
-                    🛒 Dodaj kombo u korpu
+                     Dodaj kombo u korpu
                 </button>
             </div>
         `;
@@ -1676,7 +1714,7 @@
         if (!kombo) return;
 
         kombo.stavke.forEach(s => {
-            const emoji = TIP_EMOJI_MAP[s.tipObroka] || '🍽️';
+            const emoji = TIP_EMOJI_MAP[s.tipObroka] || '';
             const postojeci = korpa.find(k => k.id === s.stavkaId);
             if (postojeci) {
                 postojeci.kolicina++;
@@ -1694,13 +1732,182 @@
         });
 
         sacuvajKorpu();
-        btn.textContent = '✓ Dodato u korpu';
+        btn.textContent = ' Dodato u korpu';
         btn.classList.add('dodato');
         setTimeout(() => {
-            btn.textContent = '🛒 Dodaj kombo u korpu';
+            btn.textContent = ' Dodaj kombo u korpu';
             btn.classList.remove('dodato');
         }, 2000);
     }
+
+
+    //  KORPA PREPORUKE
+    const TIP_EMOJI_KORPA = {
+        predjelo: '', glavno: '', desert: '',
+        pice: '', brza: '', pasta: '', ostalo: ''
+    };
+
+    let korpaPreporukeTimeout = null;
+
+    // Pozovi svaki put kad se korpa promeni
+    function osvjeziKorpaPreporuke() {
+        // Debounce — ne pozivaj odmah svaki klik
+        clearTimeout(korpaPreporukeTimeout);
+        korpaPreporukeTimeout = setTimeout(async () => {
+            await ucitajKorpaPreporuke();
+        }, 600);
+    }
+
+    async function ucitajKorpaPreporuke() {
+        const restoranId = localStorage.getItem('restoranId');
+        if (!restoranId || korpa.length === 0) {
+            document.getElementById('kp-preporuke-sekcija').style.display = 'none';
+            return;
+        }
+
+        const sekcija = document.getElementById('kp-preporuke-sekcija');
+        const scroll = document.getElementById('kp-preporuke-scroll');
+        sekcija.style.display = 'block';
+        scroll.innerHTML = '<div class="kp-preporuke-loader"><div class="kp-mini-spinner"></div> Učitavanje...</div>';
+
+        try {
+            const payload = {
+                restoranId: parseInt(restoranId),
+                kupacId: kupacId ? parseInt(kupacId) : null,
+                stavkeMenijaIds: korpa.map(k => k.id),
+                maxPreporuka: 8
+            };
+
+            const odgovor = await apiFetch('/korpa-preporuke', {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+
+            renderKorpaPreporuke(odgovor);
+        } catch (err) {
+            sekcija.style.display = 'none';
+        }
+    }
+
+    function renderKorpaPreporuke(odgovor) {
+        const sekcija = document.getElementById('kp-preporuke-sekcija');
+        const scroll = document.getElementById('kp-preporuke-scroll');
+        const porukaEl = document.getElementById('kp-preporuke-poruka');
+
+        if (!odgovor || !odgovor.preporuke || odgovor.preporuke.length === 0) {
+            sekcija.style.display = 'none';
+            return;
+        }
+
+        // Prikaži poruku o nedostajućem tipu
+        if (odgovor.poruka) {
+            porukaEl.textContent = odgovor.poruka;
+            porukaEl.style.display = 'flex';
+        } else {
+            porukaEl.style.display = 'none';
+        }
+
+        scroll.innerHTML = odgovor.preporuke.map(p => {
+            const emoji = TIP_EMOJI_KORPA[p.tipObroka] || '';
+            const uKorpi = korpa.some(k => k.id === p.stavkaId);
+            return `
+                <div class="kp-preporuka-card">
+                    <div class="kp-preporuka-img">
+                        ${p.fotografija
+                ? `<img src="${p.fotografija}" alt="${p.naziv}" loading="lazy">`
+                : emoji}
+                    </div>
+                    <div class="kp-preporuka-body">
+                        <div class="kp-preporuka-naziv">${p.naziv}</div>
+                        <div class="kp-preporuka-razlog">${p.razlogPreporuke}</div>
+                        <div class="kp-preporuka-cena">
+                            ${p.cena > 0 ? p.cena.toLocaleString('sr-RS') + ' RSD' : 'Besplatno'}
+                        </div>
+                        <button class="kp-preporuka-dodaj ${uKorpi ? 'dodato' : ''}"
+                                id="kp-btn-${p.stavkaId}"
+                                onclick="dodajPreporukuUKorpu(${JSON.stringify(p).replace(/"/g, '&quot;')})">
+                            ${uKorpi ? ' Dodato' : '+ Dodaj'}
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        sekcija.style.display = 'block';
+    }
+
+    function dodajPreporukuUKorpu(p) {
+        const postojeci = korpa.find(k => k.id === p.stavkaId);
+        const emoji = TIP_EMOJI_KORPA[p.tipObroka] || '';
+        if (postojeci) {
+            postojeci.kolicina++;
+        } else {
+            korpa.push({
+                id: p.stavkaId,
+                naziv: p.naziv,
+                emoji,
+                cena: parseFloat(p.cena) || null,
+                kolicina: 1,
+                napomena: ''
+            });
+        }
+        sacuvajKorpu();
+
+        // Azuriraj dugme
+        const btn = document.getElementById('kp-btn-' + p.stavkaId);
+        if (btn) {
+            btn.textContent = ' Dodato';
+            btn.classList.add('dodato');
+        }
+
+        // Azuriraj prikaz korpe i osvježi preporuke (debounced)
+        renderKorpaPanel();
+        osvjeziKorpaPreporuke();
+
+        try { api.zabeleziKlik(kupacId, p.proizvodId, 'KORPA'); } catch {}
+    }
+
+    // ── Custom multiselect funkcije ──────────────────────────────────────────
+    function toggleMsDropdown() {
+        const wrapper = document.getElementById('ms-kategorija-wrapper');
+        const trigger = document.getElementById('ms-trigger');
+        wrapper.classList.toggle('open');
+        trigger.classList.toggle('open');
+    }
+
+    function toggleMsOpcija(div, katId) {
+        if (aktivneKategorije.has(katId)) {
+            aktivneKategorije.delete(katId);
+            div.classList.remove('izabran');
+        } else {
+            aktivneKategorije.add(katId);
+            div.classList.add('izabran');
+        }
+        azurirajMsTriggerText();
+    }
+
+    function azurirajMsTriggerText() {
+        const text = document.getElementById('ms-trigger-text');
+        if (!text) return;
+        if (aktivneKategorije.size === 0) {
+            text.textContent = 'Sve kategorije';
+        } else {
+            const nazivi = [...aktivneKategorije].map(id => {
+                const kat = sveKategorije.find(k => k.kategorijaId === id);
+                return kat?.naziv || id;
+            });
+            text.textContent = nazivi.join(', ');
+        }
+    }
+
+    // Zatvori dropdown klikom van njega
+    document.addEventListener('click', function(e) {
+        const wrapper = document.getElementById('ms-kategorija-wrapper');
+        if (wrapper && !wrapper.contains(e.target)) {
+            wrapper.classList.remove('open');
+            document.getElementById('ms-trigger')?.classList.remove('open');
+        }
+    });
 
 </script>
 </body>

@@ -9,13 +9,11 @@ public class KomboRequestDTO {
     private Long restoranId;
     private BigDecimal maxUkupnaCena;
     private int brojStavki;
-    private List<String> tipovi;
+    private List<Long> kategorijaIds;   // ID-jevi kategorija umesto string tipova
     private int maxRezultata;
 
-    // Kalorije — opcionalni filter na zbir kalorija celog komba
     private Double minUkupneKalorije;
     private Double maxUkupneKalorije;
 
-    // Alergeni koje treba isključiti — lista ID-jeva
     private List<Long> iskljuciAlergeneIds;
 }

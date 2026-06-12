@@ -123,7 +123,7 @@
 
 <main>
     <div class="page-header">
-        <h1>♥ Moji omiljeni</h1>
+        <h1> Moji omiljeni</h1>
     </div>
 
     <!-- Tabovi -->
@@ -140,7 +140,7 @@
     <div id="tab-proizvodi" class="tab-panel active">
         <div id="grid-proizvodi" class="grid">
             <div class="empty-wrap">
-                <div class="empty-heart">⏳</div>
+                <div class="empty-heart"></div>
                 <p class="empty-sub">Učitavanje...</p>
             </div>
         </div>
@@ -150,7 +150,7 @@
     <div id="tab-kategorije" class="tab-panel">
         <div id="grid-kategorije" class="kat-grid">
             <div class="empty-wrap">
-                <div class="empty-heart">⏳</div>
+                <div class="empty-heart"></div>
                 <p class="empty-sub">Učitavanje...</p>
             </div>
         </div>
@@ -163,17 +163,17 @@
     zastitiStranicu();
 
     const katEmoji = {
-        'pizza': '🍕', 'burger': '🍔', 'pasta': '🍝', 'piletina': '🍗',
-        'piće': '🥤', 'pice': '🥤', 'deserti': '🍰', 'desert': '🍰',
-        'salate': '🥗', 'salata': '🥗', 'supe': '🍲', 'supa': '🍲',
-        'riba': '🐟', 'roštilj': '🥩', 'ostalo': '🍽️'
+        'pizza': '', 'burger': '', 'pasta': '', 'piletina': '',
+        'piće': '', 'pice': '', 'deserti': '', 'desert': '',
+        'salate': '', 'salata': '', 'supe': '', 'supa': '',
+        'riba': '', 'roštilj': '', 'ostalo': ''
     };
 
     function getKatEmoji(naziv) {
-        if (!naziv) return '🍽️';
+        if (!naziv) return '';
         const n = naziv.toLowerCase();
         for (const [k, v] of Object.entries(katEmoji)) if (n.includes(k)) return v;
-        return '🍽️';
+        return '';
     }
 
     function promenTab(name, btn) {
@@ -194,7 +194,7 @@
             prikaziKategorije(omiljeneKategorije);
         } catch {
             document.getElementById('grid-proizvodi').innerHTML =
-                '<div class="empty-wrap"><div class="empty-heart">⚠️</div><p class="empty-sub">Greška pri učitavanju.</p></div>';
+                '<div class="empty-wrap"><div class="empty-heart"></div><p class="empty-sub">Greška pri učitavanju.</p></div>';
         }
     }
 
@@ -205,7 +205,7 @@
         if (!lista.length) {
             grid.innerHTML = `
                 <div class="empty-wrap">
-                    <div class="empty-heart">🤍</div>
+                    <div class="empty-heart"></div>
                     <div class="empty-title">Još nema omiljenih jela</div>
                     <p class="empty-sub">Dodajte jela u omiljene klikom na srce</p>
                     <a href="/proizvodi.html" class="btn-explore">Istraži jela</a>
@@ -247,7 +247,7 @@
         if (!lista.length) {
             grid.innerHTML = `
                 <div class="empty-wrap">
-                    <div class="empty-heart">🤍</div>
+                    <div class="empty-heart"></div>
                     <div class="empty-title">Još nema omiljenih kategorija</div>
                     <p class="empty-sub">Dodajte kategorije u omiljene klikom na srce</p>
                     <a href="/kategorije.html" class="btn-explore">Istraži kategorije</a>

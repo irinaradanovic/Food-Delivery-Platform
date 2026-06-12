@@ -365,13 +365,13 @@
     <!-- TAB SWITCHER -->
     <div class="tab-switcher">
         <button class="tab-btn tab-personalizovano aktivan" onclick="prebacíTab('personalizovano')">
-            <span class="tab-ikona">⭐</span> Za tebe
+            <span class="tab-ikona"></span> Za tebe
         </button>
         <button class="tab-btn tab-sezonski" onclick="prebacíTab('sezonski')">
-            <span class="tab-ikona">🌿</span> Sezonski
+            <span class="tab-ikona"></span> Sezonski
         </button>
         <button class="tab-btn tab-trend" onclick="prebacíTab('trend')">
-            <span class="tab-ikona">🔥</span> U trendu
+            <span class="tab-ikona"></span> U trendu
         </button>
     </div>
 
@@ -407,31 +407,31 @@
         <div class="modal-body">
             <div class="modal-top">
                 <div class="modal-naziv" id="modal-naziv"></div>
-                <button class="modal-close" onclick="zatvoriDetaljiModal()">✕</button>
+                <button class="modal-close" onclick="zatvoriDetaljiModal()"></button>
             </div>
             <span class="modal-kat" id="modal-kat"></span>
             <p class="modal-opis" id="modal-opis"></p>
             <div class="modal-info">
                 <div class="info-box">
-                    <div class="info-icon">🔥</div>
+                    <div class="info-icon"></div>
                     <div class="info-val" id="modal-kcal">—</div>
                     <div class="info-label">Kalorije</div>
                 </div>
                 <div class="info-box">
-                    <div class="info-icon">⚖️</div>
+                    <div class="info-icon"></div>
                     <div class="info-val" id="modal-kolicina">—</div>
                     <div class="info-label">Gramaza</div>
                 </div>
                 <div class="info-box">
-                    <div class="info-icon">📦</div>
+                    <div class="info-icon"></div>
                     <div class="info-val" id="modal-jedinica">—</div>
                     <div class="info-label">Jedinica</div>
                 </div>
             </div>
             <div class="modal-actions">
-                <button class="modal-btn-fav" id="modal-btn-fav" onclick="toggleOmiljeniModal()">🤍</button>
+                <button class="modal-btn-fav" id="modal-btn-fav" onclick="toggleOmiljeniModal()"></button>
                 <button class="modal-btn-korpa" id="modal-btn-korpa" onclick="otvoriKorpaModal(aktivniProizvod)">
-                    🛒 Dodaj u korpu
+                    Dodaj u korpu
                 </button>
             </div>
         </div>
@@ -443,7 +443,7 @@
     <div class="korpa-modal" id="korpa-modal">
         <div class="korpa-modal-header">
             <span class="korpa-modal-title">Dodaj u korpu</span>
-            <button class="korpa-modal-close" onclick="zatvoriKorpaModal()">✕</button>
+            <button class="korpa-modal-close" onclick="zatvoriKorpaModal()"></button>
         </div>
         <div class="korpa-modal-proizvod">
             <span class="korpa-modal-emoji" id="km-emoji"></span>
@@ -475,7 +475,7 @@
                 <span class="km-ukupno-iznos" id="km-ukupno">—</span>
             </div>
             <button class="km-dodaj-btn" onclick="potvrdiDodavanjeUKorpu()">
-                🛒 Potvrdi
+                Potvrdi
             </button>
         </div>
     </div>
@@ -486,10 +486,10 @@
     <div class="korpa-panel" id="korpa-panel">
         <div class="kp-header">
             <div class="kp-title">
-                🛒 Korpa
+                Korpa
                 <span class="kp-count" id="kp-count">0</span>
             </div>
-            <button class="kp-close" onclick="zatvoriKorpuPanel()">✕</button>
+            <button class="kp-close" onclick="zatvoriKorpuPanel()"></button>
         </div>
         <div class="kp-lista" id="kp-lista"></div>
         <div class="kp-footer" id="kp-footer" style="display:none">
@@ -504,7 +504,7 @@
                 </svg>
                 Nastavi sa plaćanjem
             </button>
-            <button class="kp-ocisti-btn" onclick="ocistiKorpu()">🗑 Isprazni korpu</button>
+            <button class="kp-ocisti-btn" onclick="ocistiKorpu()"> Isprazni korpu</button>
         </div>
     </div>
 </div>
@@ -521,14 +521,14 @@
     let korpaModalProizvod = null;
     let korpaModalKolicina = 1;
 
-    const hrana = {'pizza':'🍕','burger':'🍔','pasta':'🍝','piletina':'🍗','salata':'🥗','tiramisu':'🍰','cheesecake':'🍰','torta':'🍰','palačink':'🥞','coca':'🥤','pepsi':'🥤','limunad':'🍋','sok':'🧃','voda':'💧','nuggets':'🍗','wings':'🍗','meso':'🥩','riba':'🐟','supa':'🍲','čorba':'🍲'};
+    const hrana = {'pizza':'','burger':'','pasta':'','piletina':'','salata':'','tiramisu':'','cheesecake':'','torta':'','palačink':'','coca':'','pepsi':'','limunad':'','sok':'','voda':'','nuggets':'','wings':'','meso':'','riba':'','supa':'','čorba':''};
     function getEmoji(naziv) {
         const n = naziv.toLowerCase();
         for (const [k, v] of Object.entries(hrana)) if (n.includes(k)) return v;
-        return '🍽️';
+        return '';
     }
 
-    // ── Korpa badge ──────────────────────────────────────
+    //  Korpa badge
     function azurirajKorpaBadge() {
         const ukupnoKom = korpa.reduce((s, st) => s + st.kolicina, 0);
         const badge = document.getElementById('korpa-badge');
@@ -540,7 +540,7 @@
         azurirajKorpaBadge();
     }
 
-    // ── Panel korpe ──────────────────────────────────────
+    //  Panel korpe
     function prikaziKorpu() {
         renderKorpaPanel();
         document.getElementById('korpa-panel-overlay').classList.add('open');
@@ -560,7 +560,7 @@
         document.getElementById('kp-count').textContent = count;
 
         if (korpa.length === 0) {
-            lista.innerHTML = '<div class="kp-empty"><div class="kp-empty-icon">🛒</div><div class="kp-empty-text">Korpa je prazna</div></div>';
+            lista.innerHTML = '<div class="kp-empty"><div class="kp-empty-icon"></div><div class="kp-empty-text">Korpa je prazna</div></div>';
             footer.style.display = 'none';
             return;
         }
@@ -574,7 +574,7 @@
                 <span class="kp-stavka-emoji">${st.emoji || getEmoji(st.naziv)}</span>
                 <div class="kp-stavka-info">
                     <p class="kp-stavka-naziv">${st.naziv}</p>
-                    ${st.napomena ? `<p class="kp-stavka-napomena">📝 ${st.napomena}</p>` : ''}
+                    ${st.napomena ? `<p class="kp-stavka-napomena"> ${st.napomena}</p>` : ''}
                     ${st.cena && st.cena > 0
             ? `<p class="kp-stavka-cena">${(st.cena * st.kolicina).toLocaleString('sr-RS')} RSD <small>(${st.cena.toLocaleString('sr-RS')} × ${st.kolicina})</small></p>`
             : `<p style="font-size:13px;color:var(--gray);margin:0">Količina: ${st.kolicina}</p>`
@@ -609,12 +609,12 @@
         document.querySelectorAll('[id^="btn-korpa-"]').forEach(btn => {
             const id = parseInt(btn.id.replace('btn-korpa-', ''));
             const uKorpi = uKorpiIds.has(id);
-            btn.textContent = uKorpi ? '✓ Dodato' : '🛒 U korpu';
+            btn.textContent = uKorpi ? ' Dodato' : ' U korpu';
             btn.className = 'btn-korpa' + (uKorpi ? ' dodato' : '');
         });
     }
 
-    // ── Korpa modal (količina + napomena) ────────────────
+    //  Korpa modal (količina + napomena)
     function otvoriKorpaModal(p) {
         if (!p) return;
         korpaModalProizvod = p;
@@ -693,7 +693,7 @@
         }
     }
 
-    // ── Omiljeni ─────────────────────────────────────────
+    //  Omiljeni
     async function ucitajOmiljene() {
         try {
             const lista = await api.getOmiljeni(kupacId);
@@ -705,11 +705,11 @@
         try {
             if (omiljeniIds.has(id)) {
                 await api.ukloniOmiljeni(kupacId, id);
-                omiljeniIds.delete(id); btn.textContent = '🤍';
+                omiljeniIds.delete(id); btn.textContent = '';
                 try { api.zabeleziKlik(kupacId, id, 'UKLONI_OMILJENI'); } catch {}
             } else {
                 await api.dodajOmiljeni(kupacId, id);
-                omiljeniIds.add(id); btn.textContent = '❤️';
+                omiljeniIds.add(id); btn.textContent = '';
                 try { api.zabeleziKlik(kupacId, id, 'DODAJ_OMILJENI'); } catch {}
             }
         } catch { alert('Greška.'); }
@@ -722,19 +722,19 @@
         try {
             if (omiljeniIds.has(id)) {
                 await api.ukloniOmiljeni(kupacId, id);
-                omiljeniIds.delete(id); btn.textContent = '🤍';
+                omiljeniIds.delete(id); btn.textContent = '';
                 try { api.zabeleziKlik(kupacId, id, 'UKLONI_OMILJENI'); } catch {}
             } else {
                 await api.dodajOmiljeni(kupacId, id);
-                omiljeniIds.add(id); btn.textContent = '❤️';
+                omiljeniIds.add(id); btn.textContent = '';
                 try { api.zabeleziKlik(kupacId, id, 'DODAJ_OMILJENI'); } catch {}
             }
             const karticaFav = document.querySelector(`[onclick="toggleOmiljeni(${id}, this)"]`);
-            if (karticaFav) karticaFav.textContent = omiljeniIds.has(id) ? '❤️' : '🤍';
+            if (karticaFav) karticaFav.textContent = omiljeniIds.has(id) ? '' : '';
         } catch { alert('Greška.'); }
     }
 
-    // ── Detalji modal ────────────────────────────────────
+    //  Detalji modal
     async function otvoriDetalje(proizvodId) {
         try { await api.zabeleziKlik(kupacId, proizvodId, 'DETALJI'); } catch {}
         try {
@@ -753,11 +753,11 @@
             document.getElementById('modal-jedinica').textContent = p.mernaJedinica || '—';
 
             const favBtn = document.getElementById('modal-btn-fav');
-            favBtn.textContent = omiljeniIds.has(p.proizvodId) ? '❤️' : '🤍';
+            favBtn.textContent = omiljeniIds.has(p.proizvodId) ? '' : '';
 
             const korpaBtn = document.getElementById('modal-btn-korpa');
             const uKorpi = korpa.some(k => k.id === p.proizvodId);
-            korpaBtn.textContent = uKorpi ? '✓ U korpi' : '🛒 Dodaj u korpu';
+            korpaBtn.textContent = uKorpi ? ' U korpi' : ' Dodaj u korpu';
             korpaBtn.className = 'modal-btn-korpa' + (uKorpi ? ' dodato' : '');
 
             document.getElementById('modal-overlay').classList.add('open');
@@ -774,7 +774,7 @@
         aktivniProizvod = null;
     }
 
-    // ── Direktno dodavanje u korpu sa kartice (fetch) ────
+    //  Direktno dodavanje u korpu sa kartice (fetch)
     async function otvoriKorpaModalZaId(proizvodId) {
         try {
             const p = await fetch(`http://localhost:8080/api/proizvodi/${proizvodId}`).then(r => r.json());
@@ -784,7 +784,7 @@
         }
     }
 
-    // ── Tab switcher ──────────────────────────────────────
+    //  Tab switcher
     function prebacíTab(tip) {
         // Sekcije
         document.querySelectorAll('.sekcija').forEach(s => s.classList.remove('aktivna'));
@@ -794,13 +794,13 @@
         document.querySelector('.tab-' + tip).classList.add('aktivan');
     }
 
-    // ── Pomoćna funkcija: renderuje listu proizvoda u grid ──
+    //  Pomoćna funkcija: renderuje listu proizvoda u grid
     function renderGrid(gridId, lista, badge) {
         const grid = document.getElementById(gridId);
         if (!lista || lista.length === 0) {
             grid.innerHTML = `
                 <div class="empty-state">
-                    <div class="icon">🔍</div>
+                    <div class="icon"></div>
                     <p>Nema dostupnih proizvoda u ovoj sekciji.</p>
                 </div>
             `;
@@ -817,7 +817,7 @@
                     <div class="card-top">
                         <div class="card-name">${p.naziv}</div>
                         <button class="btn-fav" onclick="toggleOmiljeni(${p.proizvodId}, this)">
-                            ${omiljeniIds.has(p.proizvodId) ? '❤️' : '🤍'}
+                            ${omiljeniIds.has(p.proizvodId) ? '' : ''}
                         </button>
                     </div>
                     <span class="card-kat">${p.kategorija?.naziv || 'Ostalo'}</span>
@@ -830,12 +830,12 @@
                     </div>
                     <div class="card-actions">
                         <button class="btn-detalji" onclick="otvoriDetalje(${p.proizvodId})">
-                            🔍 Detaljnije
+                             Detaljnije
                         </button>
                         <button class="btn-korpa ${uKorpiIds.has(p.proizvodId) ? 'dodato' : ''}"
                                 id="btn-korpa-${p.proizvodId}"
                                 onclick="otvoriKorpaModalZaId(${p.proizvodId})">
-                            ${uKorpiIds.has(p.proizvodId) ? '✓ Dodato' : '🛒 U korpu'}
+                            ${uKorpiIds.has(p.proizvodId) ? ' Dodato' : ' U korpu'}
                         </button>
                     </div>
                 </div>
@@ -843,7 +843,7 @@
         `).join('');
     }
 
-    // ── Učitavanje preporuka ──────────────────────────────
+    //  Učitavanje preporuka
     async function ucitajPreporuke() {
         await ucitajOmiljene();
 
@@ -856,26 +856,26 @@
 
         // Personalizovane
         if (personalizovane.status === 'fulfilled') {
-            renderGrid('grid-personalizovano', personalizovane.value, '⭐ Top za tebe');
+            renderGrid('grid-personalizovano', personalizovane.value);
         } else {
             document.getElementById('grid-personalizovano').innerHTML =
-                '<div class="empty-state"><div class="icon">⚠️</div><p>Greška pri učitavanju.</p></div>';
+                '<div class="empty-state"><div class="icon"></div><p>Greška pri učitavanju.</p></div>';
         }
 
         // Sezonske
         if (sezonske.status === 'fulfilled') {
-            renderGrid('grid-sezonski', sezonske.value, '🌿 Sezonski');
+            renderGrid('grid-sezonski', sezonske.value);
         } else {
             document.getElementById('grid-sezonski').innerHTML =
-                '<div class="empty-state"><div class="icon">⚠️</div><p>Greška pri učitavanju.</p></div>';
+                '<div class="empty-state"><div class="icon"></div><p>Greška pri učitavanju.</p></div>';
         }
 
         // Trend
         if (trend.status === 'fulfilled') {
-            renderGrid('grid-trend', trend.value, '🔥 Trending');
+            renderGrid('grid-trend', trend.value);
         } else {
             document.getElementById('grid-trend').innerHTML =
-                '<div class="empty-state"><div class="icon">⚠️</div><p>Greška pri učitavanju.</p></div>';
+                '<div class="empty-state"><div class="icon"></div><p>Greška pri učitavanju.</p></div>';
         }
     }
 
