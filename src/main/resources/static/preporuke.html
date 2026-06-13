@@ -65,6 +65,7 @@
         .tab-btn.tab-personalizovano.aktivan { background: var(--green); }
         .tab-btn.tab-sezonski.aktivan { background: #c2620a; }
         .tab-btn.tab-trend.aktivan { background: #b91c1c; }
+        .tab-btn.tab-vremenski.aktivan { background: #2563eb; }
         .tab-ikona { font-size: 16px; }
 
         .sekcija-opis { font-size: 14px; color: var(--gray); margin-bottom: 24px; }
@@ -373,6 +374,9 @@
         <button class="tab-btn tab-trend" onclick="prebacíTab('trend')">
             <span class="tab-ikona"></span> U trendu
         </button>
+        <button class="tab-btn tab-vremenski" onclick="prebacíTab('vremenski')">
+            <span class="tab-ikona"></span> Trenutno na meniju
+        </button>
     </div>
 
     <!-- SEKCIJA 1: Personalizovane preporuke -->
@@ -396,6 +400,14 @@
         <p class="sekcija-opis">Najpopularnije u poslednjih 7 dana</p>
         <div id="grid-trend" class="grid">
             <div class="loading-state"><div class="spinner"></div><p>Učitavanje trend proizvoda...</p></div>
+        </div>
+    </div>
+
+    <!-- SEKCIJA 4: Vremenske preporuke -->
+    <div class="sekcija" id="sekcija-vremenski">
+        <p class="sekcija-opis">Iz menija koji su trenutno aktivni u ovo doba dana</p>
+        <div id="grid-vremenski" class="grid">
+            <div class="loading-state"><div class="spinner"></div><p>Učitavanje ponude za ovo doba dana...</p></div>
         </div>
     </div>
 </main>
@@ -848,10 +860,11 @@
         await ucitajOmiljene();
 
         // Sva tri endpointa pozivamo paralelno
-        const [personalizovane, sezonske, trend] = await Promise.allSettled([
+        const [personalizovane, sezonske, trend, vremenski] = await Promise.allSettled([
             apiFetch(`/preporuke/kupac/${kupacId}?limit=8`),
             apiFetch(`/preporuke/sezonske?limit=8`),
-            apiFetch(`/preporuke/trend?limit=8`)
+            apiFetch(`/preporuke/trend?limit=8`),
+            apiFetch(`/preporuke/vremenski?limit=8`)
         ]);
 
         // Personalizovane
@@ -875,6 +888,14 @@
             renderGrid('grid-trend', trend.value);
         } else {
             document.getElementById('grid-trend').innerHTML =
+                '<div class="empty-state"><div class="icon"></div><p>Greška pri učitavanju.</p></div>';
+        }
+
+        // Vremenski
+        if (vremenski.status === 'fulfilled') {
+            renderGrid('grid-vremenski', vremenski.value);
+        } else {
+            document.getElementById('grid-vremenski').innerHTML =
                 '<div class="empty-state"><div class="icon"></div><p>Greška pri učitavanju.</p></div>';
         }
     }

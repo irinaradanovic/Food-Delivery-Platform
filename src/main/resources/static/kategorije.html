@@ -186,7 +186,7 @@
         grid.innerHTML = lista.map(k => `
             <div class="kat-card" id="kat-${k.kategorijaId}" onclick="prikaziProizvode(${k.kategorijaId}, '${k.naziv}', this)">
                 <button class="btn-fav-kat" onclick="toggleOmiljenaKat(event, ${k.kategorijaId})">
-                    ${omiljeneKatIds.has(k.kategorijaId) ? '' : ''}
+                    ${omiljeneKatIds.has(k.kategorijaId) ? '❤️' : '🤍'}
                 </button>
                 <div class="icon">${getKatEmoji(k.naziv)}</div>
                 <div class="naziv">${k.naziv}</div>
@@ -202,12 +202,12 @@
             if (omiljeneKatIds.has(katId)) {
                 await api.ukloniOmiljenuKategoriju(kupacId, katId);
                 omiljeneKatIds.delete(katId);
-                btn.textContent = '';
+                btn.textContent = '🤍';
                 try { api.zabeleziKlikKategorija(kupacId, katId, 'UKLONI_OMILJENI'); } catch {}
             } else {
                 await api.dodajOmiljenuKategoriju(kupacId, katId);
                 omiljeneKatIds.add(katId);
-                btn.textContent = '';
+                btn.textContent = '❤️';
                 try { api.zabeleziKlikKategorija(kupacId, katId, 'DODAJ_OMILJENI'); } catch {}
             }
         } catch { alert('Greška.'); }
@@ -252,7 +252,7 @@
                         <div class="prod-top">
                             <div class="prod-name">${p.naziv}</div>
                             <button class="btn-fav" onclick="toggleOmiljeni(${p.proizvodId}, this)">
-                                ${omiljeniIds.has(p.proizvodId) ? '' : ''}
+                                ${omiljeniIds.has(p.proizvodId) ? '❤️' : '🤍'}
                             </button>
                         </div>
                         <div class="prod-desc">${p.opis || 'Bez opisa'}</div>
@@ -269,10 +269,10 @@
         try {
             if (omiljeniIds.has(id)) {
                 await api.ukloniOmiljeni(getKupacId(), id);
-                omiljeniIds.delete(id); btn.textContent = '';
+                omiljeniIds.delete(id); btn.textContent = '🤍';
             } else {
                 await api.dodajOmiljeni(getKupacId(), id);
-                omiljeniIds.add(id); btn.textContent = '';
+                omiljeniIds.add(id); btn.textContent = '❤️';
             }
         } catch { alert('Greška.'); }
     }

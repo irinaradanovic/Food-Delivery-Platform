@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -148,6 +149,14 @@ public class PreporukaService {
     // Sezonske preporuke - proizvodi iz SezonskiMeni čija sezona je aktuelna
     public List<Proizvod> getSezonskiProizvodi(int limit) {
         return proizvodRepository.findSezonskiProizvodi(LocalDate.now())
+                .stream()
+                .limit(limit)
+                .collect(Collectors.toList());
+    }
+
+    // Vremenske preporuke - proizvodi iz VremenskiMeni čiji interval pokriva trenutno vreme
+    public List<Proizvod> getVremenskiProizvodi(int limit) {
+        return proizvodRepository.findVremenskiProizvodi(LocalTime.now())
                 .stream()
                 .limit(limit)
                 .collect(Collectors.toList());

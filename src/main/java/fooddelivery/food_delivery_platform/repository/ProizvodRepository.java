@@ -47,4 +47,20 @@ public interface ProizvodRepository extends JpaRepository<Proizvod, Long> {
             "AND TREAT(sm.meni AS SezonskiMeni).pocetakSezone <= :danas " +
             "AND TREAT(sm.meni AS SezonskiMeni).krajSezone >= :danas")
     List<Proizvod> findSezonskiProizvodi(@Param("danas") java.time.LocalDate danas);
+
+    // Vremenske preporuke - proizvodi iz aktivnih VremenskiMeni čiji interval pokriva trenutno vreme
+    // (podrzava i intervale koji prelaze ponoc, npr. 18:00 - 02:00)
+    @Query("SELECT DISTINCT sm.proizvod FROM StavkaMenija sm " +
+            "WHERE TYPE(sm.meni) = VremenskiMeni " +
+            "AND sm.meni.aktivan = true " +
+            "AND sm.obrisan = false " +
+            "AND sm.dostupno = true " +
+            "AND (" +
+            "  (TREAT(sm.meni AS VremenskiMeni).vremeOd <= TREAT(sm.meni AS VremenskiMeni).vremeDo " +
+            "    AND :sada BETWEEN TREAT(sm.meni AS VremenskiMeni).vremeOd AND TREAT(sm.meni AS VremenskiMeni).vremeDo) " +
+            "  OR " +
+            "  (TREAT(sm.meni AS VremenskiMeni).vremeOd > TREAT(sm.meni AS VremenskiMeni).vremeDo " +
+            "    AND (:sada >= TREAT(sm.meni AS VremenskiMeni).vremeOd OR :sada <= TREAT(sm.meni AS VremenskiMeni).vremeDo))" +
+            ")")
+    List<Proizvod> findVremenskiProizvodi(@Param("sada") java.time.LocalTime sada);
 }

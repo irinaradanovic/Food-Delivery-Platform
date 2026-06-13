@@ -735,7 +735,7 @@
         <div class="filter-modal">
             <div class="filter-header">
                 <div class="filter-title">Filtriraj</div>
-                <button class="filter-close" onclick="zatvoriFilterModal()"></button>
+                <button class="filter-close" onclick="zatvoriFilterModal()">✕</button>
             </div>
             <div class="filter-body">
                 <div class="filter-group">
@@ -788,7 +788,7 @@
         <div class="modal-body">
             <div class="modal-top">
                 <div class="modal-naziv" id="modal-naziv"></div>
-                <button class="modal-close" onclick="zatvoriDetaljiModal()"></button>
+                <button class="modal-close" onclick="zatvoriDetaljiModal()">✕</button>
             </div>
             <span class="modal-kat" id="modal-kat"></span>
             <p class="modal-opis" id="modal-opis"></p>
@@ -810,7 +810,7 @@
                 </div>
             </div>
             <div class="modal-actions">
-                <button class="modal-btn-fav" id="modal-btn-fav" onclick="toggleOmiljeniModal()"></button>
+                <button class="modal-btn-fav" id="modal-btn-fav" onclick="toggleOmiljeniModal()">🤍</button>
                 <button class="modal-btn-korpa" id="modal-btn-korpa" onclick="otvoriKorpaModal(aktivniProizvod)">
                     Dodaj u korpu
                 </button>
@@ -824,7 +824,7 @@
     <div class="korpa-modal" id="korpa-modal">
         <div class="korpa-modal-header">
             <span class="korpa-modal-title">Dodaj u korpu</span>
-            <button class="korpa-modal-close" onclick="zatvoriKorpaModal()"></button>
+            <button class="korpa-modal-close" onclick="zatvoriKorpaModal()">✕</button>
         </div>
         <div class="korpa-modal-proizvod">
             <span class="korpa-modal-emoji" id="km-emoji"></span>
@@ -870,7 +870,7 @@
                 Korpa
                 <span class="kp-count" id="kp-count">0</span>
             </div>
-            <button class="kp-close" onclick="zatvoriKorpuPanel()"></button>
+            <button class="kp-close" onclick="zatvoriKorpuPanel()">✕</button>
         </div>
         <div class="kp-lista" id="kp-lista"></div>
         <div class="kp-preporuke-sekcija" id="kp-preporuke-sekcija" style="display:none; padding: 0 24px 12px;">
@@ -1179,7 +1179,7 @@
                     <div class="card-top">
                         <div class="card-name">${p.naziv}</div>
                         <button class="btn-fav" onclick="toggleOmiljeni(${p.proizvodId}, this)">
-                            ${omiljeniIds.has(p.proizvodId) ? '' : ''}
+                            ${omiljeniIds.has(p.proizvodId) ? '❤️' : '🤍'}
                         </button>
                     </div>
                     <span class="card-kat">${p.kategorija?.naziv || 'Ostalo'}</span>
@@ -1234,7 +1234,7 @@
             document.getElementById('modal-jedinica').textContent = p.mernaJedinica || '—';
 
             const favBtn = document.getElementById('modal-btn-fav');
-            favBtn.textContent = omiljeniIds.has(p.proizvodId) ? '' : '';
+            favBtn.textContent = omiljeniIds.has(p.proizvodId) ? '❤️' : '🤍';
 
             const korpaBtn = document.getElementById('modal-btn-korpa');
             const uKorpi = korpa.some(k => k.id === p.proizvodId);
@@ -1268,11 +1268,11 @@
         try {
             if (omiljeniIds.has(id)) {
                 await api.ukloniOmiljeni(getKupacId(), id);
-                omiljeniIds.delete(id); btn.textContent = '';
+                omiljeniIds.delete(id); btn.textContent = '🤍';
                 if (jeKupac()) try { api.zabeleziKlik(getKupacId(), id, 'UKLONI_OMILJENI'); } catch {}
             } else {
                 await api.dodajOmiljeni(getKupacId(), id);
-                omiljeniIds.add(id); btn.textContent = '';
+                omiljeniIds.add(id); btn.textContent = '❤️';
                 if (jeKupac()) try { api.zabeleziKlik(getKupacId(), id, 'DODAJ_OMILJENI'); } catch {}
             }
         } catch { alert('Greška.'); }
@@ -1285,15 +1285,15 @@
         try {
             if (omiljeniIds.has(id)) {
                 await api.ukloniOmiljeni(getKupacId(), id);
-                omiljeniIds.delete(id); btn.textContent = '';
+                omiljeniIds.delete(id); btn.textContent = '🤍';
                 if (jeKupac()) try { api.zabeleziKlik(getKupacId(), id, 'UKLONI_OMILJENI'); } catch {}
             } else {
                 await api.dodajOmiljeni(getKupacId(), id);
-                omiljeniIds.add(id); btn.textContent = '';
+                omiljeniIds.add(id); btn.textContent = '❤️';
                 if (jeKupac()) try { api.zabeleziKlik(getKupacId(), id, 'DODAJ_OMILJENI'); } catch {}
             }
             const karticaFav = document.querySelector(`[onclick="toggleOmiljeni(${id}, this)"]`);
-            if (karticaFav) karticaFav.textContent = omiljeniIds.has(id) ? '' : '';
+            if (karticaFav) karticaFav.textContent = omiljeniIds.has(id) ? '❤️' : '🤍';
         } catch { alert('Greška.'); }
     }
 
