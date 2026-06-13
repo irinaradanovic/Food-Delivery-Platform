@@ -20,7 +20,7 @@ public class PreporukaController {
     @GetMapping("/kupac/{kupacId}")
     public ResponseEntity<List<Proizvod>> getPreporuke(
             @PathVariable Long kupacId,
-            @RequestParam(defaultValue = "10") int limit) {
+            @RequestParam(defaultValue = "8") int limit) {
         return ResponseEntity.ok(preporukaService.getPersonalizovanePreporuke(kupacId, limit));
     }
 
