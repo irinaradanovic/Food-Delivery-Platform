@@ -248,37 +248,170 @@ INSERT INTO pretrage (pretraga_id, tekst_upita, tip_pretrage, vreme_pretrage, ko
                                                                                                (12, 'limunada',   'OPSTA', '2026-05-25 23:38:32.113215', 5),
                                                                                                (13, 'hygui',      'OPSTA', '2026-05-25 23:39:20.161768', 5);
 INSERT INTO stavke_menija (stavka_id, meni_id, proizvod_id, cena, dostupno, vreme_pripreme_min, vreme_pripreme_max, obrisan) VALUES
-(17, 2, 17, 850.00, true, 8, 12, false),
-(18, 2, 18, 980.00, true, 8, 12, false),
-(19, 2, 19, 1050.00, true, 10, 15, false),
-(20, 2, 20, 780.00, true, 8, 12, false),
-(21, 1, 21, 750.00, true, 10, 15, false),
-(22, 1, 22, 950.00, true, 12, 18, false),
-(23, 1, 23, 820.00, true, 10, 15, false);
+                                                                                                                                 (17, 2, 17, 850.00, true, 8, 12, false),
+                                                                                                                                 (18, 2, 18, 980.00, true, 8, 12, false),
+                                                                                                                                 (19, 2, 19, 1050.00, true, 10, 15, false),
+                                                                                                                                 (20, 2, 20, 780.00, true, 8, 12, false),
+                                                                                                                                 (21, 1, 21, 750.00, true, 10, 15, false),
+                                                                                                                                 (22, 1, 22, 950.00, true, 12, 18, false),
+                                                                                                                                 (23, 1, 23, 820.00, true, 10, 15, false);
 
 INSERT INTO stavke_porudzbine (stavka_id, cena, porudzbina_id, kolicina, stavka_menija_id) VALUES
-(DEFAULT, 550.00, 1, 1, 1),
-(DEFAULT, 820.00, 1, 2, 2),
-(DEFAULT, 320.00, 2, 1, 5),
-(DEFAULT, 410.00, 2, 1, 6),
-(DEFAULT, 750.00, 3, 1, 7),
-(DEFAULT, 620.00, 3, 1, 8),
-(DEFAULT, 130.00, 3, 1, 9),
-(DEFAULT, 360.00, 3, 1, 10);
+                                                                                               (DEFAULT, 550.00, 1, 1, 1),
+                                                                                               (DEFAULT, 820.00, 1, 2, 2),
+                                                                                               (DEFAULT, 320.00, 2, 1, 5),
+                                                                                               (DEFAULT, 410.00, 2, 1, 6),
+                                                                                               (DEFAULT, 750.00, 3, 1, 7),
+                                                                                               (DEFAULT, 620.00, 3, 1, 8),
+                                                                                               (DEFAULT, 130.00, 3, 1, 9),
+                                                                                               (DEFAULT, 360.00, 3, 1, 10);
 
 INSERT INTO kuponi (kupon_id, kod, popust_iznos, popust_procenat, vazi_od, vazi_do, aktivan, max_upotreba, upotrebljeno_puta, vlasnik_id) VALUES
-(1, 'WELCOME100', 100.00, NULL, '2026-05-01 00:00:00', '2028-12-31 23:59:59', true, 100, 0, 4),
-(2, 'SUMMER20', NULL, 20.00, '2026-06-01 00:00:00', '2026-08-31 23:59:59', true, 50, 0, 5);
+                                                                                                                                              (1, 'WELCOME100', 100.00, NULL, '2026-05-01 00:00:00', '2028-12-31 23:59:59', true, 100, 0, 4),
+                                                                                                                                              (2, 'SUMMER20', NULL, 20.00, '2026-06-01 00:00:00', '2026-08-31 23:59:59', true, 50, 0, 5);
 
 INSERT INTO statusi_porudzbine (status_istorija_id, porudzbina_id, status, vreme_promene, promenio_korisnik_id) VALUES
-(1, 1, 'KREIRANA', '2026-05-25 09:08:06.068921', 5),
-(2, 2, 'KREIRANA', '2026-05-25 09:08:18.871066', 5),
-(3, 3, 'KREIRANA', '2026-05-25 09:09:25.310633', 5),
-(4, 4, 'KREIRANA', '2026-05-25 09:09:32.691650', 5),
-(5, 5, 'KREIRANA', '2026-05-25 09:10:02.493091', 5),
-(6, 6, 'KREIRANA', '2026-05-25 09:10:14.984126', 5),
-(7, 7, 'KREIRANA', '2026-05-25 09:10:29.991216', 5);
+                                                                                                                    (1, 1, 'KREIRANA', '2026-05-25 09:08:06.068921', 5),
+                                                                                                                    (2, 2, 'KREIRANA', '2026-05-25 09:08:18.871066', 5),
+                                                                                                                    (3, 3, 'KREIRANA', '2026-05-25 09:09:25.310633', 5),
+                                                                                                                    (4, 4, 'KREIRANA', '2026-05-25 09:09:32.691650', 5),
+                                                                                                                    (5, 5, 'KREIRANA', '2026-05-25 09:10:02.493091', 5),
+                                                                                                                    (6, 6, 'KREIRANA', '2026-05-25 09:10:14.984126', 5),
+                                                                                                                    (7, 7, 'KREIRANA', '2026-05-25 09:10:29.991216', 5);
 
+-- Pretrage
+INSERT INTO pretrage (pretraga_id, tekst_upita, tip_pretrage, vreme_pretrage, korisnik_id) VALUES
+                                                                                               (14, 'burger',      'OPSTA', '2026-05-26 09:15:00', 4),
+                                                                                               (15, 'classic',     'OPSTA', '2026-05-26 09:16:10', 4),
+                                                                                               (16, 'cola',        'OPSTA', '2026-05-26 11:30:00', 4),
+                                                                                               (17, 'piće',        'OPSTA', '2026-05-26 11:31:05', 4),
+                                                                                               (18, 'burger',      'OPSTA', '2026-05-27 12:05:00', 4),
+                                                                                               (19, 'kafa',        'OPSTA', '2026-05-27 12:06:20', 4),
+                                                                                               (20, 'wings',       'OPSTA', '2026-05-28 18:00:00', 4),
+                                                                                               (21, 'buffalo',     'OPSTA', '2026-05-28 18:01:30', 4),
+                                                                                               (22, 'monster',     'OPSTA', '2026-05-29 13:10:00', 4),
+                                                                                               (23, 'cheesecake',  'OPSTA', '2026-05-29 20:00:00', 4),
+                                                                                               (24, 'pizza',       'OPSTA', '2026-05-26 10:00:00', 5),
+                                                                                               (25, 'capricciosa', 'OPSTA', '2026-05-26 10:01:15', 5),
+                                                                                               (26, 'salata',      'OPSTA', '2026-05-26 12:45:00', 5),
+                                                                                               (27, 'piletina',    'OPSTA', '2026-05-26 12:46:00', 5),
+                                                                                               (28, 'cezar',       'OPSTA', '2026-05-27 11:00:00', 5),
+                                                                                               (29, 'avokado',     'OPSTA', '2026-05-27 11:01:40', 5),
+                                                                                               (30, 'pasta',       'OPSTA', '2026-05-27 19:30:00', 5),
+                                                                                               (31, 'tiramisu',    'OPSTA', '2026-05-28 20:15:00', 5),
+                                                                                               (32, 'desert',      'OPSTA', '2026-05-28 20:16:00', 5),
+                                                                                               (33, 'marinara',    'OPSTA', '2026-05-29 13:00:00', 5),
+                                                                                               (34, 'puttanesca',  'OPSTA', '2026-05-29 13:01:30', 5),
+                                                                                               (35, 'hrskava',     'OPSTA', '2026-05-30 18:00:00', 5);
+
+-- Klikovi
+INSERT INTO klikovi (klik_id, tip_akcije, vreme_klika, korisnik_id, proizvod_id, kategorija_id) VALUES
+                                                                                                    (49,  'REZULTAT_PRETRAGE', '2026-05-26 09:15:30', 4, 1,  NULL),
+                                                                                                    (50,  'REZULTAT_PRETRAGE', '2026-05-26 09:15:31', 4, 2,  NULL),
+                                                                                                    (51,  'PREGLED',           '2026-05-26 09:16:00', 4, 1,  NULL),
+                                                                                                    (52,  'DETALJI',           '2026-05-26 09:16:20', 4, 1,  NULL),
+                                                                                                    (53,  'PREGLED',           '2026-05-26 09:17:00', 4, 2,  NULL),
+                                                                                                    (54,  'DETALJI',           '2026-05-26 09:17:30', 4, 2,  NULL),
+                                                                                                    (55,  'KORPA',             '2026-05-26 09:18:00', 4, 1,  NULL),
+                                                                                                    (56,  'PREGLED',           '2026-05-26 09:18:30', 4, NULL, 1),
+                                                                                                    (57,  'REZULTAT_PRETRAGE', '2026-05-26 11:30:20', 4, 8,  NULL),
+                                                                                                    (58,  'PREGLED',           '2026-05-26 11:30:45', 4, 8,  NULL),
+                                                                                                    (59,  'KORPA',             '2026-05-26 11:31:00', 4, 8,  NULL),
+                                                                                                    (60,  'PREGLED',           '2026-05-26 11:31:30', 4, NULL, 4),
+                                                                                                    (61,  'PREGLED',           '2026-05-27 12:05:30', 4, 2,  NULL),
+                                                                                                    (62,  'KORPA',             '2026-05-27 12:06:00', 4, 2,  NULL),
+                                                                                                    (63,  'REZULTAT_PRETRAGE', '2026-05-27 12:06:45', 4, 9,  NULL),
+                                                                                                    (64,  'PREGLED',           '2026-05-27 12:07:00', 4, 9,  NULL),
+                                                                                                    (65,  'DETALJI',           '2026-05-27 12:07:20', 4, 9,  NULL),
+                                                                                                    (66,  'KORPA',             '2026-05-27 12:07:40', 4, 9,  NULL),
+                                                                                                    (67,  'DODAJ_OMILJENI',    '2026-05-27 12:08:00', 4, 2,  NULL),
+                                                                                                    (68,  'REZULTAT_PRETRAGE', '2026-05-28 18:01:00', 4, 12, NULL),
+                                                                                                    (69,  'PREGLED',           '2026-05-28 18:01:30', 4, 12, NULL),
+                                                                                                    (70,  'DETALJI',           '2026-05-28 18:02:00', 4, 12, NULL),
+                                                                                                    (71,  'KORPA',             '2026-05-28 18:02:30', 4, 12, NULL),
+                                                                                                    (72,  'PREGLED',           '2026-05-28 18:03:00', 4, 13, NULL),
+                                                                                                    (73,  'PREGLED',           '2026-05-28 18:03:30', 4, NULL, 6),
+                                                                                                    (74,  'REZULTAT_PRETRAGE', '2026-05-28 20:00:10', 4, 11, NULL),
+                                                                                                    (75,  'PREGLED',           '2026-05-28 20:00:30', 4, 11, NULL),
+                                                                                                    (76,  'DETALJI',           '2026-05-28 20:01:00', 4, 11, NULL),
+                                                                                                    (77,  'KORPA',             '2026-05-28 20:01:30', 4, 11, NULL),
+                                                                                                    (78,  'DODAJ_OMILJENI',    '2026-05-28 20:02:00', 4, 11, NULL),
+                                                                                                    (79,  'REZULTAT_PRETRAGE', '2026-05-29 13:10:30', 4, 2,  NULL),
+                                                                                                    (80,  'PREGLED',           '2026-05-29 13:11:00', 4, 2,  NULL),
+                                                                                                    (81,  'KORPA',             '2026-05-29 13:11:30', 4, 2,  NULL),
+                                                                                                    (82,  'PREGLED',           '2026-05-29 13:12:00', 4, 8,  NULL),
+                                                                                                    (83,  'KORPA',             '2026-05-29 13:12:30', 4, 8,  NULL),
+                                                                                                    (84,  'PREGLED',           '2026-05-29 20:00:30', 4, 10, NULL),
+                                                                                                    (85,  'PREGLED',           '2026-05-29 20:01:00', 4, 11, NULL),
+                                                                                                    (86,  'KORPA',             '2026-05-29 20:01:30', 4, 11, NULL),
+                                                                                                    (87,  'PREGLED',           '2026-05-29 20:02:00', 4, NULL, 5),
+                                                                                                    (88,  'REZULTAT_PRETRAGE', '2026-05-26 10:01:30', 5, 3,  NULL),
+                                                                                                    (89,  'REZULTAT_PRETRAGE', '2026-05-26 10:01:31', 5, 4,  NULL),
+                                                                                                    (90,  'REZULTAT_PRETRAGE', '2026-05-26 10:01:32', 5, 5,  NULL),
+                                                                                                    (91,  'PREGLED',           '2026-05-26 10:02:00', 5, 3,  NULL),
+                                                                                                    (92,  'DETALJI',           '2026-05-26 10:02:30', 5, 3,  NULL),
+                                                                                                    (93,  'KORPA',             '2026-05-26 10:03:00', 5, 3,  NULL),
+                                                                                                    (94,  'DODAJ_OMILJENI',    '2026-05-26 10:03:30', 5, 3,  NULL),
+                                                                                                    (95,  'PREGLED',           '2026-05-26 10:04:00', 5, NULL, 2),
+                                                                                                    (96,  'REZULTAT_PRETRAGE', '2026-05-26 12:45:30', 5, 6,  NULL),
+                                                                                                    (97,  'REZULTAT_PRETRAGE', '2026-05-26 12:45:31', 5, 7,  NULL),
+                                                                                                    (98,  'PREGLED',           '2026-05-26 12:46:00', 5, 6,  NULL),
+                                                                                                    (99,  'DETALJI',           '2026-05-26 12:46:30', 5, 6,  NULL),
+                                                                                                    (100, 'KORPA',             '2026-05-26 12:47:00', 5, 6,  NULL),
+                                                                                                    (101, 'PREGLED',           '2026-05-26 12:47:30', 5, NULL, 3),
+                                                                                                    (102, 'REZULTAT_PRETRAGE', '2026-05-27 11:01:00', 5, 6,  NULL),
+                                                                                                    (103, 'REZULTAT_PRETRAGE', '2026-05-27 11:01:01', 5, 7,  NULL),
+                                                                                                    (104, 'PREGLED',           '2026-05-27 11:01:30', 5, 7,  NULL),
+                                                                                                    (105, 'DETALJI',           '2026-05-27 11:02:00', 5, 7,  NULL),
+                                                                                                    (106, 'KORPA',             '2026-05-27 11:02:30', 5, 7,  NULL),
+                                                                                                    (107, 'DODAJ_OMILJENI',    '2026-05-27 11:03:00', 5, 7,  NULL),
+                                                                                                    (108, 'REZULTAT_PRETRAGE', '2026-05-27 19:30:30', 5, 16, NULL),
+                                                                                                    (109, 'PREGLED',           '2026-05-27 19:31:00', 5, 16, NULL),
+                                                                                                    (110, 'DETALJI',           '2026-05-27 19:31:30', 5, 16, NULL),
+                                                                                                    (111, 'KORPA',             '2026-05-27 19:32:00', 5, 16, NULL),
+                                                                                                    (112, 'PREGLED',           '2026-05-27 19:32:30', 5, 13, NULL),
+                                                                                                    (113, 'PREGLED',           '2026-05-27 19:33:00', 5, NULL, 6),
+                                                                                                    (114, 'REZULTAT_PRETRAGE', '2026-05-28 20:15:30', 5, 10, NULL),
+                                                                                                    (115, 'REZULTAT_PRETRAGE', '2026-05-28 20:15:31', 5, 11, NULL),
+                                                                                                    (116, 'PREGLED',           '2026-05-28 20:16:00', 5, 10, NULL),
+                                                                                                    (117, 'DETALJI',           '2026-05-28 20:16:30', 5, 10, NULL),
+                                                                                                    (118, 'KORPA',             '2026-05-28 20:17:00', 5, 10, NULL),
+                                                                                                    (119, 'DODAJ_OMILJENI',    '2026-05-28 20:17:30', 5, 10, NULL),
+                                                                                                    (120, 'PREGLED',           '2026-05-28 20:18:00', 5, 11, NULL),
+                                                                                                    (121, 'PREGLED',           '2026-05-28 20:18:30', 5, NULL, 5),
+                                                                                                    (122, 'REZULTAT_PRETRAGE', '2026-05-29 13:01:00', 5, 4,  NULL),
+                                                                                                    (123, 'REZULTAT_PRETRAGE', '2026-05-29 13:01:01', 5, 5,  NULL),
+                                                                                                    (124, 'PREGLED',           '2026-05-29 13:02:00', 5, 5,  NULL),
+                                                                                                    (125, 'DETALJI',           '2026-05-29 13:02:30', 5, 5,  NULL),
+                                                                                                    (126, 'KORPA',             '2026-05-29 13:03:00', 5, 5,  NULL),
+                                                                                                    (127, 'DODAJ_OMILJENI',    '2026-05-29 13:03:30', 5, 5,  NULL),
+                                                                                                    (128, 'PREGLED',           '2026-05-29 13:04:00', 5, NULL, 2),
+                                                                                                    (129, 'REZULTAT_PRETRAGE', '2026-05-30 18:00:30', 5, 13, NULL),
+                                                                                                    (130, 'PREGLED',           '2026-05-30 18:01:00', 5, 13, NULL),
+                                                                                                    (131, 'DETALJI',           '2026-05-30 18:01:30', 5, 13, NULL),
+                                                                                                    (132, 'KORPA',             '2026-05-30 18:02:00', 5, 13, NULL),
+                                                                                                    (133, 'PREGLED',           '2026-05-30 18:02:30', 5, 12, NULL),
+                                                                                                    (134, 'PREGLED',           '2026-05-30 18:03:00', 5, 9,  NULL),
+                                                                                                    (135, 'KORPA',             '2026-05-30 18:03:30', 5, 9,  NULL),
+                                                                                                    (136, 'PREGLED',           '2026-05-30 18:04:00', 5, NULL, 6);
+
+-- Omiljeni proizvodi
+INSERT INTO omiljeni_proizvodi (korisnik_id, proizvod_id, datum_dodavanja) VALUES
+                                                                               (4, 2,  '2026-05-27 12:08:00'),
+                                                                               (4, 11, '2026-05-28 20:02:00'),
+                                                                               (5, 3,  '2026-05-26 10:03:30'),
+                                                                               (5, 7,  '2026-05-27 11:03:00'),
+                                                                               (5, 5,  '2026-05-29 13:03:30'),
+                                                                               (5, 10, '2026-05-28 20:17:30');
+
+-- Omiljene kategorije
+INSERT INTO omiljene_kategorije (korisnik_id, kategorija_id, datum_dodavanja) VALUES
+                                                                                  (4, 1, '2026-05-26 09:18:30'),
+                                                                                  (4, 4, '2026-05-26 11:31:30'),
+                                                                                  (4, 6, '2026-05-28 18:03:30'),
+                                                                                  (5, 2, '2026-05-26 10:04:00'),
+                                                                                  (5, 3, '2026-05-26 12:47:30'),
+                                                                                  (5, 6, '2026-05-30 18:04:00');
 
 -- Sinhronizacija sekvenci za bazu
 SELECT setval(pg_get_serial_sequence('korisnici', 'korisnik_id'), MAX(korisnik_id)) FROM korisnici;
@@ -288,62 +421,10 @@ SELECT setval(pg_get_serial_sequence('sastojci', 'sastojak_id'), MAX(sastojak_id
 SELECT setval(pg_get_serial_sequence('proizvodi', 'proizvod_id'), MAX(proizvod_id)) FROM proizvodi;
 SELECT setval(pg_get_serial_sequence('meniji', 'meni_id'), MAX(meni_id)) FROM meniji;
 SELECT setval(pg_get_serial_sequence('stavke_menija', 'stavka_id'), MAX(stavka_id)) FROM stavke_menija;
-SELECT setval(pg_get_serial_sequence('stavke_menija', 'stavka_id'), MAX(stavka_id)) FROM stavke_menija;
 SELECT setval(pg_get_serial_sequence('kuponi', 'kupon_id'), MAX(kupon_id)) FROM kuponi;
 SELECT setval(pg_get_serial_sequence('porudzbine', 'porudzbina_id'), MAX(porudzbina_id)) FROM porudzbine;
 SELECT setval(pg_get_serial_sequence('statusi_porudzbine', 'status_istorija_id'), MAX(status_istorija_id)) FROM statusi_porudzbine;
 SELECT setval(pg_get_serial_sequence('klikovi', 'klik_id'), MAX(klik_id)) FROM klikovi;
 SELECT setval(pg_get_serial_sequence('pretrage', 'pretraga_id'), MAX(pretraga_id)) FROM pretrage;
-
-
---podsistem za dostavu
-
-INSERT INTO dostavljaci
-(id, ime, prezime, telefon, trenutna_lat, trenutna_lng, status, prosecna_ocena, broj_dostava)
-VALUES
-    (1, 'Petar', 'Petrović', '064111111', 45.2671, 19.8335, 'DOSTUPAN', 4.8, 152),
-
-    (2, 'Milan', 'Milić', '064222222', 45.2517, 19.8369, 'ZAUZET', 4.6, 98),
-
-    (3, 'Nikola', 'Nikolić', '064333333', 45.2440, 19.8425, 'DOSTUPAN', 4.9, 210);
-
-INSERT INTO dostave
-(id, porudzbina_id, dostavljac_id,
- adresa_preuzimanja,
- adresa_isporuke,
- vreme_kreiranja,
- procenjeno_vreme,
- status)
-VALUES
-    (1, 101, 1,
-     'Bulevar Oslobođenja 10',
-     'Cara Dušana 25',
-     NOW(),
-     25,
-     'U_TRANSPORTU'),
-
-    (2, 102, 2,
-     'Futoška 15',
-     'Narodnog Fronta 44',
-     NOW(),
-     35,
-     'DODELJENA');
-
-INSERT INTO lokacije_dostavljaca
-(id, dostavljac_id, latitude, longitude, timestamp)
-VALUES
-    (1, 1, 45.2671, 19.8335, NOW()),
-
-    (2, 2, 45.2517, 19.8369, NOW()),
-
-    (3, 3, 45.2440, 19.8425, NOW());
-
-INSERT INTO ocene_dostavljaca
-(id, dostavljac_id, ocena, komentar, tip_ocene)
-VALUES
-    (1, 1, 5, 'Odlična dostava', 'KUPAC'),
-
-    (2, 1, 4, 'Brza isporuka', 'RESTORAN'),
-
-    (3, 2, 5, 'Veoma ljubazan dostavljač', 'KUPAC');
-
+SELECT setval(pg_get_serial_sequence('omiljeni_proizvodi', 'omiljeni_id'), MAX(omiljeni_id)) FROM omiljeni_proizvodi;
+SELECT setval(pg_get_serial_sequence('omiljene_kategorije', 'omiljena_kategorija_id'), MAX(omiljena_kategorija_id)) FROM omiljene_kategorije;

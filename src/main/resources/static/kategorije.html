@@ -27,7 +27,6 @@
         .nav-links a { padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 500; color: var(--gray); transition: all 0.15s; }
         .nav-links a:hover { background: #f3f4f6; color: var(--dark); }
         .nav-links a.active { background: var(--green); color: white; }
-        .nav-links a.fav { color: var(--orange); }
         .nav-right { display: flex; align-items: center; gap: 12px; }
         .nav-user { font-size: 13px; color: var(--gray); background: #f3f4f6; padding: 6px 12px; border-radius: 20px; }
         .btn-odjava { background: none; border: 1.5px solid var(--border); border-radius: 8px; padding: 7px 14px; font-size: 13px; font-weight: 500; color: var(--gray); cursor: pointer; transition: all 0.15s; }
@@ -126,7 +125,7 @@
     </div>
 
     <div id="kat-grid" class="kat-grid">
-        <div class="empty-state"><div class="icon">⏳</div><p>Učitavanje...</p></div>
+        <div class="empty-state"><div class="icon"></div><p>Učitavanje...</p></div>
     </div>
 
     <div id="proizvodi-sekcija" class="proizvodi-sekcija">
@@ -148,17 +147,17 @@
     let aktivnaKategorija = null;
 
     const katEmoji = {
-        'pizza': '🍕', 'burger': '🍔', 'pasta': '🍝', 'piletina': '🍗',
-        'piće': '🥤', 'pića': '🥤', 'pice': '🥤', 'pić': '🥤', 'deserti': '🍰', 'desert': '🍰',
-        'salate': '🥗', 'salata': '🥗', 'supe': '🍲', 'supa': '🍲',
-        'riba': '🐟', 'roštilj': '🥩', 'ostalo': '🍽️'
+        'pizza': '', 'burger': '', 'pasta': '', 'piletina': '',
+        'piće': '', 'pića': '', 'pice': '', 'pić': '', 'deserti': '', 'desert': '',
+        'salate': '', 'salata': '', 'supe': '', 'supa': '',
+        'riba': '', 'roštilj': '', 'ostalo': ''
     };
 
     function getKatEmoji(naziv) {
-        if (!naziv) return '🍽️';
+        if (!naziv) return '';
         const n = naziv.toLowerCase();
         for (const [k, v] of Object.entries(katEmoji)) if (n.includes(k)) return v;
-        return '🍽️';
+        return '';
     }
 
     async function init() {
@@ -174,14 +173,14 @@
             prikaziKategorije(kat);
         } catch {
             document.getElementById('kat-grid').innerHTML =
-                '<div class="empty-state"><div class="icon">⚠️</div><p>Greška.</p></div>';
+                '<div class="empty-state"><div class="icon"></div><p>Greška.</p></div>';
         }
     }
 
     function prikaziKategorije(lista) {
         const grid = document.getElementById('kat-grid');
         if (!lista.length) {
-            grid.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>Nema kategorija.</p></div>';
+            grid.innerHTML = '<div class="empty-state"><div class="icon"></div><p>Nema kategorija.</p></div>';
             return;
         }
         grid.innerHTML = lista.map(k => `
@@ -224,7 +223,7 @@
         document.getElementById('sekcija-naziv').textContent = getKatEmoji(naziv) + ' ' + naziv;
         document.getElementById('sekcija-count').textContent = '...';
         document.getElementById('prod-grid').innerHTML =
-            '<div class="empty-state"><div class="icon">⏳</div><p>Učitavanje...</p></div>';
+            '<div class="empty-state"><div class="icon"></div><p>Učitavanje...</p></div>';
 
         sekcija.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
@@ -234,7 +233,7 @@
 
             if (!lista.length) {
                 document.getElementById('prod-grid').innerHTML =
-                    '<div class="empty-state"><div class="icon">📭</div><p>Nema proizvoda u ovoj kategoriji.</p></div>';
+                    '<div class="empty-state"><div class="icon"></div><p>Nema proizvoda u ovoj kategoriji.</p></div>';
                 return;
             }
 
@@ -262,7 +261,7 @@
             `}).join('');
         } catch {
             document.getElementById('prod-grid').innerHTML =
-                '<div class="empty-state"><div class="icon">⚠️</div><p>Greška.</p></div>';
+                '<div class="empty-state"><div class="icon"></div><p>Greška.</p></div>';
         }
     }
 

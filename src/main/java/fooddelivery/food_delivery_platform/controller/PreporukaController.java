@@ -31,6 +31,13 @@ public class PreporukaController {
         return ResponseEntity.ok(preporukaService.getSezonskiProizvodi(limit));
     }
 
+    // Vremenske preporuke - proizvodi iz aktivnih VremenskiMeni čiji interval pokriva trenutno vreme
+    @GetMapping("/vremenski")
+    public ResponseEntity<List<Proizvod>> getVremenskiProizvodi(
+            @RequestParam(defaultValue = "8") int limit) {
+        return ResponseEntity.ok(preporukaService.getVremenskiProizvodi(limit));
+    }
+
     // Trend preporuke - najklikavaniji proizvodi u poslednjih 7 dana
     @GetMapping("/trend")
     public ResponseEntity<List<Proizvod>> getTrendProizvodi(
