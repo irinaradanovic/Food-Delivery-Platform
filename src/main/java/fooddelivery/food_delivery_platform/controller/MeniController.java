@@ -87,4 +87,9 @@ public class MeniController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Greska na serveru: " + e.getMessage());
         }
     }
+
+    @GetMapping("/grupa/{grupniId}")
+    public List<Meni> getMenuVersionHstory(@PathVariable Long grupniId) {
+        return meniService.getMenuVersionHstory(grupniId);
+    }
 }
