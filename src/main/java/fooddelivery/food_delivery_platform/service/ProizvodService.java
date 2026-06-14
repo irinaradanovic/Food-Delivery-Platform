@@ -1,8 +1,11 @@
 package fooddelivery.food_delivery_platform.service;
 
 import fooddelivery.food_delivery_platform.model.Proizvod;
+import fooddelivery.food_delivery_platform.model.StavkaMenija;
 import fooddelivery.food_delivery_platform.repository.ProizvodRepository;
+import fooddelivery.food_delivery_platform.repository.StavkaMenijaRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.time.LocalTime;
 import java.util.List;
@@ -12,6 +15,9 @@ import java.util.List;
 public class ProizvodService {
 
     private final ProizvodRepository proizvodRepository;
+
+    @Autowired
+    private StavkaMenijaRepository stavkaMenijaRepository;
 
     public List<Proizvod> getAll() { return proizvodRepository.findAll(); }
 
@@ -44,7 +50,17 @@ public class ProizvodService {
 
     // Kupac - svi proizvodi iz aktivnih menija restorana (uz vremenski filter)
     public List<Proizvod> getProizvodiZaKupca(Long restoranId) {
-        return proizvodRepository.findProizvodiIzAktivnihMenija(restoranId, LocalTime.now());
+        //return proizvodRepository.findProizvodiIzAktivnihMenija(restoranId, LocalTime.now());
+
+        // pronalazimo stavke menija koje su aktivne za restoran
+        List<StavkaMenija> aktivneStavke = stavkaMenijaRepository.findAktivneStavkeZaRestoran(restoranId);
+
+        // uzimamo cenu svakog proizvoda iz stavki menija
+        return aktivneStavke.stream().map(stavka -> {
+            Proizvod p = stavka.getProizvod();
+            p.setCena(stavka.getCena());
+            return p;
+        }).toList();
     }
 
     // Kupac - pretraga po nazivu unutar aktivnih menija restorana (uz vremenski filter)
