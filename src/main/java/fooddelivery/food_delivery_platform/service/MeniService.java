@@ -158,4 +158,8 @@ public class MeniService {
             throw new AccessDeniedException("Nemate ovlašćenje da menjate ovaj meni!");
         }
     }
+
+    public List<Meni> getMenuVersionHstory(Long grupniMeniId){
+        return meniRepository.findByGrupniMeniIdOrderByVerzijaDesc(grupniMeniId);
+    }
 }

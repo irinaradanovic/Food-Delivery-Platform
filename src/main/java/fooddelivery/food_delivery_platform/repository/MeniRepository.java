@@ -17,4 +17,6 @@ public interface MeniRepository extends JpaRepository<Meni, Long> {
             "ORDER BY grupni_meni_id, aktivan DESC, meni_id DESC",
             nativeQuery = true)
     List<Meni> findJedinstveniMenijiPoGrupama(@Param("restoranId") Long restoranId);
+
+    List<Meni> findByGrupniMeniIdOrderByVerzijaDesc(Long grupniId);
 }

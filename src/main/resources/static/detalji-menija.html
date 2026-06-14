@@ -59,6 +59,15 @@
                     Izmena cena na ovoj stranici će automatski zatvoriti trenutni meni i kreirati novu, aktivnu verziju. Stari cenovnik će ostati sačuvan u sistemu radi praćenja istorije. Kupci mogu da vide samo poslednju, aktivnu verziju cenovnika.
                 </div>
             </div>
+            <button onclick="window.location.href='istorija-verzija.html?grupniId=' + trenutniMeni.grupniMeniId"
+                    class="w-full bg-white border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-50 font-semibold py-4 px-6 rounded-xl transition text-center cursor-pointer">
+                Istorija verzija
+            </button>
+            <button id="btn-vrati-verziju"
+                    onclick="potvrdiRollback()"
+                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-4 px-6 rounded-xl transition text-center shadow-sm cursor-pointer border border-transparent hidden">
+                Vrati na ovu verziju
+            </button>
         </div>
     </div>
 
@@ -212,6 +221,8 @@
                 statusEl.className = "text-lg font-bold text-red-500 block";
                 btnDeaktiviraj.classList.add('hidden');
                 btnNoviCenovnik.classList.add('hidden');
+                const btnVratiVerziju = document.getElementById('btn-vrati-verziju');
+                btnVratiVerziju.classList.remove('hidden');
 
                 btnIzmeniOsnovno.setAttribute('disabled', 'true');
                 btnIzmeniOsnovno.className = "w-full bg-gray-300 text-gray-500 font-semibold py-4 px-6 rounded-xl text-center border border-transparent cursor-not-allowed opacity-60";
@@ -226,6 +237,27 @@
             }
         } catch (error) {
             console.error("Greška pri učitavanju:", error);
+        }
+    }
+    async function potvrdiRollback() {
+        if (!meniId) return;
+
+        const poruka = "PAŽNJA: Vraćanjem na ovu verziju, trenutno aktivni meni će biti deaktiviran, " +
+            "a ova verzija će postati važeća. Da li želite da nastavite?";
+
+        if (confirm(poruka)) {
+            try {
+                await apiFetch(`/meni/${meniId}/vrati-verziju`, {
+                    method: 'PUT',
+                    headers: {
+                        'X-User-Id': localStorage.getItem('korisnikId')
+                    }
+                });
+                alert("Meni je uspešno vraćen i aktiviran!");
+                window.location.reload();
+            } catch (error) {
+                alert("Greška prilikom vraćanja verzije: " + error.message);
+            }
         }
     }
 

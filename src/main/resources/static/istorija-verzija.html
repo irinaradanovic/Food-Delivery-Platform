@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <title>Istorija verzija menija</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        nav {
+            background: white; border-bottom: 1px solid #e5e0d8;
+            padding: 0 40px; height: 68px; width: 100%;
+            display: flex; align-items: center; justify-content: space-between;
+            position: fixed; top: 0; left: 0; z-index: 100;
+        }
+        .nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .nav-logo-icon { width: 76px; height: 96px; display: flex; align-items: center; justify-content: center; }
+        .nav-logo-text { font-family: 'Playfair Display', serif; font-size: 20px; color: #1a1a1a; font-weight: 700; }
+        .nav-links { display: flex; align-items: center; gap: 4px; }
+        .nav-links a { padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 500; color: #6b7280; transition: all 0.15s; }
+        .nav-links a:hover { background: #f3f4f6; color: #1a1a1a; }
+        .nav-links a.active { background: #2d6a2d !important; color: white !important; }
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .nav-user { font-size: 13px; color: #6b7280; background: #f3f4f6; padding: 6px 12px; border-radius: 20px; font-family: sans-serif; }
+        .btn-odjava { background: none; border: 1.5px solid #e5e0d8; border-radius: 8px; padding: 7px 14px; font-size: 13px; font-weight: 500; color: #6b7280; cursor: pointer; transition: all 0.15s; }
+        .btn-odjava:hover { border-color: #dc2626; color: #dc2626; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen pt-24 p-8">
+<nav></nav>
+
+<div class="max-w-5xl mx-auto">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Istorija verzija</h1>
+        <p class="text-gray-500">Pregled i upravljanje prethodnim verzijama ovog menija.</p>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+        <table class="w-full text-left">
+            <thead class="bg-gray-50 border-b border-gray-200">
+            <tr>
+                <th class="px-6 py-4 font-semibold text-gray-700">Verzija</th>
+                <th class="px-6 py-4 font-semibold text-gray-700">Datum od</th>
+                <th class="px-6 py-4 font-semibold text-gray-700">Datum do</th>
+                <th class="px-6 py-4 font-semibold text-gray-700">Status</th>
+                <th class="px-6 py-4 font-semibold text-gray-700">Akcije</th>
+            </tr>
+            </thead>
+            <tbody id="tabela-verzija-body" class="divide-y divide-gray-100">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="./js/api.js"></script>
+<script src="./js/auth.js"></script>
+<script>
+    zastitiStranicu();
+    const urlParams = new URLSearchParams(window.location.search);
+    const grupniId = urlParams.get('grupniId');
+
+    async function ucitajIstoriju() {
+        try {
+            const verzije = await apiFetch(`/meni/grupa/${grupniId}`);
+            const body = document.getElementById('tabela-verzija-body');
+            body.innerHTML = '';
+
+            verzije.forEach(m => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="px-6 py-4 font-bold text-gray-800">${m.verzija}</td>
+                    <td class="px-6 py-4 text-gray-600">${m.datumOd || '-'}</td>
+                    <td class="px-6 py-4 text-gray-600">${m.datumDo || '-'}</td>
+                    <td class="px-6 py-4">
+                        ${m.aktivan ? '<span class="text-emerald-600 font-bold">Aktivna</span>' : '<span class="text-gray-400">Arhivirano</span>'}
+                    </td>
+                    <td class="px-6 py-4 flex gap-2">
+                        <button onclick="window.location.href='detalji-menija.html?meniId=${m.meniId}'"
+                                class="px-3 py-1.5 border border-emerald-600 text-emerald-600 rounded-lg cursor-pointer hover:bg-emerald-50 transition">Pregled</button>
+                        ${!m.aktivan ? `
+                            <button onclick="potvrdiRollback(${m.meniId})"
+                                    class="px-3 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 cursor-pointer transition">Vrati na verziju</button>
+                        ` : ''}
+                    </td>
+                `;
+                body.appendChild(tr);
+            });
+        } catch (e) { console.error(e); }
+    }
+
+    async function potvrdiRollback(meniId) {
+        if (confirm("PAŽNJA: Vraćanjem na ovu verziju, trenutno aktivan meni će postati neaktivan, " +
+            "a izabrana verzija će postati važeća. Da li želite da nastavite?")) {
+            await apiFetch(`/meni/${meniId}/vrati-verziju`, { method: 'PUT' });
+            window.location.reload();
+        }
+    }
+
+    window.onload = ucitajIstoriju;
+</script>
+</body>
+</html>
