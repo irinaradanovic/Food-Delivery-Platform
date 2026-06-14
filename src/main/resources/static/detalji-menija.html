@@ -242,22 +242,21 @@
     async function potvrdiRollback() {
         if (!meniId) return;
 
-        const poruka = "PAŽNJA: Vraćanjem na ovu verziju, trenutno aktivni meni će biti deaktiviran, " +
-            "a ova verzija će postati važeća. Da li želite da nastavite?";
+        if (!confirm("PAŽNJA: Vraćanjem na ovu verziju, trenutno aktivni meni će biti deaktiviran. Da li želite da nastavite?")) {
+            return;
+        }
 
-        if (confirm(poruka)) {
-            try {
-                await apiFetch(`/meni/${meniId}/vrati-verziju`, {
-                    method: 'PUT',
-                    headers: {
-                        'X-User-Id': localStorage.getItem('korisnikId')
-                    }
-                });
-                alert("Meni je uspešno vraćen i aktiviran!");
-                window.location.reload();
-            } catch (error) {
-                alert("Greška prilikom vraćanja verzije: " + error.message);
-            }
+        try {
+            const rezultat = await apiFetch(`/meni/${meniId}/vrati-verziju`, {
+                method: 'PUT',
+                headers: { 'X-User-Id': localStorage.getItem('korisnikId') }
+            });
+
+            alert("Meni je uspešno vraćen i aktiviran!");
+            // Redirect na detalje NOVE verzije
+            window.location.replace(`detalji-menija.html?meniId=${rezultat.noviMeniId}`);
+        } catch (error) {
+            alert("Greška prilikom vraćanja verzije: " + error.message);
         }
     }
 

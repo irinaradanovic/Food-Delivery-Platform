@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.persistence.EntityNotFoundException;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/meni")
@@ -91,5 +92,13 @@ public class MeniController {
     @GetMapping("/grupa/{grupniId}")
     public List<Meni> getMenuVersionHstory(@PathVariable Long grupniId) {
         return meniService.getMenuVersionHstory(grupniId);
+    }
+
+    @PutMapping("/{meniId}/vrati-verziju")
+    public ResponseEntity<Map<String, Long>> rollbackToVersion(
+            @PathVariable Long meniId,
+            @RequestHeader("X-User-Id") Long userId) {
+        Meni novaVerzija = meniService.rollbackToVersion(meniId, userId);
+        return ResponseEntity.ok(Map.of("noviMeniId", novaVerzija.getMeniId()));
     }
 }

@@ -37,13 +37,13 @@ public class DatabaseTriggerInitializer {
                     RETURN NEW;
                 END IF;
             
-                INSERT INTO stavke_menija (meni_id, proizvod_id, vreme_pripreme_min, vreme_pripreme_max, cena, dostupno, obrisan)
+                /*INSERT INTO stavke_menija (meni_id, proizvod_id, vreme_pripreme_min, vreme_pripreme_max, cena, dostupno, obrisan)
                 SELECT NEW.meni_id, proizvod_id, vreme_pripreme_min, vreme_pripreme_max, cena, dostupno, obrisan
                 FROM stavke_menija
                 WHERE meni_id = v_stari_meni_id 
                   AND obrisan = FALSE
                  
-                ON CONFLICT (meni_id, proizvod_id) DO NOTHING;
+                ON CONFLICT (meni_id, proizvod_id) DO NOTHING;  */
             
                 -- deaktivacija prethodne verzije
                 UPDATE meniji
