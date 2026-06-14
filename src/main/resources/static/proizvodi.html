@@ -915,6 +915,12 @@
         return localStorage.getItem('uloga') === 'KUPAC';
     }
 
+    // Gost moze da pregleda i koristi korpu, ali ne moze da koristi omiljene/tracking
+    function jeKupacIliGost() {
+        const uloga = localStorage.getItem('uloga');
+        return uloga === 'KUPAC' || !uloga;
+    }
+
     let omiljeniIds = new Set();
     // Korpa: [{id, naziv, emoji, cena, kolicina, napomena}]
     let korpa = JSON.parse(localStorage.getItem('korpa') || '[]');
@@ -1115,6 +1121,7 @@
 
     //  Omiljeni
     async function ucitajOmiljene() {
+        if (!jeKupac()) return; // Gosti nemaju omiljene
         try {
             const lista = await api.getOmiljeni(getKupacId());
             omiljeniIds = new Set(lista.map(o => o.proizvod.proizvodId));
@@ -1178,9 +1185,7 @@
                 <div class="card-body">
                     <div class="card-top">
                         <div class="card-name">${p.naziv}</div>
-                        <button class="btn-fav" onclick="toggleOmiljeni(${p.proizvodId}, this)">
-                            ${omiljeniIds.has(p.proizvodId) ? '❤️' : '🤍'}
-                        </button>
+                        ${jeKupac() ? `<button class="btn-fav" onclick="toggleOmiljeni(${p.proizvodId}, this)">${omiljeniIds.has(p.proizvodId) ? '❤️' : '🤍'}</button>` : ''}
                     </div>
                     <span class="card-kat">${p.kategorija?.naziv || 'Ostalo'}</span>
                     <div class="card-cena-row">
@@ -1235,6 +1240,7 @@
 
             const favBtn = document.getElementById('modal-btn-fav');
             favBtn.textContent = omiljeniIds.has(p.proizvodId) ? '❤️' : '🤍';
+            favBtn.style.display = jeKupac() ? '' : 'none';
 
             const korpaBtn = document.getElementById('modal-btn-korpa');
             const uKorpi = korpa.some(k => k.id === p.proizvodId);
@@ -1265,6 +1271,7 @@
 
     //  Omiljeni
     async function toggleOmiljeni(id, btn) {
+        if (!jeKupac()) { window.location.href = '/login.html?poruka=morate-biti-prijavljeni'; return; }
         try {
             if (omiljeniIds.has(id)) {
                 await api.ukloniOmiljeni(getKupacId(), id);
@@ -1280,6 +1287,7 @@
 
     async function toggleOmiljeniModal() {
         if (!aktivniProizvod) return;
+        if (!jeKupac()) { window.location.href = '/login.html?poruka=morate-biti-prijavljeni'; return; }
         const id = aktivniProizvod.proizvodId;
         const btn = document.getElementById('modal-btn-fav');
         try {

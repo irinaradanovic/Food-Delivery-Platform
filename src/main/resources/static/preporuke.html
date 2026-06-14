@@ -363,11 +363,11 @@
     </div>
 
     <!-- TAB SWITCHER -->
-    <div class="tab-switcher">
-        <button class="tab-btn tab-personalizovano aktivan" onclick="prebacíTab('personalizovano')">
+    <div class="tab-switcher" id="tab-switcher">
+        <button class="tab-btn tab-personalizovano" id="tab-btn-personalizovano" onclick="prebacíTab('personalizovano')">
             <span class="tab-ikona"></span> Za tebe
         </button>
-        <button class="tab-btn tab-sezonski" onclick="prebacíTab('sezonski')">
+        <button class="tab-btn tab-sezonski aktivan" onclick="prebacíTab('sezonski')">
             <span class="tab-ikona"></span> Sezonski
         </button>
         <button class="tab-btn tab-trend" onclick="prebacíTab('trend')">
@@ -379,7 +379,7 @@
     </div>
 
     <!-- SEKCIJA 1: Personalizovane preporuke -->
-    <div class="sekcija aktivna" id="sekcija-personalizovano">
+    <div class="sekcija" id="sekcija-personalizovano">
         <div id="grid-personalizovano" class="grid">
             <div class="loading-state"><div class="spinner"></div><p>Analiziramo tvoje navike...</p></div>
         </div>
@@ -521,6 +521,10 @@
 <script>
     zastitiStranicu();
     const kupacId = getKupacId();
+
+    function jeKupac() {
+        return localStorage.getItem('uloga') === 'KUPAC';
+    }
 
     let omiljeniIds = new Set();
     let korpa = JSON.parse(localStorage.getItem('korpa') || '[]');
@@ -672,7 +676,7 @@
         if (!p) return;
         const napomena = document.getElementById('km-napomena').value.trim();
 
-        try { api.zabeleziKlik(kupacId, p.proizvodId, 'KORPA'); } catch {}
+        if (jeKupac()) try { api.zabeleziKlik(kupacId, p.proizvodId, 'KORPA'); } catch {}
 
         const postojeci = korpa.find(k => k.id === p.proizvodId && k.napomena === napomena);
         if (postojeci) {
@@ -702,6 +706,7 @@
 
     //  Omiljeni
     async function ucitajOmiljene() {
+        if (!jeKupac()) return; // Gosti nemaju omiljene
         try {
             const lista = await api.getOmiljeni(kupacId);
             omiljeniIds = new Set(lista.map(o => o.proizvod.proizvodId));
@@ -709,6 +714,7 @@
     }
 
     async function toggleOmiljeni(id, btn) {
+        if (!jeKupac()) { window.location.href = '/login.html?poruka=morate-biti-prijavljeni'; return; }
         try {
             if (omiljeniIds.has(id)) {
                 await api.ukloniOmiljeni(kupacId, id);
@@ -724,6 +730,7 @@
 
     async function toggleOmiljeniModal() {
         if (!aktivniProizvod) return;
+        if (!jeKupac()) { window.location.href = '/login.html?poruka=morate-biti-prijavljeni'; return; }
         const id = aktivniProizvod.proizvodId;
         const btn = document.getElementById('modal-btn-fav');
         try {
@@ -743,7 +750,7 @@
 
     //  Detalji modal
     async function otvoriDetalje(proizvodId) {
-        try { await api.zabeleziKlik(kupacId, proizvodId, 'DETALJI'); } catch {}
+        if (jeKupac()) try { await api.zabeleziKlik(kupacId, proizvodId, 'DETALJI'); } catch {}
         try {
             const p = await fetch(`http://localhost:8080/api/proizvodi/${proizvodId}`).then(r => r.json());
             aktivniProizvod = p;
@@ -761,6 +768,7 @@
 
             const favBtn = document.getElementById('modal-btn-fav');
             favBtn.textContent = omiljeniIds.has(p.proizvodId) ? '' : '';
+            favBtn.style.display = jeKupac() ? '' : 'none';
 
             const korpaBtn = document.getElementById('modal-btn-korpa');
             const uKorpi = korpa.some(k => k.id === p.proizvodId);
@@ -823,9 +831,7 @@
                 <div class="card-body">
                     <div class="card-top">
                         <div class="card-name">${p.naziv}</div>
-                        <button class="btn-fav" onclick="toggleOmiljeni(${p.proizvodId}, this)">
-                            ${omiljeniIds.has(p.proizvodId) ? '' : ''}
-                        </button>
+                        ${jeKupac() ? `<button class="btn-fav" onclick="toggleOmiljeni(${p.proizvodId}, this)">${omiljeniIds.has(p.proizvodId) ? '' : ''}</button>` : ''}
                     </div>
                     <span class="card-kat">${p.kategorija?.naziv || 'Ostalo'}</span>
                     <div class="card-cena-row">
@@ -854,20 +860,39 @@
     async function ucitajPreporuke() {
         await ucitajOmiljene();
 
-        // Sva tri endpointa pozivamo paralelno
-        const [personalizovane, sezonske, trend, vremenski] = await Promise.allSettled([
-            apiFetch(`/preporuke/kupac/${kupacId}?limit=8`),
-            apiFetch(`/preporuke/sezonske?limit=8`),
-            apiFetch(`/preporuke/trend?limit=8`),
-            apiFetch(`/preporuke/vremenski?limit=8`)
+        // Za goste: sakrij tab "Za tebe" i defaultuj na "Sezonski"
+        const tabPersonalizovano = document.getElementById('tab-btn-personalizovano');
+        if (!jeKupac()) {
+            if (tabPersonalizovano) tabPersonalizovano.style.display = 'none';
+            document.getElementById('sekcija-sezonski').classList.add('aktivna');
+            document.querySelector('.tab-btn.tab-sezonski').classList.add('aktivan');
+            document.getElementById('grid-personalizovano').innerHTML =
+                '<div class="empty-state"><div class="icon"></div><p>Prijavite se da biste videli personalizovane preporuke.</p></div>';
+        } else {
+            if (tabPersonalizovano) tabPersonalizovano.style.display = '';
+            // Za prijavljene: "Za tebe" je aktivan tab
+            document.getElementById('sekcija-personalizovano').classList.add('aktivna');
+            document.getElementById('sekcija-sezonski').classList.remove('aktivna');
+            tabPersonalizovano.classList.add('aktivan');
+            document.querySelector('.tab-btn.tab-sezonski').classList.remove('aktivan');
+        }
+
+        // Endpointi koje ucitavamo za sve
+        const [sezonske, trend, vremenski] = await Promise.allSettled([
+            apiFetch('/preporuke/sezonske?limit=8'),
+            apiFetch('/preporuke/trend?limit=8'),
+            apiFetch('/preporuke/vremenski?limit=8')
         ]);
 
-        // Personalizovane
-        if (personalizovane.status === 'fulfilled') {
-            renderGrid('grid-personalizovano', personalizovane.value);
-        } else {
-            document.getElementById('grid-personalizovano').innerHTML =
-                '<div class="empty-state"><div class="icon"></div><p>Greška pri učitavanju.</p></div>';
+        // Personalizovane — samo za kupce
+        if (jeKupac()) {
+            try {
+                const personalizovane = await apiFetch(`/preporuke/kupac/${kupacId}?limit=8`);
+                renderGrid('grid-personalizovano', personalizovane);
+            } catch {
+                document.getElementById('grid-personalizovano').innerHTML =
+                    '<div class="empty-state"><div class="icon"></div><p>Greška pri učitavanju.</p></div>';
+            }
         }
 
         // Sezonske
