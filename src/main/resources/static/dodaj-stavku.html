@@ -94,8 +94,12 @@
             </div>
         </div>
 
+
         <div class="space-y-4">
             <h3 class="text-lg font-bold text-emerald-700 border-b border-emerald-100 pb-1">4. Cena i vreme pripreme</h3>
+            <div id="poruka-preporuke" class="hidden p-3 bg-emerald-50 text-emerald-700 text-sm rounded-lg border border-emerald-200">
+                ℹ️ Sistem je predložio vreme pripreme za ovu kategoriju. Možete ga ručno izmeniti.
+            </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Cena (RSD)</label>
@@ -210,20 +214,42 @@
 
     function toggleKategorijaUnos(select) {
         const noviUnos = document.getElementById('novaKategorijaNaziv');
+        const poruka = document.getElementById('poruka-preporuke');
         if (select.value !== "") {
             noviUnos.value = "";
             noviUnos.disabled = true;
             noviUnos.required = false;
             noviUnos.classList.add('bg-gray-100');
+            proveriPreporukuVremena(select.value);
         } else {
             noviUnos.disabled = false;
             noviUnos.required = true;
             noviUnos.classList.remove('bg-gray-100');
+            poruka.classList.add('hidden');
         }
     }
 
     function vratiSeNazad() {
         window.location.href = `detalji-menija.html?meniId=${meniId}`;
+    }
+
+    async function proveriPreporukuVremena(kategorijaId) {
+        if (!kategorijaId) return;
+
+        try {
+            const opt = { headers: { 'X-User-Id': ulogovaniKorisnikId } };
+            const preporuka = await apiFetch(`/stavke-menija/preporuka-vremena/${kategorijaId}`, opt);
+
+            if (preporuka && preporuka.min !== undefined && preporuka.max !== undefined) {
+                document.getElementById('vremePripremeMin').value = preporuka.min;
+                document.getElementById('vremePripremeMax').value = preporuka.max;
+
+                document.getElementById('poruka-preporuke').classList.remove('hidden');
+            }
+        } catch (e) {
+            console.warn("Nema preporuke za ovu kategoriju ili greška u komunikaciji.");
+            document.getElementById('poruka-preporuke').classList.add('hidden');
+        }
     }
 
     async function sacuvajStavku(event) {

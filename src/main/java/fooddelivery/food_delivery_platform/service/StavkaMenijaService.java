@@ -20,9 +20,7 @@ import fooddelivery.food_delivery_platform.repository.*;
 import java.io.IOException;
 import java.nio.file.*;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -295,6 +293,28 @@ public class StavkaMenijaService {
         }
     }
 
+    public Map<String, Integer> calculateAvgPreparationTime(Long kategorijaId) {
+        Object[] rezultat = stavkaMenijaRepository.findAverageTimeByKategorija(kategorijaId);
 
+        Map<String, Integer> mapa = new HashMap<>();
 
+        if (rezultat != null && rezultat.length >= 2) {
+            double min = ((Number) rezultat[0]).doubleValue();
+            double max = ((Number) rezultat[1]).doubleValue();
+
+            if (min > 0 && max > 0) {
+                mapa.put("min", (int) min);
+                mapa.put("max", (int) max);
+            } else {
+                mapa.put("min", 15);
+                mapa.put("max", 25);
+            }
+        } else {
+            mapa.put("min", 15);
+            mapa.put("max", 25);
+        }
+
+        return mapa;
+    }
 }
+

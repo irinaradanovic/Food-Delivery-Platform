@@ -110,4 +110,12 @@ public class StavkaMenijaController {
             return ResponseEntity.badRequest().build();
         }
     }
+
+    @GetMapping("/preporuka-vremena/{kategorijaId}")
+    public ResponseEntity<Map<String, Integer>> getPreporukaVremena(@PathVariable Long kategorijaId) {
+        Map<String, Integer> preporuka = stavkaMenijaService.calculateAvgPreparationTime(kategorijaId);
+        // vraca min:5, max:10 npr
+        return ResponseEntity.ok(preporuka);
+    }
+
 }
