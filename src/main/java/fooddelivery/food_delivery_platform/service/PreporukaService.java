@@ -5,6 +5,7 @@ import fooddelivery.food_delivery_platform.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -20,6 +21,7 @@ public class PreporukaService {
     private final PorudzbinaRepository porudzbinaRepository;
     private final StavkaPorudzbineRepository stavkaPorudzbineRepository;
     private final ProizvodRepository proizvodRepository;
+    private final StavkaMenijaRepository stavkaMenijaRepository;
 
     // Tezinski faktori za razlicite akcije
     private static final Map<String, Double> TEZINE_AKCIJA = Map.of(
@@ -129,12 +131,14 @@ public class PreporukaService {
         Map<Long, Proizvod> proizvodiMap = sviProizvodi.stream()
                 .collect(Collectors.toMap(Proizvod::getProizvodId, p -> p));
 
-        return skorovi.entrySet().stream()
+        List<Proizvod> rezultat =  skorovi.entrySet().stream()
                 .sorted(Map.Entry.<Long, Double>comparingByValue().reversed())
                 .map(e -> proizvodiMap.get(e.getKey()))
                 .filter(Objects::nonNull)
                 .limit(limit)
                 .collect(Collectors.toList());
+
+        return postaviCene(rezultat);
     }
 
     // Dodaje bonus svim proizvodima iste kategorije, osim izuzetog proizvoda
@@ -150,18 +154,20 @@ public class PreporukaService {
 
     // Sezonske preporuke - proizvodi iz SezonskiMeni čija sezona je aktuelna
     public List<Proizvod> getSezonskiProizvodi(int limit) {
-        return proizvodRepository.findSezonskiProizvodi(LocalDate.now())
+        List<Proizvod> rezultat = proizvodRepository.findSezonskiProizvodi(LocalDate.now())
                 .stream()
                 .limit(limit)
                 .collect(Collectors.toList());
+        return postaviCene(rezultat);
     }
 
     // Vremenske preporuke - proizvodi iz VremenskiMeni čiji interval pokriva trenutno vreme
     public List<Proizvod> getVremenskiProizvodi(int limit) {
-        return proizvodRepository.findVremenskiProizvodi(LocalTime.now())
+        List<Proizvod> rezultat =  proizvodRepository.findVremenskiProizvodi(LocalTime.now())
                 .stream()
                 .limit(limit)
                 .collect(Collectors.toList());
+        return postaviCene(rezultat);
     }
 
     // Trend preporuke - najklikavaniji proizvodi u poslednjih 7 dana (globalno)
@@ -193,11 +199,42 @@ public class PreporukaService {
             return trenutnoAktivni.stream().limit(limit).collect(Collectors.toList());
         }
 
-        return skorovi.entrySet().stream()
+        List<Proizvod> rezultat =  skorovi.entrySet().stream()
                 .sorted(Map.Entry.<Long, Double>comparingByValue().reversed())
                 .limit(limit)
                 .map(e -> aktivniMap.get(e.getKey()))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
+        return postaviCene(rezultat);
     }
+
+    // POMOCNA FUNKCIJA
+    // Mapa proizvodId - cena
+    // pronalazi aktivne cene za svaki proizvod na osnovu veze sa Stavka Menija
+    private Map<Long, BigDecimal> ucitajCeneIzAktivnihStavki(List<Proizvod> proizvodi) {
+        Set<Long> ids = proizvodi.stream()
+                .map(Proizvod::getProizvodId)
+                .collect(Collectors.toSet());
+
+        return stavkaMenijaRepository.findAktivneCeneZaProizvode(ids)
+                .stream()
+                .collect(Collectors.toMap(
+                        sm -> sm.getProizvod().getProizvodId(),
+                        StavkaMenija::getCena
+                ));
+    }
+
+    // postavlja cene na listu proizvoda na osnovu aktivnih stavki menija
+    private List<Proizvod> postaviCene(List<Proizvod> proizvodi) {
+        Map<Long, BigDecimal> cene = ucitajCeneIzAktivnihStavki(proizvodi);
+        proizvodi.forEach(p -> {
+            BigDecimal cena = cene.get(p.getProizvodId());
+            if (cena != null) p.setCena(cena);
+        });
+        return proizvodi;
+    }
+
+
+
+
 }
