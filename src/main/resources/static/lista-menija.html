@@ -115,7 +115,10 @@
             if (meniji && meniji.length > 0) {
                 meniji.forEach(meni => {
                     const kartica = document.createElement('div');
-                    kartica.className = "bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 flex flex-col justify-between cursor-pointer transition transform hover:-translate-y-1";
+
+                    // Ako je meni neaktivan, dodajemo 'opacity-60' da bude blago zamućen
+                    //const neaktivanKlasa = !meni.aktivan ? "opacity-60 grayscale-[20%]" : "";
+                    kartica.className = `bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 flex flex-col justify-between cursor-pointer transition transform hover:-translate-y-1`;
 
                     let emoji = "🍔";
                     let bgBoja = "bg-amber-100";
@@ -130,20 +133,28 @@
                     } else if (meni.tipMenija === 'STANDARDNI' || meni.tipMenija === 'STANDARDNIMENI') {
                         emoji = "✨";
                         bgBoja = "bg-emerald-100";
-                        prikazTipa = 'STANDARDNI'; // Sređivanje ispisa teksta
+                        prikazTipa = 'STANDARDNI';
                     }
 
+                    const statusBedz = meni.aktivan
+                        ? `<span class="text-[10px] font-bold uppercase px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full ml-2">Aktivan</span>`
+                        : `<span class="text-[10px] font-bold uppercase px-2 py-0.5 bg-rose-100 text-rose-700 rounded-full ml-2">Deaktiviran</span>`;
+
                     kartica.innerHTML = `
-            <div>
-                <div class="w-full h-40 ${bgBoja} flex items-center justify-center text-6xl select-none">
-                    ${emoji}
-                </div>
-                <div class="p-4">
-                    <span class="text-xs font-semibold uppercase px-2 py-1 bg-gray-100 text-gray-600 rounded-full">${prikazTipa}</span>
-                    <h3 class="text-xl font-bold text-gray-800 mt-2">${meni.naziv}</h3>
-                </div>
+        <div>
+            <div class="w-full h-40 ${bgBoja} flex items-center justify-center text-6xl select-none">
+                ${emoji}
             </div>
-        `;
+            <div class="p-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-semibold uppercase px-2 py-1 bg-gray-100 text-gray-600 rounded-full">${prikazTipa}</span>
+                    ${statusBedz}
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mt-2">${meni.naziv}</h3>
+                <p class="text-xs text-gray-400 mt-1">Verzija: ${meni.verzija || 'v1'}</p>
+            </div>
+        </div>
+    `;
 
                     kartica.onclick = () => {
                         window.location.href = `detalji-menija.html?meniId=${meni.meniId}`;

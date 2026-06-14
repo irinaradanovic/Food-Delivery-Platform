@@ -1,3 +1,5 @@
+ALTER TABLE stavke_menija
+    ADD CONSTRAINT uq_meni_proizvod UNIQUE (meni_id, proizvod_id);
 -- Menadzeri
 INSERT INTO korisnici (korisnik_id, ime, prezime, telefon, lozinka, email, datum_reg, uloga) VALUES
                                                                                                  (1, 'Marko', 'Marković', '064123456', 'password123', 'menadzer1@test.com', '2026-05-25', 'MENADZER'),
@@ -125,17 +127,16 @@ INSERT INTO proizvod_alergeni (proizvod_id, alergen_id) VALUES
 
 -- Meniji
 -- Restoran 1: STANDARDNI
-INSERT INTO meniji (meni_id, naziv, opis, tip_menija, verzija, aktivan, datum_od, restoran_id) VALUES
-    (1, 'Glavni Meni Big Bite', 'Standardna ponuda hrane i pića', 'STANDARDNI', 'v1', true, '2026-05-26', 1);
+INSERT INTO meniji (meni_id, naziv, opis, tip_menija, verzija, aktivan, datum_od, restoran_id, grupni_meni_id) VALUES
+    (1, 'Glavni Meni Big Bite', 'Standardna ponuda hrane i pića', 'STANDARDNI', 'v1', true, '2026-05-26', 1, 1);
 
 -- Restoran 2: VREMENSKI (Doručak od 08:00 do 11:00)
-INSERT INTO meniji (meni_id, naziv, opis, tip_menija, verzija, aktivan, datum_od, vreme_od, vreme_do, restoran_id) VALUES
-    (2, 'Jutarnji Meni Napoli', 'Najbolji doručak u gradu', 'VREMENSKI', 'v1', true, '2026-05-26', '08:00:00', '11:00:00', 2);
+INSERT INTO meniji (meni_id, naziv, opis, tip_menija, verzija, aktivan, datum_od, vreme_od, vreme_do, restoran_id, grupni_meni_id) VALUES
+    (2, 'Jutarnji Meni Napoli', 'Najbolji doručak u gradu', 'VREMENSKI', 'v1', true, '2026-05-26', '08:00:00', '11:00:00', 2, 2);
 
 -- Restoran 3: SEZONSKI (Letnji meni)
-INSERT INTO meniji (meni_id, naziv, opis, tip_menija, verzija, aktivan, datum_od, pocetak_sezone, kraj_sezone, restoran_id) VALUES
-    (3, 'Letnji Meni 2026 Green', 'Laka letnja osveženja i obroci', 'SEZONSKI', 'v1', true, '2026-05-26', '2026-06-01', '2026-08-31', 3);
-
+INSERT INTO meniji (meni_id, naziv, opis, tip_menija, verzija, aktivan, datum_od, pocetak_sezone, kraj_sezone, restoran_id, grupni_meni_id) VALUES
+    (3, 'Letnji Meni 2026 Green', 'Laka letnja osveženja i obroci', 'SEZONSKI', 'v1', true, '2026-05-26', '2026-06-01', '2026-08-31', 3, 3);
 
 -- Povezivanje Menija i Proizvoda
 INSERT INTO stavke_menija (stavka_id, meni_id, proizvod_id, cena, dostupno, vreme_pripreme_min, vreme_pripreme_max, obrisan) VALUES

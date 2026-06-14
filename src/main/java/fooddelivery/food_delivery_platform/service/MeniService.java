@@ -1,12 +1,10 @@
 package fooddelivery.food_delivery_platform.service;
 
 import fooddelivery.food_delivery_platform.dto.MeniUpdateDTO;
-import fooddelivery.food_delivery_platform.model.Meni;
-import fooddelivery.food_delivery_platform.model.Restoran;
-import fooddelivery.food_delivery_platform.model.SezonskiMeni;
-import fooddelivery.food_delivery_platform.model.VremenskiMeni;
+import fooddelivery.food_delivery_platform.model.*;
 import fooddelivery.food_delivery_platform.repository.MeniRepository;
 import fooddelivery.food_delivery_platform.repository.RestoranRepository;
+import fooddelivery.food_delivery_platform.repository.StavkaMenijaRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -27,10 +25,11 @@ public class MeniService {
     @Autowired
     private RestoranRepository restoranRepository;
 
+
     public List<Meni> getAll() { return meniRepository.findAll(); }
 
     public List<Meni> findByRestoranRestoranId(Long restoranId) {
-        return meniRepository.findByRestoranRestoranId(restoranId);
+        return meniRepository.findJedinstveniMenijiPoGrupama(restoranId);
     }
 
     public List<Meni> findAktivniByRestoranRestoranId(Long restoranId) {
@@ -46,10 +45,7 @@ public class MeniService {
         Meni meni = meniRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Meni sa ID-jem " + id + " ne postoji u bazi."));
 
-        Restoran restoran = meni.getRestoran();
-        if (restoran == null || !restoran.getMenadzer().getKorisnikId().equals(trenutniKorisnikId)) {
-            throw new AccessDeniedException("Nemate ovlascenje da menjate meni ovog restorana!");
-        }
+        checkAccess(meni, trenutniKorisnikId);
 
         meni.setNaziv(dto.getNaziv());
         meni.setOpis(dto.getOpis());
@@ -72,10 +68,7 @@ public class MeniService {
         Meni meni = meniRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Meni sa ID-jem " + id + " nije pronadjen."));
 
-        Restoran restoran = meni.getRestoran();
-        if (restoran == null || !restoran.getMenadzer().getKorisnikId().equals(trenutniKorisnikId)) {
-            throw new AccessDeniedException("Nemate ovlascenje da menjate meni ovog restorana!");
-        }
+        checkAccess(meni, trenutniKorisnikId);
         meni.setAktivan(false);
         meni.setDatumDo(LocalDate.now());
 
@@ -100,6 +93,69 @@ public class MeniService {
         noviMeni.setVerzija("v1");
         noviMeni.setAktivan(true);
 
+        meniRepository.save(noviMeni);
+        noviMeni.setGrupniMeniId(noviMeni.getMeniId());
         return meniRepository.save(noviMeni);
+    }
+
+
+    public Meni cloneMenu(Meni original) {
+        if (original instanceof SezonskiMeni s) {
+            SezonskiMeni novi = new SezonskiMeni();
+            copyBasicMenuInfo(s, novi);
+            novi.setPocetakSezone(s.getPocetakSezone());
+            novi.setKrajSezone(s.getKrajSezone());
+            return novi;
+        } else if (original instanceof VremenskiMeni v) {
+            VremenskiMeni novi = new VremenskiMeni();
+            copyBasicMenuInfo(v, novi);
+            novi.setVremeOd(v.getVremeOd());
+            novi.setVremeDo(v.getVremeDo());
+            return novi;
+        } else {
+            StandardniMeni novi = new StandardniMeni();
+            copyBasicMenuInfo(original, novi);
+            return novi;
+        }
+    }
+
+    private void copyBasicMenuInfo(Meni original, Meni novi) {
+        novi.setNaziv(original.getNaziv());
+        novi.setOpis(original.getOpis());
+        novi.setRestoran(original.getRestoran());
+        novi.setGrupniMeniId(original.getGrupniMeniId());
+    }
+
+   /* private void copyMenuItems(Long staroMeniId, Meni noviMeni) {
+        List<StavkaMenija> stareStavke = stavkaMenijaRepository
+                .findByMeniMeniIdAndObrisanFalse(staroMeniId);
+        for (StavkaMenija stara : stareStavke) {
+            StavkaMenija nova = StavkaMenija.builder()
+                    .meni(noviMeni)
+                    .proizvod(stara.getProizvod())
+                    .vremePripremeMin(stara.getVremePripremeMin())
+                    .vremePripremeMax(stara.getVremePripremeMax())
+                    .cena(stara.getCena())
+                    .dostupno(stara.isDostupno())
+                    .obrisan(false)
+                    .build();
+            stavkaMenijaRepository.save(nova);
+        }
+    } */
+
+    public String findNextVersion(String trenutna) {
+        try {
+            int broj = Integer.parseInt(trenutna.replace("v", ""));
+            return "v" + (broj + 1);
+        } catch (Exception e) {
+            return "v2";
+        }
+    }
+
+    private void checkAccess(Meni meni, Long korisnikId) {
+        Restoran restoran = meni.getRestoran();
+        if (restoran == null || !restoran.getMenadzer().getKorisnikId().equals(korisnikId)) {
+            throw new AccessDeniedException("Nemate ovlašćenje da menjate ovaj meni!");
+        }
     }
 }

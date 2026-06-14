@@ -1,5 +1,6 @@
 package fooddelivery.food_delivery_platform.service;
 
+import fooddelivery.food_delivery_platform.dto.CenovnikMasovniUpdateDTO;
 import fooddelivery.food_delivery_platform.dto.IzmenaStavkeMenijaDTO;
 import fooddelivery.food_delivery_platform.dto.NovaStavkaMenijaDTO;
 import fooddelivery.food_delivery_platform.model.Meni;
@@ -18,6 +19,7 @@ import fooddelivery.food_delivery_platform.repository.*;
 
 import java.io.IOException;
 import java.nio.file.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -46,6 +48,9 @@ public class StavkaMenijaService {
     @Autowired
     private AlergenRepository alergenRepository;
 
+    @Autowired
+    private MeniService meniService;
+
     private final String UPLOAD_DIR = "src/main/resources/static/images/food/";
 
     @Transactional(readOnly = true)
@@ -72,10 +77,7 @@ public class StavkaMenijaService {
         Meni meni = meniRepository.findById(meniId)
                 .orElseThrow(() -> new IllegalArgumentException("Meni ne postoji."));
 
-        Restoran restoran = meni.getRestoran();
-        if (restoran == null || !restoran.getMenadzer().getKorisnikId().equals(trenutniKorisnikId)) {
-            throw new SecurityException("Nemate ovlašćenje da dodajete stavke u ovaj meni!");
-        }
+        checkAccess(meniRepository.findById(meniId).orElseThrow(), trenutniKorisnikId);
 
         String putanjaSlikeUBazi = "images/food/default.jpg";
         if (slika != null && !slika.isEmpty()) {
@@ -159,10 +161,7 @@ public class StavkaMenijaService {
             throw new IllegalArgumentException("Ova stavka ne pripada izabranom meniju!");
         }
 
-        Restoran restoran = stavka.getMeni().getRestoran();
-        if (restoran == null || !restoran.getMenadzer().getKorisnikId().equals(trenutniKorisnikId)) {
-            throw new AccessDeniedException("Nemate ovlašćenje da brišete stavke iz ovog menija!");
-        }
+        checkAccess(meniRepository.findById(meniId).orElseThrow(), trenutniKorisnikId);
 
         stavka.setObrisan(true);
         stavkaMenijaRepository.save(stavka);
@@ -178,10 +177,7 @@ public class StavkaMenijaService {
         }
 
 
-        Restoran restoran = stavka.getMeni().getRestoran();
-        if (restoran == null || !restoran.getMenadzer().getKorisnikId().equals(trenutniKorisnikId)) {
-            throw new AccessDeniedException("Nemate ovlašćenje da menjate stavke u ovom meniju!");
-        }
+        checkAccess(meniRepository.findById(meniId).orElseThrow(), trenutniKorisnikId);
 
         Proizvod proizvod = stavka.getProizvod();
 
@@ -252,5 +248,68 @@ public class StavkaMenijaService {
         proizvodRepository.save(proizvod);
         stavkaMenijaRepository.save(stavka);
     }
+
+    @Transactional
+    public Meni updateMenuPriceListWithVersioning(Long stariMeniId, CenovnikMasovniUpdateDTO dto, Long trenutniKorisnikId) {
+        Meni stariMeni = meniRepository.findById(stariMeniId)
+                .orElseThrow(() -> new EntityNotFoundException("Meni sa ID-jem " + stariMeniId + " ne postoji."));
+        checkAccess(meniRepository.findById(stariMeniId).orElseThrow(), trenutniKorisnikId);
+
+        // azuriramo cene koje su se zapravo promenile
+       /* for (var izmena : dto.getIzmeneCena()) {
+            StavkaMenija stavka = stavkaMenijaRepository.findById(izmena.getStavkaId()).orElseThrow();
+            stavka.setCena(izmena.getNovaCena());
+            stavkaMenijaRepository.save(stavka);
+        }
+        //  guramo izmene cena u bazu pre kreiranja menija
+        stavkaMenijaRepository.flush();  */
+
+        Meni noviMeni = meniService.cloneMenu(stariMeni);
+        String staraVerzija = stariMeni.getVerzija();
+        String novaVerzija = meniService.findNextVersion(staraVerzija);
+        noviMeni.setVerzija(novaVerzija);
+        noviMeni.setAktivan(true);
+        noviMeni.setDatumOd(LocalDate.now()); // datum pocetka aktivacije menija
+
+        meniRepository.save(noviMeni);
+        meniRepository.flush();
+        // okida se triger koji kopira sve stavke sa novim cenama
+
+        for (var izmena : dto.getIzmeneCena()) {
+            StavkaMenija staraStavka = stavkaMenijaRepository.findById(izmena.getStavkaId()).orElseThrow();
+
+           /* StavkaMenija novaStavka = StavkaMenija.builder()
+                    .meni(noviMeni)
+                    .proizvod(staraStavka.getProizvod())
+                    .vremePripremeMin(staraStavka.getVremePripremeMin())
+                    .vremePripremeMax(staraStavka.getVremePripremeMax())
+                    .cena(izmena.getNovaCena())
+                    .dostupno(staraStavka.isDostupno())
+                    .obrisan(false)
+                    .build();
+
+            stavkaMenijaRepository.save(novaStavka); */
+            StavkaMenija novaStavkaIzTrigera = stavkaMenijaRepository
+                    .findByMeniAndProizvod(noviMeni, staraStavka.getProizvod())
+                    .orElseThrow(() -> new EntityNotFoundException(
+                            "Triger nije iskopirao stavku za proizvod: " + staraStavka.getProizvod().getNaziv()));
+
+            // Samo joj promenimo cenu (Hibernate će ovde uraditi UPDATE umesto INSERT)
+            novaStavkaIzTrigera.setCena(izmena.getNovaCena());
+            stavkaMenijaRepository.save(novaStavkaIzTrigera);
+        }
+        //meniRepository.flush();
+        stavkaMenijaRepository.flush();
+        return noviMeni;
+    }
+
+    private void checkAccess(Meni meni, Long korisnikId) {
+        Restoran restoran = meni.getRestoran();
+        if (restoran == null || !restoran.getMenadzer().getKorisnikId().equals(korisnikId)) {
+            throw new AccessDeniedException("Nemate ovlašćenje da menjate ovaj meni!");
+        }
+    }
+
+
 
 }

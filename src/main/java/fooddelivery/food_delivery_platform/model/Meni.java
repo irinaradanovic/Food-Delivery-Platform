@@ -37,6 +37,9 @@ public abstract class Meni {
     private LocalDate datumOd;
     private LocalDate datumDo;
 
+    @Column(name = "grupni_meni_id")
+    private Long grupniMeniId; // ID koji povezuje sve verzije jednog istog menija
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     @JoinColumn(name = "restoran_id")
