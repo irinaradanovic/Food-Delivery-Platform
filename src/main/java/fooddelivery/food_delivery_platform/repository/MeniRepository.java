@@ -1,6 +1,7 @@
 package fooddelivery.food_delivery_platform.repository;
 
 import fooddelivery.food_delivery_platform.model.Meni;
+import fooddelivery.food_delivery_platform.model.SezonskiMeni;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,7 +20,9 @@ public interface MeniRepository extends JpaRepository<Meni, Long> {
     @Query("SELECT m FROM Meni m WHERE m.restoran.restoranId = :restoranId AND m.aktivan = true " +
             "AND (TYPE(m) <> VremenskiMeni " +
             "OR (TREAT(m AS VremenskiMeni).vremeOd <= :trenutnoVreme " +
-            "AND TREAT(m AS VremenskiMeni).vremeDo >= :trenutnoVreme))")
+            "AND TREAT(m AS VremenskiMeni).vremeDo >= :trenutnoVreme))" +
+            "AND (TYPE(m) <> SezonskiMeni " +
+            "OR (TREAT(m AS SezonskiMeni).pocetakSezone <= CURRENT_DATE AND TREAT(m AS SezonskiMeni).krajSezone >= CURRENT_DATE))")
     List<Meni> findAktivniZaKupcaSaVremenskimFilterom(
             @Param("restoranId") Long restoranId,
             @Param("trenutnoVreme") LocalTime trenutnoVreme);
@@ -36,4 +39,9 @@ public interface MeniRepository extends JpaRepository<Meni, Long> {
 
     @Query("SELECT MAX(CAST(SUBSTRING(m.verzija, 2) AS int)) FROM Meni m WHERE m.grupniMeniId = :grupniId")
     Integer findMaxVersionNumberByGrupniId(@Param("grupniId") Long grupniId);
+
+    @Query("SELECT m FROM Meni m"
+    + " WHERE TYPE(m) = SezonskiMeni ")
+    List<SezonskiMeni> findAllSeasonalMenus();
+
 }

@@ -194,13 +194,42 @@
                 specKontejner.classList.add('hidden');
             }
 
+            const danas = new Date();
+            const pocetak = meni.pocetakSezone ? new Date(meni.pocetakSezone) : null;
+            const kraj = meni.krajSezone ? new Date(meni.krajSezone) : null;
+
+            // sezona jos nije pocela
+            const jeBuduci = (meni.tipMenija === 'SEZONSKI' && !meni.aktivan && pocetak && danas < pocetak);
+
+            // meni se moze menjati ako je aktivan ili buduci
+            const mozeSeMenjati = meni.aktivan || jeBuduci;
+
             const statusEl = document.getElementById('prikaz-status');
             const btnDeaktiviraj = document.getElementById('btn-deaktiviraj-meni');
             const btnIzmeniOsnovno = document.querySelector('button[onclick="otvoriModal()"]');
 
             const btnNovaStavka = document.querySelector('a[onclick*="dodaj-stavku.html"]');
             const btnNoviCenovnik = document.getElementById('btn-masovni-cenovnik');
+            if (mozeSeMenjati) {
+                btnIzmeniOsnovno.removeAttribute('disabled');
+                btnIzmeniOsnovno.className = "w-full bg-gray-600 hover:bg-gray-700 text-white font-semibold py-4 px-6 rounded-xl transition text-center shadow-sm cursor-pointer border border-transparent";
 
+                btnNovaStavka.classList.remove('hidden');
+                btnNovaStavka.style.pointerEvents = "auto";
+
+                btnNoviCenovnik.classList.remove('hidden');
+
+                if (jeBuduci) {
+                    dodajDugmeStartSezone();
+                }
+            } else {
+                btnIzmeniOsnovno.setAttribute('disabled', 'true');
+                btnIzmeniOsnovno.className = "w-full bg-gray-300 text-gray-500 font-semibold py-4 px-6 rounded-xl text-center border border-transparent cursor-not-allowed opacity-60";
+
+                btnNovaStavka.classList.add('hidden');
+                btnNoviCenovnik.classList.add('hidden');
+            }
+            /*
             if (meni.aktivan) {
                 statusEl.textContent = "Aktivan";
                 statusEl.className = "text-lg font-bold text-emerald-600 block";
@@ -234,7 +263,7 @@
                 }
                 //btnNoviCenovnik.setAttribute('disabled', 'true');
                 //btnNoviCenovnik.className = "w-full bg-gray-300 text-gray-500 font-semibold py-4 px-6 rounded-xl text-center border border-transparent cursor-not-allowed opacity-60";
-            }
+            } */
         } catch (error) {
             console.error("Greška pri učitavanju:", error);
         }
@@ -348,6 +377,21 @@
         } catch (error) {
             console.error("Greška pri učitavanju stavki:", error);
         }
+    }
+    function dodajDugmeStartSezone() {
+        const kontejner = document.querySelector('.md\\:pt-10');
+        if (document.getElementById('btn-start-sezonu')) return;
+
+        const btn = document.createElement('button');
+        btn.id = 'btn-start-sezonu';
+        btn.textContent = "Započni sezonu danas";
+        btn.className = "w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-xl transition text-center shadow-sm cursor-pointer";
+        btn.onclick = async () => {
+            if (!confirm("Ovo će postaviti početak sezone na današnji datum. Nastaviti?")) return;
+            await apiFetch(`/meni/${meniId}/zapocni-sezonu`, { method: 'PUT' });
+            location.reload();
+        };
+        kontejner.prepend(btn);
     }
 
     function izmeniStavkuVisual(id) {

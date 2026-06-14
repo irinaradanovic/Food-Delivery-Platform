@@ -9,6 +9,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
@@ -64,8 +65,9 @@ public class MeniService {
             vremenski.setVremeOd(dto.getVremeOd());
             vremenski.setVremeDo(dto.getVremeDo());
         }
-
-        return meniRepository.save(meni);
+        meniRepository.save(meni);
+        syncSeasonalMenus();
+        return meni;
     }
 
     @Transactional
@@ -196,5 +198,33 @@ public class MeniService {
 
         copyMenuItems(meniId, novaVerzija);
         return novaVerzija;
+    }
+
+    // scheduler funkcija kja svaki dan u ponoc gleda da li su sezonski meniji aktivni ili ne
+    @Scheduled(cron = "0 0 0 * * ?")
+    @Transactional
+    public void syncSeasonalMenus() {
+        LocalDate danas = LocalDate.now();
+
+        List<SezonskiMeni> sezonskiMeniji = meniRepository.findAllSeasonalMenus();
+
+        for (SezonskiMeni m : sezonskiMeniji) {
+            boolean uSezoni = !danas.isBefore(m.getPocetakSezone()) && !danas.isAfter(m.getKrajSezone());
+
+            // ako je sezona istekla ili nije pocela, a meni je bio aktivan, deaktiviraj
+            // ako je sezona pocela, a meni je bio neaktivan, aktiviraj
+            if (m.isAktivan() != uSezoni) {
+                m.setAktivan(uSezoni);
+                meniRepository.save(m);
+            }
+        }
+    }
+
+    public SezonskiMeni startSeason(Long id){
+        SezonskiMeni m = (SezonskiMeni) meniRepository.findById(id).orElseThrow();
+        m.setPocetakSezone(LocalDate.now());
+        meniRepository.save(m);
+        syncSeasonalMenus();
+        return m;
     }
 }

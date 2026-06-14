@@ -135,11 +135,18 @@
                         bgBoja = "bg-emerald-100";
                         prikazTipa = 'STANDARDNI';
                     }
+                    const danas = new Date();
+                    const pocetak = meni.pocetakSezone ? new Date(meni.pocetakSezone) : null;
+                    const kraj = meni.krajSezone ? new Date(meni.krajSezone) : null;
 
-                    const statusBedz = meni.aktivan
-                        ? `<span class="text-[10px] font-bold uppercase px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full ml-2">Aktivan</span>`
-                        : `<span class="text-[10px] font-bold uppercase px-2 py-0.5 bg-rose-100 text-rose-700 rounded-full ml-2">Deaktiviran</span>`;
-
+                    let statusBedz = '';
+                    if (meni.aktivan) {
+                        statusBedz = `<span class="text-[10px] font-bold uppercase px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full ml-2">Aktivan</span>`;
+                    } else if (meni.tipMenija === 'SEZONSKI' && pocetak && danas < pocetak) {
+                        statusBedz = `<span class="text-[10px] font-bold uppercase px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full ml-2">Uskoro počinje</span>`;
+                    } else {
+                        statusBedz = `<span class="text-[10px] font-bold uppercase px-2 py-0.5 bg-rose-100 text-rose-700 rounded-full ml-2">Deaktiviran</span>`;
+                    }
                     kartica.innerHTML = `
         <div>
             <div class="w-full h-40 ${bgBoja} flex items-center justify-center text-6xl select-none">
