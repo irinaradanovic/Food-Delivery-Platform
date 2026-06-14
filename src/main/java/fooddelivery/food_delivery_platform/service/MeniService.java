@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +25,9 @@ public class MeniService {
 
     @Autowired
     private RestoranRepository restoranRepository;
+
+    @Autowired
+    private StavkaMenijaRepository stavkaMenijaRepository;
 
 
     public List<Meni> getAll() { return meniRepository.findAll(); }
@@ -126,7 +130,7 @@ public class MeniService {
         novi.setGrupniMeniId(original.getGrupniMeniId());
     }
 
-   /* private void copyMenuItems(Long staroMeniId, Meni noviMeni) {
+   public void copyMenuItems(Long staroMeniId, Meni noviMeni) {
         List<StavkaMenija> stareStavke = stavkaMenijaRepository
                 .findByMeniMeniIdAndObrisanFalse(staroMeniId);
         for (StavkaMenija stara : stareStavke) {
@@ -141,15 +145,14 @@ public class MeniService {
                     .build();
             stavkaMenijaRepository.save(nova);
         }
-    } */
+    }
 
-    public String findNextVersion(String trenutna) {
-        try {
-            int broj = Integer.parseInt(trenutna.replace("v", ""));
-            return "v" + (broj + 1);
-        } catch (Exception e) {
-            return "v2";
-        }
+    public String findNextVersion(Long grupniMeniId) {
+        Integer maxVerzija = meniRepository.findMaxVersionNumberByGrupniId(grupniMeniId);
+
+        int sledeciBroj = (maxVerzija == null) ? 1 : maxVerzija + 1;
+
+        return "v" + sledeciBroj;
     }
 
     private void checkAccess(Meni meni, Long korisnikId) {
@@ -161,5 +164,36 @@ public class MeniService {
 
     public List<Meni> getMenuVersionHstory(Long grupniMeniId){
         return meniRepository.findByGrupniMeniIdOrderByVerzijaDesc(grupniMeniId);
+    }
+
+    @Transactional
+    public Meni rollbackToVersion(Long meniId, Long userId) {
+        Meni staraVerzija = meniRepository.findById(meniId)
+                .orElseThrow(() -> new EntityNotFoundException("Meni nije pronađen"));
+
+        checkAccess(staraVerzija, userId);
+
+        // deaktiviraj sve aktivne verzije u grupi
+      /*  meniRepository.findByGrupniMeniIdAndAktivanTrue(staraVerzija.getGrupniMeniId())
+                .ifPresent(trenutnoAktivni -> {
+                    trenutnoAktivni.setAktivan(false);
+                    trenutnoAktivni.setDatumDo(LocalDate.now());
+                    meniRepository.save(trenutnoAktivni);
+                }); */
+        //kopiraj staru verziju
+        Meni novaVerzija = cloneMenu(staraVerzija);
+
+        novaVerzija.setAktivan(true);
+        novaVerzija.setDatumOd(LocalDate.now());
+        novaVerzija.setDatumDo(null);
+
+        String sledecaVerzija = findNextVersion(staraVerzija.getGrupniMeniId());
+        novaVerzija.setVerzija(sledecaVerzija);
+
+        meniRepository.save(novaVerzija);
+        meniRepository.flush();
+
+        copyMenuItems(meniId, novaVerzija);
+        return novaVerzija;
     }
 }

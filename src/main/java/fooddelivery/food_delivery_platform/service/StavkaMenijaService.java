@@ -265,8 +265,7 @@ public class StavkaMenijaService {
         stavkaMenijaRepository.flush();  */
 
         Meni noviMeni = meniService.cloneMenu(stariMeni);
-        String staraVerzija = stariMeni.getVerzija();
-        String novaVerzija = meniService.findNextVersion(staraVerzija);
+        String novaVerzija = meniService.findNextVersion(stariMeni.getGrupniMeniId());
         noviMeni.setVerzija(novaVerzija);
         noviMeni.setAktivan(true);
         noviMeni.setDatumOd(LocalDate.now()); // datum pocetka aktivacije menija
@@ -275,31 +274,17 @@ public class StavkaMenijaService {
         meniRepository.flush();
         // okida se triger koji kopira sve stavke sa novim cenama
 
-        for (var izmena : dto.getIzmeneCena()) {
-            StavkaMenija staraStavka = stavkaMenijaRepository.findById(izmena.getStavkaId()).orElseThrow();
-
-           /* StavkaMenija novaStavka = StavkaMenija.builder()
-                    .meni(noviMeni)
-                    .proizvod(staraStavka.getProizvod())
-                    .vremePripremeMin(staraStavka.getVremePripremeMin())
-                    .vremePripremeMax(staraStavka.getVremePripremeMax())
-                    .cena(izmena.getNovaCena())
-                    .dostupno(staraStavka.isDostupno())
-                    .obrisan(false)
-                    .build();
-
-            stavkaMenijaRepository.save(novaStavka); */
-            StavkaMenija novaStavkaIzTrigera = stavkaMenijaRepository
-                    .findByMeniAndProizvod(noviMeni, staraStavka.getProizvod())
-                    .orElseThrow(() -> new EntityNotFoundException(
-                            "Triger nije iskopirao stavku za proizvod: " + staraStavka.getProizvod().getNaziv()));
-
-            // Samo joj promenimo cenu (Hibernate će ovde uraditi UPDATE umesto INSERT)
-            novaStavkaIzTrigera.setCena(izmena.getNovaCena());
-            stavkaMenijaRepository.save(novaStavkaIzTrigera);
-        }
-        //meniRepository.flush();
+        meniService.copyMenuItems(stariMeni.getMeniId(), noviMeni);
         stavkaMenijaRepository.flush();
+
+        for (var izmena : dto.getIzmeneCena()) {
+            StavkaMenija novaStavka = stavkaMenijaRepository
+                    .findByMeniAndProizvod(noviMeni, stavkaMenijaRepository.findById(izmena.getStavkaId()).get().getProizvod())
+                    .orElseThrow();
+
+            novaStavka.setCena(izmena.getNovaCena());
+            stavkaMenijaRepository.save(novaStavka);
+        }
         return noviMeni;
     }
 
