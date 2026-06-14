@@ -1,7 +1,9 @@
 package fooddelivery.food_delivery_platform.controller;
 
+import fooddelivery.food_delivery_platform.dto.CenovnikMasovniUpdateDTO;
 import fooddelivery.food_delivery_platform.dto.IzmenaStavkeMenijaDTO;
 import fooddelivery.food_delivery_platform.dto.NovaStavkaMenijaDTO;
+import fooddelivery.food_delivery_platform.model.Meni;
 import fooddelivery.food_delivery_platform.model.StavkaMenija;
 import fooddelivery.food_delivery_platform.service.StavkaMenijaService;
 import jakarta.persistence.EntityNotFoundException;
@@ -15,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -91,6 +94,20 @@ public class StavkaMenijaController {
             return ResponseEntity.ok().body("Stavka je uspesno izmenjena.");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+
+    @PutMapping("/meni/{meniId}/masovni-cenovnik")
+    public ResponseEntity<Meni> updateMenuPriceList(
+            @PathVariable Long meniId,
+            @RequestBody CenovnikMasovniUpdateDTO dto,
+            @RequestHeader("X-User-Id") Long korisnikId) {
+        try {
+            Meni noviMeni= stavkaMenijaService.updateMenuPriceListWithVersioning(meniId, dto, korisnikId);
+            return ResponseEntity.ok(noviMeni);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
         }
     }
 }
