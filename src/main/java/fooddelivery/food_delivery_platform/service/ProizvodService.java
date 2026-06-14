@@ -4,6 +4,7 @@ import fooddelivery.food_delivery_platform.model.Proizvod;
 import fooddelivery.food_delivery_platform.repository.ProizvodRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import java.time.LocalTime;
 import java.util.List;
 
 @Service
@@ -41,18 +42,18 @@ public class ProizvodService {
 
     public void delete(Long id) { proizvodRepository.deleteById(id); }
 
-    // Kupac - svi proizvodi iz aktivnih menija restorana
+    // Kupac - svi proizvodi iz aktivnih menija restorana (uz vremenski filter)
     public List<Proizvod> getProizvodiZaKupca(Long restoranId) {
-        return proizvodRepository.findProizvodiIzAktivnihMenija(restoranId);
+        return proizvodRepository.findProizvodiIzAktivnihMenija(restoranId, LocalTime.now());
     }
 
-    // Kupac - pretraga po nazivu unutar aktivnih menija restorana
+    // Kupac - pretraga po nazivu unutar aktivnih menija restorana (uz vremenski filter)
     public List<Proizvod> searchProizvodiZaKupca(Long restoranId, String naziv) {
-        return proizvodRepository.searchProizvodiIzAktivnihMenija(restoranId, naziv);
+        return proizvodRepository.searchProizvodiIzAktivnihMenija(restoranId, naziv, LocalTime.now());
     }
 
-    // Kupac - filtriranje po kategoriji unutar aktivnih menija restorana
+    // Kupac - filtriranje po kategoriji unutar aktivnih menija restorana (uz vremenski filter)
     public List<Proizvod> getProizvodiZaKupcaByKategorija(Long restoranId, Long kategorijaId) {
-        return proizvodRepository.findProizvodiIzAktivnihMenijaByKategorija(restoranId, kategorijaId);
+        return proizvodRepository.findProizvodiIzAktivnihMenijaByKategorija(restoranId, kategorijaId, LocalTime.now());
     }
 }

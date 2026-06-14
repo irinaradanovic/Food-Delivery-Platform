@@ -160,14 +160,23 @@
         return '';
     }
 
+    function jeKupac() {
+        return localStorage.getItem('uloga') === 'KUPAC';
+    }
+
     async function init() {
         try {
             const kupacId = getKupacId();
-            const [kat, omiljeni, omiljeneKat] = await Promise.all([
-                api.getKategorije(),
-                api.getOmiljeni(kupacId),
-                api.getOmiljeneKategorije(kupacId)
-            ]);
+            let kat, omiljeni = [], omiljeneKat = [];
+            if (jeKupac()) {
+                [kat, omiljeni, omiljeneKat] = await Promise.all([
+                    api.getKategorije(),
+                    api.getOmiljeni(kupacId),
+                    api.getOmiljeneKategorije(kupacId)
+                ]);
+            } else {
+                kat = await api.getKategorije();
+            }
             omiljeniIds = new Set(omiljeni.map(o => o.proizvod.proizvodId));
             omiljeneKatIds = new Set(omiljeneKat.map(o => o.kategorija.kategorijaId));
             prikaziKategorije(kat);
@@ -185,9 +194,7 @@
         }
         grid.innerHTML = lista.map(k => `
             <div class="kat-card" id="kat-${k.kategorijaId}" onclick="prikaziProizvode(${k.kategorijaId}, '${k.naziv}', this)">
-                <button class="btn-fav-kat" onclick="toggleOmiljenaKat(event, ${k.kategorijaId})">
-                    ${omiljeneKatIds.has(k.kategorijaId) ? '❤️' : '🤍'}
-                </button>
+                ${jeKupac() ? `<button class="btn-fav-kat" onclick="toggleOmiljenaKat(event, ${k.kategorijaId})">${omiljeneKatIds.has(k.kategorijaId) ? '❤️' : '🤍'}</button>` : ''}
                 <div class="icon">${getKatEmoji(k.naziv)}</div>
                 <div class="naziv">${k.naziv}</div>
             </div>
@@ -196,6 +203,7 @@
 
     async function toggleOmiljenaKat(event, katId) {
         event.stopPropagation(); // ne aktiviraj klik na karticu
+        if (!jeKupac()) { window.location.href = '/login.html?poruka=morate-biti-prijavljeni'; return; }
         const kupacId = getKupacId();
         const btn = event.currentTarget;
         try {
@@ -251,9 +259,7 @@
                     <div class="prod-body">
                         <div class="prod-top">
                             <div class="prod-name">${p.naziv}</div>
-                            <button class="btn-fav" onclick="toggleOmiljeni(${p.proizvodId}, this)">
-                                ${omiljeniIds.has(p.proizvodId) ? '❤️' : '🤍'}
-                            </button>
+                            ${jeKupac() ? `<button class="btn-fav" onclick="toggleOmiljeni(${p.proizvodId}, this)">${omiljeniIds.has(p.proizvodId) ? '❤️' : '🤍'}</button>` : ''}
                         </div>
                         <div class="prod-desc">${p.opis || 'Bez opisa'}</div>
                     </div>
@@ -266,6 +272,7 @@
     }
 
     async function toggleOmiljeni(id, btn) {
+        if (!jeKupac()) { window.location.href = '/login.html?poruka=morate-biti-prijavljeni'; return; }
         try {
             if (omiljeniIds.has(id)) {
                 await api.ukloniOmiljeni(getKupacId(), id);

@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 import java.util.List;
 import java.util.Optional;
@@ -37,7 +38,7 @@ public class MeniService {
     }
 
     public List<Meni> findAktivniByRestoranRestoranId(Long restoranId) {
-        return meniRepository.findByRestoranRestoranIdAndAktivanTrue(restoranId);
+        return meniRepository.findAktivniZaKupcaSaVremenskimFilterom(restoranId, LocalTime.now());
     }
 
     public Meni getById(Long id) {

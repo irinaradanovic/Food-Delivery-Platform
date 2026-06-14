@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,6 +14,13 @@ public interface MeniRepository extends JpaRepository<Meni, Long> {
 
     @Query("SELECT m FROM Meni m WHERE m.restoran.restoranId = :restoranId AND m.aktivan = true ORDER BY m.meniId DESC")
     List<Meni> findByRestoranRestoranIdAndAktivanTrue(Long restoranId);
+
+
+    @Query("SELECT m FROM Meni m WHERE m.restoran.restoranId = :restoranId AND m.aktivan = true " +
+            "AND (m.vremeOd IS NULL OR (m.vremeOd <= :trenutnoVreme AND m.vremeDo >= :trenutnoVreme))")
+    List<Meni> findAktivniZaKupcaSaVremenskimFilterom(
+            @Param("restoranId") Long restoranId,
+            @Param("trenutnoVreme") LocalTime trenutnoVreme);
 
     @Query(value = "SELECT DISTINCT ON (grupni_meni_id) * FROM meniji " +
             "WHERE restoran_id = :restoranId " +

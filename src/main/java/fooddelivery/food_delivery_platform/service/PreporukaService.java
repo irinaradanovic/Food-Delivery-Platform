@@ -37,7 +37,9 @@ public class PreporukaService {
         // Mapa: proizvodId -> ukupni skor
         Map<Long, Double> skorovi = new HashMap<>();
 
-        List<Proizvod> sviProizvodi = proizvodRepository.findAll();
+        // Samo trenutno dostupni proizvodi (VremenskiMeni filtriran po satnici)
+        LocalTime sada = LocalTime.now();
+        List<Proizvod> sviProizvodi = proizvodRepository.findSviTrenutnoAktivniProizvodi(sada);
 
         // --- 1. Iz porudzbina (najveci tezinski faktor) ---
         // Narudjeni proizvodi dobijaju visoki skor jer je to najjaci signal interesovanja.
@@ -129,9 +131,9 @@ public class PreporukaService {
 
         return skorovi.entrySet().stream()
                 .sorted(Map.Entry.<Long, Double>comparingByValue().reversed())
-                .limit(limit)
                 .map(e -> proizvodiMap.get(e.getKey()))
                 .filter(Objects::nonNull)
+                .limit(limit)
                 .collect(Collectors.toList());
     }
 
@@ -167,28 +169,34 @@ public class PreporukaService {
         LocalDateTime od = LocalDateTime.now().minusDays(7);
         List<Klik> klikovi = klikRepository.findKlikoviNaProizvodimaOd(od);
 
-        // Težinski skor po tipu akcije, isto kao personalizovane preporuke
+        // Samo trenutno dostupni proizvodi (VremenskiMeni filtriran po satnici)
+        LocalTime sada = LocalTime.now();
+        List<Proizvod> trenutnoAktivni = proizvodRepository.findSviTrenutnoAktivniProizvodi(sada);
+        Set<Long> aktivniIds = trenutnoAktivni.stream()
+                .map(Proizvod::getProizvodId)
+                .collect(Collectors.toSet());
+        Map<Long, Proizvod> aktivniMap = trenutnoAktivni.stream()
+                .collect(Collectors.toMap(Proizvod::getProizvodId, p -> p));
+
+        // Težinski skor po tipu akcije, samo za trenutno dostupne proizvode
         Map<Long, Double> skorovi = new HashMap<>();
         for (Klik k : klikovi) {
             if (k.getProizvod() == null) continue;
+            Long pid = k.getProizvod().getProizvodId();
+            if (!aktivniIds.contains(pid)) continue; // preskoči van satnice
             double tezina = TEZINE_AKCIJA.getOrDefault(k.getTipAkcije(), 1.0);
-            skorovi.merge(k.getProizvod().getProizvodId(), tezina, Double::sum);
+            skorovi.merge(pid, tezina, Double::sum);
         }
 
         if (skorovi.isEmpty()) {
-            // Fallback: prvih N proizvoda iz baze
-            return proizvodRepository.findAll().stream().limit(limit).collect(Collectors.toList());
+            // Fallback: prvih N trenutno dostupnih proizvoda
+            return trenutnoAktivni.stream().limit(limit).collect(Collectors.toList());
         }
-
-        Map<Long, Proizvod> proizvodiMap = new HashMap<>();
-        klikovi.stream()
-                .filter(k -> k.getProizvod() != null)
-                .forEach(k -> proizvodiMap.put(k.getProizvod().getProizvodId(), k.getProizvod()));
 
         return skorovi.entrySet().stream()
                 .sorted(Map.Entry.<Long, Double>comparingByValue().reversed())
                 .limit(limit)
-                .map(e -> proizvodiMap.get(e.getKey()))
+                .map(e -> aktivniMap.get(e.getKey()))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
