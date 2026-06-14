@@ -5,6 +5,8 @@ import fooddelivery.food_delivery_platform.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -14,6 +16,7 @@ public class OmiljeniService {
     private final OmiljeniProizvodRepository omiljeniRepo;
     private final KupacRepository kupacRepo;
     private final ProizvodRepository proizvodRepo;
+    private final KlikRepository klikRepo;
 
     public List<OmiljeniProizvod> getOmiljeni(Long kupacId) {
         kupacRepo.findById(kupacId)
@@ -31,10 +34,20 @@ public class OmiljeniService {
         Proizvod proizvod = proizvodRepo.findById(proizvodId)
                 .orElseThrow(() -> new RuntimeException("Proizvod nije pronađen: " + proizvodId));
 
-        return omiljeniRepo.save(OmiljeniProizvod.builder()
+        OmiljeniProizvod omiljeni = omiljeniRepo.save(OmiljeniProizvod.builder()
                 .kupac(kupac)
                 .proizvod(proizvod)
                 .build());
+
+
+        klikRepo.save(Klik.builder()
+                .kupac(kupac)
+                .proizvod(proizvod)
+                .vremeKlika(LocalDateTime.now())
+                .tipAkcije("DODAJ_OMILJENI")
+                .build());
+
+        return omiljeni;
     }
 
     @Transactional

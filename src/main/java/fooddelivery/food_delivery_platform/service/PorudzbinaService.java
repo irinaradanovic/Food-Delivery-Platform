@@ -6,6 +6,7 @@ import fooddelivery.food_delivery_platform.dto.StavkaPorudzbineDTO;
 import fooddelivery.food_delivery_platform.model.*;
 import fooddelivery.food_delivery_platform.repository.KorisnikRepository;
 import fooddelivery.food_delivery_platform.repository.KupacRepository;
+import fooddelivery.food_delivery_platform.repository.KlikRepository; // DODATO
 import fooddelivery.food_delivery_platform.repository.PorudzbinaRepository;
 import fooddelivery.food_delivery_platform.repository.KuponRepository;
 import fooddelivery.food_delivery_platform.repository.StatusPorudzbineIstorijaRepository;
@@ -17,8 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,6 +34,7 @@ public class PorudzbinaService {
     private final StavkaMenijaRepository stavkaMenijaRepository;
     private final KuponRepository kuponRepository;
     private final StatusPorudzbineIstorijaRepository statusPorudzbineIstorijaRepository;
+    private final KlikRepository klikRepository;
 
     private static final Map<StatusPorudzbine, Set<StatusPorudzbine>> DOZVOLJENI_PRELASCI = Map.of(
             StatusPorudzbine.KREIRANA, Set.of(StatusPorudzbine.PRIHVACENA, StatusPorudzbine.OTKAZANA),
@@ -91,7 +93,6 @@ public class PorudzbinaService {
         Kupac kupac = kupacRepository.findById(dto.getKupacId())
                 .orElseThrow(() -> new RuntimeException("Kupac nije pronađen: " + dto.getKupacId()));
 
-
         Porudzbina porudzbina = Porudzbina.builder()
                 .kupac(kupac)
                 .adresaDostave(dto.getAdresaDostave())
@@ -104,6 +105,9 @@ public class PorudzbinaService {
         applyMockDostavljac(porudzbina);
 
         BigDecimal ukupnaCena = BigDecimal.ZERO;
+
+
+        List<Proizvod> kupljeniProizvodi = new ArrayList<>();
 
         for (StavkaPorudzbineDTO stavkaDTO : dto.getStavke()) {
             StavkaMenija stavkaMenija = stavkaMenijaRepository.findById(stavkaDTO.getStavkaMenijaId())
@@ -126,6 +130,10 @@ public class PorudzbinaService {
 
             porudzbina.getStavke().add(stavka);
             ukupnaCena = ukupnaCena.add(cenaStavke);
+
+            if (stavkaMenija.getProizvod() != null) {
+                kupljeniProizvodi.add(stavkaMenija.getProizvod());
+            }
         }
 
         porudzbina.setUkupnaCena(ukupnaCena.setScale(2, RoundingMode.HALF_UP));
@@ -154,7 +162,20 @@ public class PorudzbinaService {
 
         porudzbina.getIstorijaStatusa().add(prviZapis);
 
-        return porudzbinaRepository.save(porudzbina);
+        Porudzbina sacuvana = porudzbinaRepository.save(porudzbina);
+
+
+        LocalDateTime sada = LocalDateTime.now();
+        for (Proizvod proizvod : kupljeniProizvodi) {
+            klikRepository.save(Klik.builder()
+                    .kupac(kupac)
+                    .proizvod(proizvod)
+                    .vremeKlika(sada)
+                    .tipAkcije("KUPOVINA")
+                    .build());
+        }
+
+        return sacuvana;
     }
 
     @Transactional
