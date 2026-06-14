@@ -19,25 +19,22 @@ public class KorpaPreporukaService {
     private final PorudzbinaRepository porudzbinaRepository;
     private final StavkaPorudzbineRepository stavkaPorudzbineRepository;
 
-    // Tipovi obroka i njihove ključne reči
-    private static final Map<String, List<String>> TIP_KLJUCNE_RECI = Map.of(
-            "predjelo",  List.of("salat", "predjelo", "čorb", "soup", "salad"),
-            "glavno",    List.of("meso", "piletina", "riba", "chicken", "meat", "fish", "burger", "pizza", "pasta"),
-            "desert",    List.of("desert", "kolač", "torta", "tiramisu", "cheesecake", "palačink"),
-            "pice",      List.of("piće", "pića", "drink", "cola", "pepsi", "voda", "limunad", "sok", "kafa")
-    );
+    private static final List<TipObroka> PRIORITET_TIPOVA =
+            List.of(TipObroka.PICE, TipObroka.DESERT, TipObroka.GLAVNO, TipObroka.PREDJELO);
 
-    private static final Map<String, String> TIP_PORUKE = Map.of(
-            "pice",   "Dodaj piće uz obrok! 🥤",
-            "desert", "Završi obrok slatkim zalogajem! 🍰",
-            "glavno", "Dodaj glavno jelo uz narudžbinu! 🍽️",
-            "predjelo", "Počni sa predjelom! 🥗"
+
+    private static final Map<TipObroka, Double> TIP_BONUS = Map.of(
+            TipObroka.PICE,     8.0,
+            TipObroka.DESERT,   8.0,
+            TipObroka.GLAVNO,   4.0,
+            TipObroka.PREDJELO, 4.0,
+            TipObroka.OSTALO,   1.0
     );
 
     public KorpaPreporukaResponseDTO getPreporuke(KorpaPreporukaRequestDTO request) {
         int max = request.getMaxPreporuka() > 0 ? request.getMaxPreporuka() : 5;
 
-        // Dohvati sve stavke menija koje su u korpi
+        // Dohvati stavke menija koje su u korpi
         List<StavkaMenija> korpaStavke = new ArrayList<>();
         if (request.getStavkeMenijaIds() != null) {
             for (Long id : request.getStavkeMenijaIds()) {
@@ -59,52 +56,18 @@ public class KorpaPreporukaService {
         Map<Long, Double> skorovi = new HashMap<>();
         Map<Long, String> razlozi = new HashMap<>();
 
-        // ── Signal 1: Korelacije iz istorije porudžbina ───────────────────
-        // Koje stavke se najčešće naručuju zajedno sa stavkama koje su u korpi?
-        Map<Long, Integer> korelacije = izracunajKorelacije(
-                request.getStavkeMenijaIds(), request.getKupacId()
-        );
-        for (StavkaMenija kandidat : kandidati) {
-            int frekvencija = korelacije.getOrDefault(kandidat.getStavkaId(), 0);
-            if (frekvencija > 0) {
-                skorovi.merge(kandidat.getStavkaId(), frekvencija * 5.0, Double::sum);
-                razlozi.putIfAbsent(kandidat.getStavkaId(), "Često se naručuje uz ovaj izbor");
-            }
-        }
 
-        // ── Signal 2: Kombo dopuna — detektuj koji tipovi nedostaju ───────
-        Set<String> tipUKorpi = detektujTipove(korpaStavke);
-        Set<String> sviTipovi = new LinkedHashSet<>(List.of("glavno", "predjelo", "pice", "desert"));
-        List<String> nedostajuciTipovi = sviTipovi.stream()
+        Set<TipObroka> tipUKorpi = detektujTipove(korpaStavke);
+        List<TipObroka> nedostajuciTipovi = PRIORITET_TIPOVA.stream()
                 .filter(t -> !tipUKorpi.contains(t))
                 .collect(Collectors.toList());
 
-        // Daj bonus kandidatima koji popunjavaju nedostajuće tipove
         for (StavkaMenija kandidat : kandidati) {
-            for (String nedostajuciTip : nedostajuciTipovi) {
-                if (odgovaraTipu(kandidat, nedostajuciTip)) {
-                    // Piće i desert dobijaju veći bonus jer se češće zaboravljaju
-                    double bonus = (nedostajuciTip.equals("pice") || nedostajuciTip.equals("desert")) ? 8.0 : 4.0;
-                    skorovi.merge(kandidat.getStavkaId(), bonus, Double::sum);
-                    razlozi.putIfAbsent(kandidat.getStavkaId(), "Dopunjava tvoj obrok");
-                    break;
-                }
-            }
-        }
-
-        // ── Signal 3: Kategorijska afinost iz korpe ───────────────────────
-        // Ako je u korpi pizza, predloži i druge popularne stavke iste kategorije
-        Set<Long> kategorijeuKorpi = korpaStavke.stream()
-                .filter(s -> s.getProizvod() != null && s.getProizvod().getKategorija() != null)
-                .map(s -> s.getProizvod().getKategorija().getKategorijaId())
-                .collect(Collectors.toSet());
-
-        for (StavkaMenija kandidat : kandidati) {
-            if (kandidat.getProizvod() == null || kandidat.getProizvod().getKategorija() == null) continue;
-            Long katId = kandidat.getProizvod().getKategorija().getKategorijaId();
-            if (kategorijeuKorpi.contains(katId)) {
-                skorovi.merge(kandidat.getStavkaId(), 2.0, Double::sum);
-                razlozi.putIfAbsent(kandidat.getStavkaId(), "Slično onome što si izabrao");
+            TipObroka tipKandidata = odredinTip(kandidat);
+            if (nedostajuciTipovi.contains(tipKandidata)) {
+                double bonus = TIP_BONUS.getOrDefault(tipKandidata, 1.0);
+                skorovi.merge(kandidat.getStavkaId(), bonus, Double::sum);
+                razlozi.putIfAbsent(kandidat.getStavkaId(), null);
             }
         }
 
@@ -126,10 +89,10 @@ public class KorpaPreporukaService {
                             .fotografija(s.getProizvod().getFotografija())
                             .kategorija(s.getProizvod().getKategorija() != null
                                     ? s.getProizvod().getKategorija().getNaziv() : "")
-                            .tipObroka(odredinTip(s))
+                            .tipObroka(odredinTip(s).name().toLowerCase())
                             .cena(s.getCena())
                             .skorRelevantnosti(e.getValue())
-                            .razlogPreporuke(razlozi.getOrDefault(e.getKey(), "Preporučujemo"))
+                            .razlogPreporuke(razlozi.getOrDefault(e.getKey(), null))
                             .build();
                 })
                 .filter(Objects::nonNull)
@@ -147,7 +110,7 @@ public class KorpaPreporukaService {
                             .fotografija(s.getProizvod().getFotografija())
                             .kategorija(s.getProizvod().getKategorija() != null
                                     ? s.getProizvod().getKategorija().getNaziv() : "")
-                            .tipObroka(odredinTip(s))
+                            .tipObroka(odredinTip(s).name().toLowerCase())
                             .cena(s.getCena())
                             .skorRelevantnosti(0)
                             .razlogPreporuke("Možda te zanima")
@@ -155,24 +118,33 @@ public class KorpaPreporukaService {
                     .collect(Collectors.toList());
         }
 
-        // Kreiraj poruku na osnovu prvog nedostajućeg tipa
-        String poruka = nedostajuciTipovi.isEmpty() ? null
-                : TIP_PORUKE.get(nedostajuciTipovi.get(0));
+        String poruka = null;
+
+        // Vrati nazive nedostajućih tipova kao stringove (za frontend kompatibilnost)
+        List<String> nedostajuciTipoviStr = nedostajuciTipovi.stream()
+                .map(t -> t.name().toLowerCase())
+                .collect(Collectors.toList());
 
         return KorpaPreporukaResponseDTO.builder()
                 .preporuke(preporuke)
-                .nedostajuciTipovi(nedostajuciTipovi)
+                .nedostajuciTipovi(nedostajuciTipoviStr)
                 .poruka(poruka)
                 .build();
     }
 
-    // Analizira istoriju svih porudžbina i broji koliko puta se svaka stavka
-    // pojavljuje u istoj porudžbini sa stavkama iz korpe
+
     private Map<Long, Integer> izracunajKorelacije(List<Long> korpaStavkeMenijaIds, Long kupacId) {
         Map<Long, Integer> korelacije = new HashMap<>();
         if (korpaStavkeMenijaIds == null || korpaStavkeMenijaIds.isEmpty()) return korelacije;
 
-        // Dohvati sve porudžbine (opciono filtrirano po kupcu za personalizovanije rezultate)
+        // Pretvori korpa stavkeMenijaIds u set proizvodIds za pouzdano poređenje
+        Set<Long> korpaProizvodIds = korpaStavkeMenijaIds.stream()
+                .map(id -> stavkaMenijaRepository.findById(id)
+                        .map(sm -> sm.getProizvod() != null ? sm.getProizvod().getProizvodId() : null)
+                        .orElse(null))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
         List<Porudzbina> porudzbine = kupacId != null
                 ? porudzbinaRepository.findByKupac_KorisnikIdOrderByDatumKreiranjaDesc(kupacId)
                 : porudzbinaRepository.findAll();
@@ -181,20 +153,25 @@ public class KorpaPreporukaService {
             List<StavkaPorudzbine> stavke = stavkaPorudzbineRepository
                     .findByPorudzbinaPorudzbinaId(p.getPorudzbinaId());
 
-            // ID-jevi stavki menija u ovoj porudžbini
-            Set<Long> stavkeMenijaUPorudzbini = stavke.stream()
-                    .filter(sp -> sp.getStavkaMenija() != null)
-                    .map(sp -> sp.getStavkaMenija().getStavkaId())
-                    .collect(Collectors.toSet());
+            // Grupišemo po proizvodId — isto kao što grupišemo korpu
+            Map<Long, Long> stavkaToProizvod = stavke.stream()
+                    .filter(sp -> sp.getStavkaMenija() != null
+                            && sp.getStavkaMenija().getProizvod() != null)
+                    .collect(Collectors.toMap(
+                            sp -> sp.getStavkaMenija().getStavkaId(),
+                            sp -> sp.getStavkaMenija().getProizvod().getProizvodId(),
+                            (a, b) -> a  // duplikati stavkaId su nemogući, ali radi sigurnosti
+                    ));
 
-            // Ako se porudžbina preklapa sa korpom, sve ostale stavke su korelacije
-            boolean preklapanje = korpaStavkeMenijaIds.stream()
-                    .anyMatch(stavkeMenijaUPorudzbini::contains);
+            Set<Long> proizvodiUPorudzbini = new HashSet<>(stavkaToProizvod.values());
+
+            boolean preklapanje = proizvodiUPorudzbini.stream()
+                    .anyMatch(korpaProizvodIds::contains);
 
             if (preklapanje) {
-                stavkeMenijaUPorudzbini.stream()
-                        .filter(id -> !korpaStavkeMenijaIds.contains(id))
-                        .forEach(id -> korelacije.merge(id, 1, Integer::sum));
+                proizvodiUPorudzbini.stream()
+                        .filter(pid -> !korpaProizvodIds.contains(pid))
+                        .forEach(pid -> korelacije.merge(pid, 1, Integer::sum));
             }
         }
         return korelacije;
@@ -207,32 +184,44 @@ public class KorpaPreporukaService {
                 .collect(Collectors.toList());
     }
 
-    private Set<String> detektujTipove(List<StavkaMenija> stavke) {
-        Set<String> tipovi = new HashSet<>();
-        for (StavkaMenija s : stavke) {
-            for (String tip : TIP_KLJUCNE_RECI.keySet()) {
-                if (odgovaraTipu(s, tip)) {
-                    tipovi.add(tip);
-                    break;
-                }
-            }
-        }
-        return tipovi;
+
+    private Set<TipObroka> detektujTipove(List<StavkaMenija> stavke) {
+        return stavke.stream()
+                .map(this::odredinTip)
+                .filter(t -> t != TipObroka.OSTALO)
+                .collect(Collectors.toSet());
     }
 
-    private boolean odgovaraTipu(StavkaMenija s, String tip) {
-        if (s.getProizvod() == null) return false;
+    private TipObroka odredinTip(StavkaMenija s) {
+        if (s.getProizvod() == null) return TipObroka.OSTALO;
+        Kategorija kat = s.getProizvod().getKategorija();
+        // Primarni izvor: enum polje na kategoriji
+        if (kat != null && kat.getTipObroka() != null && kat.getTipObroka() != TipObroka.OSTALO) {
+            return kat.getTipObroka();
+        }
+
         String naziv = Optional.ofNullable(s.getProizvod().getNaziv()).orElse("").toLowerCase();
-        String kat = s.getProizvod().getKategorija() != null
-                ? s.getProizvod().getKategorija().getNaziv().toLowerCase() : "";
-        String tekst = naziv + " " + kat;
-        return TIP_KLJUCNE_RECI.getOrDefault(tip, List.of()).stream().anyMatch(tekst::contains);
-    }
-
-    private String odredinTip(StavkaMenija s) {
-        for (String tip : TIP_KLJUCNE_RECI.keySet()) {
-            if (odgovaraTipu(s, tip)) return tip;
+        String katNaziv = kat != null ? kat.getNaziv().toLowerCase() : "";
+        String tekst = naziv + " " + katNaziv;
+        if (tekst.contains("piće") || tekst.contains("pića") || tekst.contains("drink")
+                || tekst.contains("cola") || tekst.contains("pepsi") || tekst.contains("voda")
+                || tekst.contains("sok") || tekst.contains("kafa") || tekst.contains("limunad")) {
+            return TipObroka.PICE;
         }
-        return "ostalo";
+        if (tekst.contains("desert") || tekst.contains("kolač") || tekst.contains("torta")
+                || tekst.contains("tiramisu") || tekst.contains("cheesecake")
+                || tekst.contains("palačink")) {
+            return TipObroka.DESERT;
+        }
+        if (tekst.contains("salat") || tekst.contains("predjelo") || tekst.contains("čorb")
+                || tekst.contains("soup")) {
+            return TipObroka.PREDJELO;
+        }
+        if (tekst.contains("meso") || tekst.contains("piletina") || tekst.contains("riba")
+                || tekst.contains("chicken") || tekst.contains("burger") || tekst.contains("pizza")
+                || tekst.contains("pasta") || tekst.contains("meat") || tekst.contains("fish")) {
+            return TipObroka.GLAVNO;
+        }
+        return TipObroka.OSTALO;
     }
 }
