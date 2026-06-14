@@ -64,7 +64,7 @@ INSERT INTO sastojci (sastojak_id, naziv) VALUES
                                               (5, 'Zelena salata'),
                                               (6, 'Čedar sir'),
                                               (7, 'Piletina'),
-                                              (8, 'Tjestenina'),
+                                              (8, 'Testenina'),
                                               (9, 'Avokado'),
                                               (10, 'Jaja za omlet'),
                                               (11, 'Čokolada');
@@ -136,7 +136,7 @@ INSERT INTO meniji (meni_id, naziv, opis, tip_menija, verzija, aktivan, datum_od
 
 -- Restoran 3: SEZONSKI (Letnji meni)
 INSERT INTO meniji (meni_id, naziv, opis, tip_menija, verzija, aktivan, datum_od, pocetak_sezone, kraj_sezone, restoran_id, grupni_meni_id) VALUES
-    (3, 'Letnji Meni 2026 Green', 'Laka letnja osveženja i obroci', 'SEZONSKI', 'v1', true, '2026-05-26', '2026-06-01', '2026-08-31', 3, 3);
+    (3, 'Letnji Meni 2026 Green', 'Laka letnja osveženja i obroci', 'SEZONSKI', 'v1', true, '2026-05-26', '2026-07-01', '2026-08-31', 3, 3);
 
 -- Povezivanje Menija i Proizvoda
 INSERT INTO stavke_menija (stavka_id, meni_id, proizvod_id, cena, dostupno, vreme_pripreme_min, vreme_pripreme_max, obrisan) VALUES

@@ -3,6 +3,7 @@ package fooddelivery.food_delivery_platform.controller;
 import fooddelivery.food_delivery_platform.dto.MeniUpdateDTO;
 import fooddelivery.food_delivery_platform.model.Meni;
 import fooddelivery.food_delivery_platform.model.Restoran;
+import fooddelivery.food_delivery_platform.model.SezonskiMeni;
 import fooddelivery.food_delivery_platform.service.MeniService;
 import fooddelivery.food_delivery_platform.service.RestoranService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
 import jakarta.persistence.EntityNotFoundException;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -100,5 +102,10 @@ public class MeniController {
             @RequestHeader("X-User-Id") Long userId) {
         Meni novaVerzija = meniService.rollbackToVersion(meniId, userId);
         return ResponseEntity.ok(Map.of("noviMeniId", novaVerzija.getMeniId()));
+    }
+
+    @PutMapping("/{id}/zapocni-sezonu")
+    public ResponseEntity<?> startSeason(@PathVariable Long id) {
+        return ResponseEntity.ok(meniService.startSeason(id));
     }
 }
