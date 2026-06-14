@@ -17,7 +17,9 @@ public interface MeniRepository extends JpaRepository<Meni, Long> {
 
 
     @Query("SELECT m FROM Meni m WHERE m.restoran.restoranId = :restoranId AND m.aktivan = true " +
-            "AND (m.vremeOd IS NULL OR (m.vremeOd <= :trenutnoVreme AND m.vremeDo >= :trenutnoVreme))")
+            "AND (TYPE(m) <> VremenskiMeni " +
+            "OR (TREAT(m AS VremenskiMeni).vremeOd <= :trenutnoVreme " +
+            "AND TREAT(m AS VremenskiMeni).vremeDo >= :trenutnoVreme))")
     List<Meni> findAktivniZaKupcaSaVremenskimFilterom(
             @Param("restoranId") Long restoranId,
             @Param("trenutnoVreme") LocalTime trenutnoVreme);
