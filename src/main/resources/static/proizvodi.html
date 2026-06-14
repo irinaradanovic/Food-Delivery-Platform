@@ -696,6 +696,27 @@
             animation: spin 0.8s linear infinite; flex-shrink: 0;
         }
 
+        /*  INLINE PREPORUKA BAR  */
+        .preporuka-bar {
+            background: #f0fdf4;
+            border-bottom: 1.5px solid #86efac;
+            padding: 10px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #15803d;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .preporuka-bar:hover { background: #dcfce7; }
+        .preporuka-bar-cta {
+            margin-left: auto;
+            font-weight: 600;
+            color: var(--green);
+        }
+
     </style>
 </head>
 <body>
@@ -703,10 +724,15 @@
 <nav>
 </nav>
 
+<div id="preporuka-bar" style="display:none"
+     class="preporuka-bar" onclick="prikaziKorpu()">
+    <span id="preporuka-bar-tekst"></span>
+    <span class="preporuka-bar-cta">Pogledaj →</span>
+</div>
+
 <main>
     <div class="page-header">
         <h1>Svi proizvodi</h1>
-        <p>Pronađite omiljenu hranu i piće</p>
     </div>
 
     <div class="search-bar">
@@ -927,6 +953,7 @@
     let aktivniProizvod = null;
     let korpaModalProizvod = null;
     let korpaModalKolicina = 1;
+    const kupacId = getKupacId();
 
     // Emoji mapa
     const hrana = {'pizza':'','burger':'','pasta':'','piletina':'','piće':'','supa':'','salata':'','tiramisu':'','cheesecake':'','torta':'','palačinke':'','coca':'','pepsi':'','limunad':'','sok':'','voda':'','nuggets':'','wings':''};
@@ -961,6 +988,7 @@
         if (event && !event.target.classList.contains('korpa-panel-overlay')) return;
         document.getElementById('korpa-panel-overlay').classList.remove('open');
         document.body.style.overflow = '';
+        renderPreporukaBar(null);
     }
 
     function renderKorpaPanel() {
@@ -1024,6 +1052,7 @@
         renderKorpaPanel();
         osvjeziKarticeDugmad();
         document.getElementById('kp-preporuke-sekcija').style.display = 'none';
+        renderPreporukaBar(null);
     }
 
     function osvjeziKarticeDugmad() {
@@ -1769,6 +1798,7 @@
         const restoranId = localStorage.getItem('restoranId');
         if (!restoranId || korpa.length === 0) {
             document.getElementById('kp-preporuke-sekcija').style.display = 'none';
+            renderPreporukaBar(null);
             return;
         }
 
@@ -1791,8 +1821,10 @@
             });
 
             renderKorpaPreporuke(odgovor);
+            renderPreporukaBar(odgovor);
         } catch (err) {
             sekcija.style.display = 'none';
+            renderPreporukaBar(null);
         }
     }
 
@@ -1826,7 +1858,7 @@
                     </div>
                     <div class="kp-preporuka-body">
                         <div class="kp-preporuka-naziv">${p.naziv}</div>
-                        <div class="kp-preporuka-razlog">${p.razlogPreporuke}</div>
+                        ${p.razlogPreporuke ? `<div class="kp-preporuka-razlog">${p.razlogPreporuke}</div>` : ""}
                         <div class="kp-preporuka-cena">
                             ${p.cena > 0 ? p.cena.toLocaleString('sr-RS') + ' RSD' : 'Besplatno'}
                         </div>
@@ -1841,6 +1873,18 @@
         }).join('');
 
         sekcija.style.display = 'block';
+    }
+
+    // Inline bar ispod nav-a — prikazuje poruku preporuke i van panela korpe
+    function renderPreporukaBar(odgovor) {
+        const bar = document.getElementById('preporuka-bar');
+        const tekst = document.getElementById('preporuka-bar-tekst');
+        if (!odgovor || !odgovor.poruka || korpa.length === 0) {
+            bar.style.display = 'none';
+            return;
+        }
+        tekst.textContent = odgovor.poruka;
+        bar.style.display = 'flex';
     }
 
     function dodajPreporukuUKorpu(p) {

@@ -348,6 +348,71 @@
         .kp-total-iznos { font-size: 26px; font-weight: 700; color: var(--dark); }
         .kp-ocisti-btn { width: 100%; background: none; border: 1.5px solid var(--border); border-radius: 12px; padding: 11px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; color: var(--gray); cursor: pointer; transition: all 0.15s; }
         .kp-ocisti-btn:hover { border-color: #dc2626; color: #dc2626; }
+
+        /*  KORPA PREPORUKE PANEL  */
+        .kp-preporuke-sekcija {
+            border-top: 1px solid var(--border); padding-top: 16px; margin-top: 4px;
+        }
+        .kp-preporuke-poruka {
+            background: #f0f7f0; border: 1px solid #c3e6c3; border-radius: 10px;
+            padding: 10px 14px; font-size: 13px; font-weight: 600; color: var(--green);
+            margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+        }
+        .kp-preporuke-title {
+            font-size: 12px; font-weight: 600; color: var(--gray);
+            text-transform: uppercase; letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+        .kp-preporuke-scroll {
+            display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px;
+            scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+        }
+        .kp-preporuke-scroll::-webkit-scrollbar { height: 4px; }
+        .kp-preporuke-scroll::-webkit-scrollbar-track { background: transparent; }
+        .kp-preporuke-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+        .kp-preporuka-card {
+            flex-shrink: 0; width: 150px; background: var(--cream);
+            border: 1px solid var(--border); border-radius: 14px;
+            overflow: hidden; transition: all 0.15s; cursor: default;
+        }
+        .kp-preporuka-card:hover { border-color: var(--green); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .kp-preporuka-img {
+            width: 100%; height: 90px; object-fit: cover;
+            background: linear-gradient(135deg, #f0ede8, #e8e4dc);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 32px; overflow: hidden; position: relative;
+        }
+        .kp-preporuka-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+        .kp-preporuka-body { padding: 9px 10px 10px; }
+        .kp-preporuka-naziv {
+            font-size: 12px; font-weight: 600; color: var(--dark);
+            margin-bottom: 2px; line-height: 1.3;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .kp-preporuka-razlog {
+            font-size: 10px; color: var(--green); margin-bottom: 6px;
+            font-weight: 500; line-height: 1.3;
+        }
+        .kp-preporuka-cena {
+            font-size: 13px; font-weight: 700; color: var(--dark); margin-bottom: 8px;
+        }
+        .kp-preporuka-dodaj {
+            width: 100%; background: var(--green); color: white; border: none;
+            border-radius: 8px; padding: 7px 0; font-family: 'DM Sans', sans-serif;
+            font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s;
+        }
+        .kp-preporuka-dodaj:hover { background: var(--green-lt); }
+        .kp-preporuka-dodaj.dodato { background: #4b9b4b; }
+        .kp-preporuke-loader {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 13px; color: var(--gray); padding: 8px 0;
+        }
+        .kp-mini-spinner {
+            width: 16px; height: 16px; border: 2px solid var(--border);
+            border-top-color: var(--green); border-radius: 50%;
+            animation: spin 0.8s linear infinite; flex-shrink: 0;
+        }
         .kp-placanje-btn { width: 100%; background: var(--green); color: white; border: none; border-radius: 12px; padding: 14px 18px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; }
         .kp-placanje-btn:hover { background: var(--green-lt); }
     </style>
@@ -499,6 +564,15 @@
             <button class="kp-close" onclick="zatvoriKorpuPanel()"></button>
         </div>
         <div class="kp-lista" id="kp-lista"></div>
+        <div class="kp-preporuke-sekcija" id="kp-preporuke-sekcija" style="display:none; padding: 0 24px 12px;">
+            <div class="kp-preporuke-poruka" id="kp-preporuke-poruka" style="display:none"></div>
+            <div class="kp-preporuke-title">Možda te zanima</div>
+            <div class="kp-preporuke-scroll" id="kp-preporuke-scroll">
+                <div class="kp-preporuke-loader">
+                    <div class="kp-mini-spinner"></div> Učitavanje...
+                </div>
+            </div>
+        </div>
         <div class="kp-footer" id="kp-footer" style="display:none">
             <div class="kp-total-row">
                 <span class="kp-total-label">Ukupno</span>
@@ -556,6 +630,7 @@
         renderKorpaPanel();
         document.getElementById('korpa-panel-overlay').classList.add('open');
         document.body.style.overflow = 'hidden';
+        osvjeziKorpaPreporuke();
     }
 
     function zatvoriKorpuPanel(event) {
@@ -606,6 +681,7 @@
         sacuvajKorpu();
         renderKorpaPanel();
         osvjeziKarticeDugmad();
+        osvjeziKorpaPreporuke();
     }
 
     function ocistiKorpu() {
@@ -613,6 +689,128 @@
         sacuvajKorpu();
         renderKorpaPanel();
         osvjeziKarticeDugmad();
+        document.getElementById('kp-preporuke-sekcija').style.display = 'none';
+    }
+
+    //  KORPA PREPORUKE ("Možda te zanima" u panelu korpe)
+    const TIP_EMOJI_KORPA = {
+        predjelo: '🥗', glavno: '🍽️', desert: '🍰',
+        pice: '🥤', brza: '🍔', pasta: '🍝', ostalo: '🍴'
+    };
+
+    let korpaPreporukeTimeout = null;
+
+    function osvjeziKorpaPreporuke() {
+        clearTimeout(korpaPreporukeTimeout);
+        korpaPreporukeTimeout = setTimeout(async () => {
+            await ucitajKorpaPreporuke();
+        }, 600);
+    }
+
+    async function ucitajKorpaPreporuke() {
+        const restoranId = localStorage.getItem('restoranId');
+        if (!restoranId || korpa.length === 0) {
+            document.getElementById('kp-preporuke-sekcija').style.display = 'none';
+            return;
+        }
+
+        const sekcija = document.getElementById('kp-preporuke-sekcija');
+        const scroll = document.getElementById('kp-preporuke-scroll');
+        sekcija.style.display = 'block';
+        scroll.innerHTML = '<div class="kp-preporuke-loader"><div class="kp-mini-spinner"></div> Učitavanje...</div>';
+
+        try {
+            const payload = {
+                restoranId: parseInt(restoranId),
+                kupacId: kupacId ? parseInt(kupacId) : null,
+                stavkeMenijaIds: korpa.map(k => k.id),
+                maxPreporuka: 8
+            };
+
+            const odgovor = await apiFetch('/korpa-preporuke', {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+
+            renderKorpaPreporuke(odgovor);
+        } catch (err) {
+            sekcija.style.display = 'none';
+        }
+    }
+
+    function renderKorpaPreporuke(odgovor) {
+        const sekcija = document.getElementById('kp-preporuke-sekcija');
+        const scroll = document.getElementById('kp-preporuke-scroll');
+        const porukaEl = document.getElementById('kp-preporuke-poruka');
+
+        if (!odgovor || !odgovor.preporuke || odgovor.preporuke.length === 0) {
+            sekcija.style.display = 'none';
+            return;
+        }
+
+        if (odgovor.poruka) {
+            porukaEl.textContent = odgovor.poruka;
+            porukaEl.style.display = 'flex';
+        } else {
+            porukaEl.style.display = 'none';
+        }
+
+        scroll.innerHTML = odgovor.preporuke.map(p => {
+            const emoji = TIP_EMOJI_KORPA[p.tipObroka] || '🍴';
+            const uKorpi = korpa.some(k => k.id === p.stavkaId);
+            return `
+                <div class="kp-preporuka-card">
+                    <div class="kp-preporuka-img">
+                        ${p.fotografija
+                ? `<img src="${p.fotografija}" alt="${p.naziv}" loading="lazy">`
+                : emoji}
+                    </div>
+                    <div class="kp-preporuka-body">
+                        <div class="kp-preporuka-naziv">${p.naziv}</div>
+                        ${p.razlogPreporuke ? `<div class="kp-preporuka-razlog">${p.razlogPreporuke}</div>` : ""}
+                        <div class="kp-preporuka-cena">
+                            ${p.cena > 0 ? p.cena.toLocaleString('sr-RS') + ' RSD' : 'Besplatno'}
+                        </div>
+                        <button class="kp-preporuka-dodaj ${uKorpi ? 'dodato' : ''}"
+                                id="kp-btn-${p.stavkaId}"
+                                onclick="dodajPreporukuUKorpu(${JSON.stringify(p).replace(/"/g, '&quot;')})">
+                            ${uKorpi ? '✓ Dodato' : '+ Dodaj'}
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        sekcija.style.display = 'block';
+    }
+
+    function dodajPreporukuUKorpu(p) {
+        const postojeci = korpa.find(k => k.id === p.stavkaId);
+        const emoji = TIP_EMOJI_KORPA[p.tipObroka] || '🍴';
+        if (postojeci) {
+            postojeci.kolicina++;
+        } else {
+            korpa.push({
+                id: p.stavkaId,
+                naziv: p.naziv,
+                emoji,
+                cena: parseFloat(p.cena) || null,
+                kolicina: 1,
+                napomena: ''
+            });
+        }
+        sacuvajKorpu();
+
+        const btn = document.getElementById('kp-btn-' + p.stavkaId);
+        if (btn) {
+            btn.textContent = '✓ Dodato';
+            btn.classList.add('dodato');
+        }
+
+        renderKorpaPanel();
+        osvjeziKorpaPreporuke();
+
+        try { api.zabeleziKlik(kupacId, p.proizvodId, 'KORPA'); } catch {}
     }
 
     function osvjeziKarticeDugmad() {
@@ -695,6 +893,7 @@
         sacuvajKorpu();
         zatvoriKorpaModal();
         osvjeziKarticeDugmad();
+        osvjeziKorpaPreporuke();
 
         const navBtn = document.querySelector('.nav-korpa');
         if (navBtn) {

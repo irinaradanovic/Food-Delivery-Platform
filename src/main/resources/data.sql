@@ -418,6 +418,21 @@ INSERT INTO omiljene_kategorije (korisnik_id, kategorija_id, datum_dodavanja) VA
                                                                                   (5, 3, '2026-05-26 12:47:30'),
                                                                                   (5, 6, '2026-05-30 18:04:00');
 
+-- 1. Dodaj kolonu (Hibernate create-drop je pravi ionako, ali ovo
+--    pokriva i slučaj ako se koristi validate/update mode)
+ALTER TABLE kategorije
+    ADD COLUMN IF NOT EXISTS tip_obroka VARCHAR(20);
+
+-- 2. Mapiranje postojećih kategorija na tipove obroka
+UPDATE kategorije SET tip_obroka = 'GLAVNO'   WHERE naziv ILIKE '%burger%';
+UPDATE kategorije SET tip_obroka = 'GLAVNO'   WHERE naziv ILIKE '%pizza%';
+UPDATE kategorije SET tip_obroka = 'PREDJELO' WHERE naziv ILIKE '%salad%';
+UPDATE kategorije SET tip_obroka = 'PICE'     WHERE naziv ILIKE '%drink%';
+UPDATE kategorije SET tip_obroka = 'DESERT'   WHERE naziv ILIKE '%desert%';
+UPDATE kategorije SET tip_obroka = 'GLAVNO'   WHERE naziv ILIKE '%chicken%';
+-- Sve kategorije bez eksplicitnog mapiranja dobijaju OSTALO
+UPDATE kategorije SET tip_obroka = 'OSTALO'   WHERE tip_obroka IS NULL;
+
 -- Sinhronizacija sekvenci za bazu
 SELECT setval(pg_get_serial_sequence('korisnici', 'korisnik_id'), MAX(korisnik_id)) FROM korisnici;
 SELECT setval(pg_get_serial_sequence('kategorije', 'kategorija_id'), MAX(kategorija_id)) FROM kategorije;
