@@ -68,7 +68,6 @@
         .tab-btn.tab-vremenski.aktivan { background: #2563eb; }
         .tab-ikona { font-size: 16px; }
 
-        .sekcija-opis { font-size: 14px; color: var(--gray); margin-bottom: 24px; }
 
         /* GRID */
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
@@ -630,7 +629,7 @@
         renderKorpaPanel();
         document.getElementById('korpa-panel-overlay').classList.add('open');
         document.body.style.overflow = 'hidden';
-        osvjeziKorpaPreporuke();
+        osveziKorpaPreporuke();
     }
 
     function zatvoriKorpuPanel(event) {
@@ -680,15 +679,15 @@
         if (korpa[idx].kolicina <= 0) korpa.splice(idx, 1);
         sacuvajKorpu();
         renderKorpaPanel();
-        osvjeziKarticeDugmad();
-        osvjeziKorpaPreporuke();
+        osveziKarticeDugmad();
+        osveziKorpaPreporuke();
     }
 
     function ocistiKorpu() {
         korpa = [];
         sacuvajKorpu();
         renderKorpaPanel();
-        osvjeziKarticeDugmad();
+        osveziKarticeDugmad();
         document.getElementById('kp-preporuke-sekcija').style.display = 'none';
     }
 
@@ -700,7 +699,7 @@
 
     let korpaPreporukeTimeout = null;
 
-    function osvjeziKorpaPreporuke() {
+    function osveziKorpaPreporuke() {
         clearTimeout(korpaPreporukeTimeout);
         korpaPreporukeTimeout = setTimeout(async () => {
             await ucitajKorpaPreporuke();
@@ -808,12 +807,12 @@
         }
 
         renderKorpaPanel();
-        osvjeziKorpaPreporuke();
+        osveziKorpaPreporuke();
 
-        try { api.zabeleziKlik(kupacId, p.proizvodId, 'KORPA'); } catch {}
+        try { api.zabeleziKlik(kupacId, p.stavkaId, 'KORPA'); } catch {}
     }
 
-    function osvjeziKarticeDugmad() {
+    function osveziKarticeDugmad() {
         const uKorpiIds = new Set(korpa.map(k => k.id));
         document.querySelectorAll('[id^="btn-korpa-"]').forEach(btn => {
             const id = parseInt(btn.id.replace('btn-korpa-', ''));
@@ -892,8 +891,8 @@
 
         sacuvajKorpu();
         zatvoriKorpaModal();
-        osvjeziKarticeDugmad();
-        osvjeziKorpaPreporuke();
+        osveziKarticeDugmad();
+        osveziKorpaPreporuke();
 
         const navBtn = document.querySelector('.nav-korpa');
         if (navBtn) {
@@ -951,7 +950,7 @@
     async function otvoriDetalje(proizvodId) {
         if (jeKupac()) try { await api.zabeleziKlik(kupacId, proizvodId, 'DETALJI'); } catch {}
         try {
-            const p = await fetch(`http://localhost:8080/api/proizvodi/${proizvodId}`).then(r => r.json());
+            const p = await apiFetch(`/proizvodi/${proizvodId}`);
             aktivniProizvod = p;
 
             document.getElementById('modal-img').innerHTML = p.fotografija
@@ -991,7 +990,7 @@
     //  Direktno dodavanje u korpu sa kartice (fetch)
     async function otvoriKorpaModalZaId(proizvodId) {
         try {
-            const p = await fetch(`http://localhost:8080/api/proizvodi/${proizvodId}`).then(r => r.json());
+            const p = await apiFetch(`/proizvodi/${proizvodId}`);
             otvoriKorpaModal(p);
         } catch {
             alert('Greška pri učitavanju proizvoda.');

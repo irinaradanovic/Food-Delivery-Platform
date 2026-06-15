@@ -13,13 +13,10 @@ import java.util.List;
 @AllArgsConstructor
 public class KorpaPreporukaResponseDTO {
 
-    // Preporučene stavke menija
     private List<PreporukaStavkaDTO> preporuke;
 
-    // Koji tipovi obroka nedostaju u korpi (za kombo dopunu)
     private List<String> nedostajuciTipovi;
 
-    // Poruka korisniku (npr. "Dodaj piće za kompletan obrok!")
     private String poruka;
 
     @Data
@@ -34,7 +31,7 @@ public class KorpaPreporukaResponseDTO {
         private String kategorija;
         private String tipObroka;
         private BigDecimal cena;
-        private double skorRelevantnosti; // interni skor za debug
-        private String razlogPreporuke;   // "Često se naručuje uz X", "Dopuna obroka" itd.
+        private double skorRelevantnosti;
+        private String razlogPreporuke;
     }
 }

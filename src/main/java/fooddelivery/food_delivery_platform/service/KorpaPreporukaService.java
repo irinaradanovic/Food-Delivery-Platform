@@ -34,7 +34,6 @@ public class KorpaPreporukaService {
     public KorpaPreporukaResponseDTO getPreporuke(KorpaPreporukaRequestDTO request) {
         int max = request.getMaxPreporuka() > 0 ? request.getMaxPreporuka() : 5;
 
-        // Dohvati stavke menija koje su u korpi
         List<StavkaMenija> korpaStavke = new ArrayList<>();
         if (request.getStavkeMenijaIds() != null) {
             for (Long id : request.getStavkeMenijaIds()) {
@@ -42,17 +41,14 @@ public class KorpaPreporukaService {
             }
         }
 
-        // Dohvati sve dostupne stavke iz aktivnih menija restorana
         List<StavkaMenija> sveDostupne = dohvatiAktivneStavke(request.getRestoranId());
 
-        // Ukloni iz kandidata ono što je već u korpi
         Set<Long> uKorpiIds = korpaStavke.stream()
                 .map(StavkaMenija::getStavkaId).collect(Collectors.toSet());
         List<StavkaMenija> kandidati = sveDostupne.stream()
                 .filter(s -> !uKorpiIds.contains(s.getStavkaId()))
                 .collect(Collectors.toList());
 
-        // Skor mapa: stavkaId -> skor
         Map<Long, Double> skorovi = new HashMap<>();
         Map<Long, String> razlozi = new HashMap<>();
 
@@ -63,7 +59,7 @@ public class KorpaPreporukaService {
                 .collect(Collectors.toList());
 
         for (StavkaMenija kandidat : kandidati) {
-            TipObroka tipKandidata = odredinTip(kandidat);
+            TipObroka tipKandidata = odrediTip(kandidat);
             if (nedostajuciTipovi.contains(tipKandidata)) {
                 double bonus = TIP_BONUS.getOrDefault(tipKandidata, 1.0);
                 skorovi.merge(kandidat.getStavkaId(), bonus, Double::sum);
@@ -89,7 +85,7 @@ public class KorpaPreporukaService {
                             .fotografija(s.getProizvod().getFotografija())
                             .kategorija(s.getProizvod().getKategorija() != null
                                     ? s.getProizvod().getKategorija().getNaziv() : "")
-                            .tipObroka(odredinTip(s).name().toLowerCase())
+                            .tipObroka(odrediTip(s).name().toLowerCase())
                             .cena(s.getCena())
                             .skorRelevantnosti(e.getValue())
                             .razlogPreporuke(razlozi.getOrDefault(e.getKey(), null))
@@ -110,7 +106,7 @@ public class KorpaPreporukaService {
                             .fotografija(s.getProizvod().getFotografija())
                             .kategorija(s.getProizvod().getKategorija() != null
                                     ? s.getProizvod().getKategorija().getNaziv() : "")
-                            .tipObroka(odredinTip(s).name().toLowerCase())
+                            .tipObroka(odrediTip(s).name().toLowerCase())
                             .cena(s.getCena())
                             .skorRelevantnosti(0)
                             .razlogPreporuke("Možda te zanima")
@@ -187,12 +183,12 @@ public class KorpaPreporukaService {
 
     private Set<TipObroka> detektujTipove(List<StavkaMenija> stavke) {
         return stavke.stream()
-                .map(this::odredinTip)
+                .map(this::odrediTip)
                 .filter(t -> t != TipObroka.OSTALO)
                 .collect(Collectors.toSet());
     }
 
-    private TipObroka odredinTip(StavkaMenija s) {
+    private TipObroka odrediTip(StavkaMenija s) {
         if (s.getProizvod() == null) return TipObroka.OSTALO;
         Kategorija kat = s.getProizvod().getKategorija();
         // Primarni izvor: enum polje na kategoriji

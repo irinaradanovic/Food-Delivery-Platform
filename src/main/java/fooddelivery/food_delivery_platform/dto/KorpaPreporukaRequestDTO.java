@@ -7,7 +7,6 @@ import java.util.List;
 public class KorpaPreporukaRequestDTO {
     private Long restoranId;
     private Long kupacId;
-    // ID-jevi stavki menija koje su trenutno u korpi
     private List<Long> stavkeMenijaIds;
-    private int maxPreporuka; // default 5
+    private int maxPreporuka;
 }

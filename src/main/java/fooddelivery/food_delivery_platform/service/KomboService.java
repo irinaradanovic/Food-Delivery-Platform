@@ -50,11 +50,11 @@ public class KomboService {
         List<List<StavkaMenija>> sveKombinacije = new ArrayList<>();
 
         if (trazeneKategorije != null) {
-            generirajKombinacije(trazeneKategorije, poKategoriji, new ArrayList<>(),
+            generisiKombinacije(trazeneKategorije, poKategoriji, new ArrayList<>(),
                     request.getBrojStavki(), sveStavke, request.getMaxUkupnaCena(),
                     sveKombinacije, maxRezultata * 3);
         } else {
-            generirajBezKategorije(sveStavke, request.getBrojStavki(),
+            generisiBezKategorije(sveStavke, request.getBrojStavki(),
                     request.getMaxUkupnaCena(), sveKombinacije, maxRezultata * 3);
         }
 
@@ -76,7 +76,7 @@ public class KomboService {
             return sumaKombinacije(a).compareTo(sumaKombinacije(b));
         });
 
-        List<List<StavkaMenija>> deduplikovane = deduplikuj(sveKombinacije);
+        List<List<StavkaMenija>> deduplikovane = ukloniDuplikate(sveKombinacije);
 
         return deduplikovane.stream()
                 .limit(maxRezultata)
@@ -84,10 +84,10 @@ public class KomboService {
                 .collect(Collectors.toList());
     }
 
-    private void generirajKombinacije(List<Long> kategorije, Map<Long, List<StavkaMenija>> poKategoriji,
-                                      List<StavkaMenija> trenutna, int ciljniBroj,
-                                      List<StavkaMenija> sveStavke, BigDecimal maxCena,
-                                      List<List<StavkaMenija>> rezultati, int maxBroj) {
+    private void generisiKombinacije(List<Long> kategorije, Map<Long, List<StavkaMenija>> poKategoriji,
+                                     List<StavkaMenija> trenutna, int ciljniBroj,
+                                     List<StavkaMenija> sveStavke, BigDecimal maxCena,
+                                     List<List<StavkaMenija>> rezultati, int maxBroj) {
         if (rezultati.size() >= maxBroj) return;
 
         int index = trenutna.size();
@@ -121,21 +121,21 @@ public class KomboService {
             if (korisceneId.contains(kandidat.getStavkaId())) continue;
             if (kandidat.getCena().compareTo(dostupno) > 0) continue;
             trenutna.add(kandidat);
-            generirajKombinacije(kategorije, poKategoriji, trenutna, ciljniBroj, sveStavke, maxCena, rezultati, maxBroj);
+            generisiKombinacije(kategorije, poKategoriji, trenutna, ciljniBroj, sveStavke, maxCena, rezultati, maxBroj);
             trenutna.remove(trenutna.size() - 1);
         }
     }
 
-    private void generirajBezKategorije(List<StavkaMenija> stavke, int ciljniBroj,
-                                        BigDecimal maxCena, List<List<StavkaMenija>> rezultati, int maxBroj) {
-        generirajRekurzivno(stavke, 0, new ArrayList<>(), ciljniBroj,
+    private void generisiBezKategorije(List<StavkaMenija> stavke, int ciljniBroj,
+                                       BigDecimal maxCena, List<List<StavkaMenija>> rezultati, int maxBroj) {
+        generisiRekurzivno(stavke, 0, new ArrayList<>(), ciljniBroj,
                 BigDecimal.ZERO, maxCena, rezultati, maxBroj);
     }
 
-    private void generirajRekurzivno(List<StavkaMenija> stavke, int startIdx,
-                                     List<StavkaMenija> trenutna, int ciljniBroj,
-                                     BigDecimal trenutnaCena, BigDecimal maxCena,
-                                     List<List<StavkaMenija>> rezultati, int maxBroj) {
+    private void generisiRekurzivno(List<StavkaMenija> stavke, int startIdx,
+                                    List<StavkaMenija> trenutna, int ciljniBroj,
+                                    BigDecimal trenutnaCena, BigDecimal maxCena,
+                                    List<List<StavkaMenija>> rezultati, int maxBroj) {
         if (rezultati.size() >= maxBroj) return;
         if (trenutna.size() == ciljniBroj) {
             rezultati.add(new ArrayList<>(trenutna));
@@ -148,7 +148,7 @@ public class KomboService {
             BigDecimal novaCena = trenutnaCena.add(s.getCena());
             if (novaCena.compareTo(maxCena) > 0) continue;
             trenutna.add(s);
-            generirajRekurzivno(stavke, i + 1, trenutna, ciljniBroj, novaCena, maxCena, rezultati, maxBroj);
+            generisiRekurzivno(stavke, i + 1, trenutna, ciljniBroj, novaCena, maxCena, rezultati, maxBroj);
             trenutna.remove(trenutna.size() - 1);
         }
     }
@@ -184,7 +184,7 @@ public class KomboService {
         });
     }
 
-    private List<List<StavkaMenija>> deduplikuj(List<List<StavkaMenija>> kombinacije) {
+    private List<List<StavkaMenija>> ukloniDuplikate(List<List<StavkaMenija>> kombinacije) {
         Set<Set<Long>> vidjeni = new HashSet<>();
         List<List<StavkaMenija>> rezultat = new ArrayList<>();
         for (List<StavkaMenija> kombo : kombinacije) {
@@ -204,7 +204,7 @@ public class KomboService {
                     .opisProizvoda(s.getProizvod() != null ? s.getProizvod().getOpis() : "")
                     .fotografija(s.getProizvod() != null ? s.getProizvod().getFotografija() : null)
                     .kategorija(kategorijaNaziv)
-                    .tipObroka(kategorijaNaziv)  // šalje stvarni naziv kategorije
+                    .tipObroka(kategorijaNaziv)
                     .cena(s.getCena())
                     .build();
         }).collect(Collectors.toList());

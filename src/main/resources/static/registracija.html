@@ -254,6 +254,7 @@
     </p>
 </div>
 
+<script src="/js/api.js"></script>
 <script>
     function toggleLozinka(id, btn) {
         const input = document.getElementById(id);
@@ -353,21 +354,10 @@
         };
 
         try {
-            const res = await fetch('http://localhost:8080/api/kupci/registracija', {
+            const res = await apiFetch('/kupci/registracija', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(podaci)
             });
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                alertErr.textContent = data.greska || 'Greška pri registraciji.';
-                alertErr.style.display = 'block';
-                btn.disabled = false;
-                btn.textContent = 'Kreiraj nalog';
-                return;
-            }
 
             alertOk.textContent = `Nalog kreiran! Preusmeravamo na prijavu...`;
             alertOk.style.display = 'block';
@@ -377,7 +367,7 @@
             }, 2000);
 
         } catch {
-            alertErr.textContent = 'Nije moguće povezati se sa serverom.';
+            alertErr.textContent = 'Greška pri registraciji ili korisnik već postoji.';
             alertErr.style.display = 'block';
             btn.disabled = false;
             btn.textContent = 'Kreiraj nalog';

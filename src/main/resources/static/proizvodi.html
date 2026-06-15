@@ -941,11 +941,6 @@
         return localStorage.getItem('uloga') === 'KUPAC';
     }
 
-    // Gost moze da pregleda i koristi korpu, ali ne moze da koristi omiljene/tracking
-    function jeKupacIliGost() {
-        const uloga = localStorage.getItem('uloga');
-        return uloga === 'KUPAC' || !uloga;
-    }
 
     let omiljeniIds = new Set();
     // Korpa: [{id, naziv, emoji, cena, kolicina, napomena}]
@@ -1036,8 +1031,8 @@
         }
         sacuvajKorpu();
         renderKorpaPanel();
-        osvjeziKarticeDugmad();
-        osvjeziKorpaPreporuke();
+        osveziKarticeDugmad();
+        osveziKorpaPreporuke();
     }
 
     function ocistiKorpu() {
@@ -1050,12 +1045,12 @@
         korpa = [];
         sacuvajKorpu();
         renderKorpaPanel();
-        osvjeziKarticeDugmad();
+        osveziKarticeDugmad();
         document.getElementById('kp-preporuke-sekcija').style.display = 'none';
         renderPreporukaBar(null);
     }
 
-    function osvjeziKarticeDugmad() {
+    function osveziKarticeDugmad() {
         const uKorpiIds = new Set(korpa.map(k => k.id));
         document.querySelectorAll('[id^="btn-korpa-"]').forEach(btn => {
             const id = parseInt(btn.id.replace('btn-korpa-', ''));
@@ -1137,9 +1132,9 @@
         }
 
         sacuvajKorpu();
-        osvjeziKarticeDugmad();
-        osvjeziKorpaPreporuke();
-        osvjeziKarticeDugmad();
+        zatvoriKorpaModal();
+        osveziKarticeDugmad();
+        osveziKorpaPreporuke();
 
         // Kratka vizuelna potvrda na nav dugmetu
         const navBtn = document.querySelector('.nav-korpa');
@@ -1242,7 +1237,7 @@
     // Otvori korpa modal sa kartice (trebamo fetch proizvoda ako nemamo objekat)
     async function otvoriKorpaModalZaId(proizvodId) {
         try {
-            const p = await fetch(`http://localhost:8080/api/proizvodi/${proizvodId}`).then(r => r.json());
+            const p = await apiFetch(`/proizvodi/${proizvodId}`);
             otvoriKorpaModal(p);
         } catch {
             alert('Greška pri učitavanju proizvoda.');
@@ -1253,7 +1248,7 @@
     async function otvoriDetalje(proizvodId) {
         if (jeKupac()) try { await api.zabeleziKlik(getKupacId(), proizvodId, 'DETALJI'); } catch {}
         try {
-            const p = await fetch(`http://localhost:8080/api/proizvodi/${proizvodId}`).then(r => r.json());
+            const p = await apiFetch(`/proizvodi/${proizvodId}`);
             aktivniProizvod = p;
 
             document.getElementById('modal-img').innerHTML = p.fotografija
@@ -1586,16 +1581,6 @@
         predjelo: '', glavno: '', desert: '',
         pice: '', brza: '', pasta: '', ostalo: ''
     };
-    const TIP_NAZIV_MAP = {
-        burgers:  'Burgers',
-        pizzas:   'Pizzas',
-        salads:   'Salads',
-        drinks:   'Drinks',
-        deserts:  'Deserts',
-        chicken:  'Chicken',
-        predjelo: 'Predjelo', glavno: 'Glavno jelo', desert: 'Desert',
-        pice: 'Piće', brza: 'Brza hrana', pasta: 'Pasta & Pizza', ostalo: 'Ostalo'
-    };
 
     let aktivneKategorije = new Set();
     let komboRezultatiCache = [];
@@ -1786,7 +1771,7 @@
     let korpaPreporukeTimeout = null;
 
     // Pozovi svaki put kad se korpa promeni
-    function osvjeziKorpaPreporuke() {
+    function osveziKorpaPreporuke() {
         // Debounce — ne pozivaj odmah svaki klik
         clearTimeout(korpaPreporukeTimeout);
         korpaPreporukeTimeout = setTimeout(async () => {
@@ -1911,11 +1896,11 @@
             btn.classList.add('dodato');
         }
 
-        // Azuriraj prikaz korpe i osvježi preporuke (debounced)
+        // Azuriraj prikaz korpe i osveži preporuke (debounced)
         renderKorpaPanel();
-        osvjeziKorpaPreporuke();
+        osveziKorpaPreporuke();
 
-        try { api.zabeleziKlik(kupacId, p.proizvodId, 'KORPA'); } catch {}
+        try { api.zabeleziKlik(kupacId, p.stavkaId, 'KORPA'); } catch {}
     }
 
     // ── Custom multiselect funkcije ──────────────────────────────────────────

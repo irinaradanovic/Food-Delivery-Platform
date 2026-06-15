@@ -44,8 +44,7 @@ public class PreporukaService {
         List<Proizvod> sviProizvodi = proizvodRepository.findSviTrenutnoAktivniProizvodi(sada);
 
         // --- 1. Iz porudzbina (najveci tezinski faktor) ---
-        // Narudjeni proizvodi dobijaju visoki skor jer je to najjaci signal interesovanja.
-        // Ponavljanje iste narudzbine je norma za hranu — ne skrivamo vec narudjene.
+        // Naruceni proizvodi dobijaju visoki skor jer je to najjaci signal interesovanja.
         List<Porudzbina> porudzbine = porudzbinaRepository
                 .findByKupac_KorisnikIdOrderByDatumKreiranjaDesc(kupacId);
 
@@ -59,7 +58,7 @@ public class PreporukaService {
                 if (proizvod == null) continue;
 
                 Long pid = proizvod.getProizvodId();
-                // Veci skor za veci broj narudjenih komada
+                // Veci skor za veci broj narucenih komada
                 double bonusKolicina = stavka.getKolicina() != null ? stavka.getKolicina() : 1;
                 skorovi.merge(pid, 10.0 * bonusKolicina, Double::sum);
 
@@ -127,7 +126,7 @@ public class PreporukaService {
             return sviProizvodi.stream().limit(limit).collect(Collectors.toList());
         }
 
-        // --- 5. Sortiranje po skoru i vracanje top limit rezultata ---
+        // --- 5. Sortiranje po skoru i vracanje top rezultata
         Map<Long, Proizvod> proizvodiMap = sviProizvodi.stream()
                 .collect(Collectors.toMap(Proizvod::getProizvodId, p -> p));
 
@@ -208,7 +207,6 @@ public class PreporukaService {
         return postaviCene(rezultat);
     }
 
-    // POMOCNA FUNKCIJA
     // Mapa proizvodId - cena
     // pronalazi aktivne cene za svaki proizvod na osnovu veze sa Stavka Menija
     private Map<Long, BigDecimal> ucitajCeneIzAktivnihStavki(List<Proizvod> proizvodi) {

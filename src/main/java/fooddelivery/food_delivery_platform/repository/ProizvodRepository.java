@@ -13,10 +13,7 @@ public interface ProizvodRepository extends JpaRepository<Proizvod, Long> {
     List<Proizvod> findByNazivContainingIgnoreCase(String naziv);
     List<Proizvod> findByKategorija_KategorijaId(Long kategorijaId);
 
-    // Vremenski uslov koji isključuje VremenskiMeni van satnice.
-    // StandardniMeni i SezonskiMeni (vremeOd IS NULL) uvek prolaze.
-    // VremenskiMeni prolazi samo ako je trenutno vreme unutar intervala.
-    // Podržava i intervale koji prelaze ponoć (npr. 22:00 - 02:00).
+
     String VREMENSKI_USLOV =
             "AND (TYPE(sm.meni) != VremenskiMeni " +
                     " OR (TREAT(sm.meni AS VremenskiMeni).vremeOd <= TREAT(sm.meni AS VremenskiMeni).vremeDo " +
@@ -88,7 +85,6 @@ public interface ProizvodRepository extends JpaRepository<Proizvod, Long> {
     List<Proizvod> findSezonskiProizvodi(@Param("danas") java.time.LocalDate danas);
 
     // Vremenske preporuke - proizvodi iz aktivnih VremenskiMeni čiji interval pokriva trenutno vreme
-    // (podrzava i intervale koji prelaze ponoc, npr. 18:00 - 02:00)
     @Query("SELECT DISTINCT sm.proizvod FROM StavkaMenija sm " +
             "WHERE TYPE(sm.meni) = VremenskiMeni " +
             "AND sm.meni.aktivan = true " +
