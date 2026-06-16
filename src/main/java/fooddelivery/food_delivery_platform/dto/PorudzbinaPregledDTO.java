@@ -30,5 +30,7 @@ public class PorudzbinaPregledDTO {
     private BigDecimal ukupnaCena;
     private String kuponKod;
     private Long dostavljacId;
+    private boolean imaRacun;
+    private boolean imaStorno;
     private List<CheckoutStavkaDTO> stavke;
 }

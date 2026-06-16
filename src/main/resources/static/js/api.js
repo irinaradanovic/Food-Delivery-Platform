@@ -131,6 +131,25 @@ const api = {
             body: JSON.stringify({ noviStatus })
         }),
 
+    preuzmiPdfPorudzbine: async (porudzbinaId, tip = 'racun') => {
+        const path = tip === 'storno' ? 'storno-racun' : 'racun';
+        const res = await fetch(`${API_BASE}/porudzbine/${porudzbinaId}/${path}`, {
+            headers: { 'X-User-Id': localStorage.getItem('korisnikId') }
+        });
+        if (!res.ok) {
+            throw new Error('Preuzimanje PDF dokumenta nije uspelo.');
+        }
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${tip === 'storno' ? 'storno-racun' : 'racun'}-${porudzbinaId}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+    },
+
     getPreporuke: (kupacId, limit = 10) =>
         apiFetch(`/preporuke/kupac/${kupacId}?limit=${limit}`),
 

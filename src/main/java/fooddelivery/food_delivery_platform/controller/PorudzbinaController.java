@@ -12,10 +12,14 @@ import fooddelivery.food_delivery_platform.model.Proizvod;
 import fooddelivery.food_delivery_platform.model.StatusPorudzbineIstorija;
 import fooddelivery.food_delivery_platform.model.StavkaMenija;
 import fooddelivery.food_delivery_platform.model.StavkaPorudzbine;
+import fooddelivery.food_delivery_platform.model.TipRacuna;
 import fooddelivery.food_delivery_platform.service.PorudzbinaService;
+import fooddelivery.food_delivery_platform.service.RacunService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,6 +35,7 @@ import java.util.stream.Collectors;
 public class PorudzbinaController {
 
     private final PorudzbinaService porudzbinaService;
+    private final RacunService racunService;
 
     @GetMapping
     public ResponseEntity<List<PorudzbinaPregledDTO>> getAll(
@@ -141,6 +146,37 @@ public class PorudzbinaController {
         }
     }
 
+    @GetMapping(value = "/{id}/racun", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<?> preuzmiRacun(
+            @PathVariable Long id,
+            @RequestHeader("X-User-Id") Long trenutniKorisnikId
+    ) {
+        return preuzmiPdf(id, trenutniKorisnikId, TipRacuna.RACUN, "racun-" + id + ".pdf");
+    }
+
+    @GetMapping(value = "/{id}/storno-racun", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<?> preuzmiStornoRacun(
+            @PathVariable Long id,
+            @RequestHeader("X-User-Id") Long trenutniKorisnikId
+    ) {
+        return preuzmiPdf(id, trenutniKorisnikId, TipRacuna.STORNO, "storno-racun-" + id + ".pdf");
+    }
+
+    private ResponseEntity<?> preuzmiPdf(Long id, Long trenutniKorisnikId, TipRacuna tip, String filename) {
+        try {
+            porudzbinaService.getById(trenutniKorisnikId, id);
+            byte[] pdf = racunService.generisiPdf(id, tip);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(pdf);
+        } catch (org.springframework.security.access.AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("greska", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("greska", e.getMessage()));
+        }
+    }
+
     private PorudzbinaPregledDTO toPregledDTO(Porudzbina porudzbina) {
         return PorudzbinaPregledDTO.builder()
                 .porudzbinaId(porudzbina.getPorudzbinaId())
@@ -160,6 +196,8 @@ public class PorudzbinaController {
                 .ukupnaCena(porudzbina.getUkupnaCena())
                 .kuponKod(porudzbina.getKupon() != null ? porudzbina.getKupon().getKod() : null)
                 .dostavljacId(porudzbina.getDostavljacId())
+                .imaRacun(racunService.postojiRacun(porudzbina.getPorudzbinaId()))
+                .imaStorno(racunService.postojiStorno(porudzbina.getPorudzbinaId()))
                 .stavke(porudzbina.getStavke().stream().map(this::toStavkaDTO).collect(Collectors.toList()))
                 .build();
     }

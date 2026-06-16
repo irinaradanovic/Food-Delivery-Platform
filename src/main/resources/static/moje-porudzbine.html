@@ -47,6 +47,7 @@
         .timeline-item { display:flex; align-items:center; gap:8px; background:white; border:1px solid var(--border); border-radius:8px; padding:8px 10px; font-size:12px; color:#374151; }
         .timeline-dot { width:8px; height:8px; border-radius:50%; background:var(--green); flex:0 0 auto; }
         .timeline-time { color:var(--gray); }
+        .actions { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; padding:0 20px 18px; }
         .empty, .error { background:white; border:1px solid var(--border); border-radius:8px; padding:28px; text-align:center; color:var(--gray); }
         .error { color:var(--danger); }
         @media (max-width:780px) { nav { padding:0 18px; } .header { align-items:flex-start; flex-direction:column; } .order-head, .order-body { grid-template-columns:1fr; } }
@@ -108,17 +109,29 @@
         if (stavke.length === 0) return '<div class="item">Nema stavki za prikaz.</div>';
         return stavke.map(stavka => {
             const proizvod = stavka.stavkaMenija?.proizvod;
-            const naziv = proizvod?.naziv || 'Stavka menija';
+            const naziv = stavka.naziv || proizvod?.naziv || 'Stavka menija';
+            const cena = stavka.ukupnaCena ?? stavka.cena;
             return `
                 <div>
                     <div class="item">
                         <span>${naziv} x ${stavka.kolicina}</span>
-                        <strong>${formatRsd(stavka.cena)}</strong>
+                        <strong>${formatRsd(cena)}</strong>
                     </div>
                     ${stavka.napomena ? `<div class="item-note">Napomena: ${stavka.napomena}</div>` : ''}
                 </div>
             `;
         }).join('');
+    }
+
+    function racuniHtml(porudzbina) {
+        const dugmad = [];
+        if (porudzbina.imaRacun) {
+            dugmad.push(`<button class="btn" onclick="preuzmiRacun(${porudzbina.porudzbinaId}, 'racun')">Preuzmi racun</button>`);
+        }
+        if (porudzbina.imaStorno) {
+            dugmad.push(`<button class="btn" onclick="preuzmiRacun(${porudzbina.porudzbinaId}, 'storno')">Preuzmi storno</button>`);
+        }
+        return dugmad.length ? `<div class="actions">${dugmad.join('')}</div>` : '';
     }
 
     function istorijaHtml(porudzbina) {
@@ -174,8 +187,17 @@
                     </div>
                 </div>
                 ${istorijaHtml(p)}
+                ${racuniHtml(p)}
             </article>
         `).join('');
+    }
+
+    async function preuzmiRacun(porudzbinaId, tip) {
+        try {
+            await api.preuzmiPdfPorudzbine(porudzbinaId, tip);
+        } catch {
+            alert('Preuzimanje racuna nije uspelo.');
+        }
     }
 
     async function ucitajIstorijuZaPorudzbine() {
