@@ -13,4 +13,6 @@ public class StavkaPorudzbineDTO {
     @NotNull
     @Min(1)
     private Integer kolicina;
+
+    private String napomena;
 }

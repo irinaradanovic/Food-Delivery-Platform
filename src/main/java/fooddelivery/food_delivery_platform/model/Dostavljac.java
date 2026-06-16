@@ -9,6 +9,7 @@ public class Dostavljac {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "korisnik_id")
     private Long id;
 
     private String ime;

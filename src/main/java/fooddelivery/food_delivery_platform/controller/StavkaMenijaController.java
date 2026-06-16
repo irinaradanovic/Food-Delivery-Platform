@@ -51,6 +51,11 @@ public class StavkaMenijaController {
         }
     }
 
+    @GetMapping("/kupac/restoran/{restoranId}")
+    public ResponseEntity<?> getAktivneStavkeZaRestoranKupac(@PathVariable Long restoranId) {
+        return ResponseEntity.ok(stavkaMenijaService.getAktivneStavkeZaRestoranKupac(restoranId));
+    }
+
     @PostMapping("/meni/{meniId}")
     public ResponseEntity<Void> addMenuItem(
             @PathVariable Long meniId,

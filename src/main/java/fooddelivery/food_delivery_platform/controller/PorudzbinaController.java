@@ -1,11 +1,17 @@
 package fooddelivery.food_delivery_platform.controller;
 
+import fooddelivery.food_delivery_platform.dto.CheckoutPreviewDTO;
+import fooddelivery.food_delivery_platform.dto.CheckoutStavkaDTO;
 import fooddelivery.food_delivery_platform.dto.KreiranjePorudzbineDTO;
+import fooddelivery.food_delivery_platform.dto.PorudzbinaPregledDTO;
 import fooddelivery.food_delivery_platform.dto.PromenaStatusaPorudzbineDTO;
 import fooddelivery.food_delivery_platform.dto.PromenaStatusaPorudzbineResponseDTO;
 import fooddelivery.food_delivery_platform.dto.StatusPorudzbineIstorijaDTO;
 import fooddelivery.food_delivery_platform.model.Porudzbina;
+import fooddelivery.food_delivery_platform.model.Proizvod;
 import fooddelivery.food_delivery_platform.model.StatusPorudzbineIstorija;
+import fooddelivery.food_delivery_platform.model.StavkaMenija;
+import fooddelivery.food_delivery_platform.model.StavkaPorudzbine;
 import fooddelivery.food_delivery_platform.service.PorudzbinaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -26,11 +33,13 @@ public class PorudzbinaController {
     private final PorudzbinaService porudzbinaService;
 
     @GetMapping
-    public ResponseEntity<List<Porudzbina>> getAll(
+    public ResponseEntity<List<PorudzbinaPregledDTO>> getAll(
             @RequestHeader("X-User-Id") Long trenutniKorisnikId,
             @RequestParam(required = false) Long kupacId
     ) {
-        return ResponseEntity.ok(porudzbinaService.getAll(trenutniKorisnikId, kupacId));
+        return ResponseEntity.ok(porudzbinaService.getAll(trenutniKorisnikId, kupacId).stream()
+                .map(this::toPregledDTO)
+                .collect(Collectors.toList()));
     }
 
     @GetMapping("/{id}")
@@ -39,7 +48,7 @@ public class PorudzbinaController {
             @RequestHeader("X-User-Id") Long trenutniKorisnikId
     ) {
         try {
-            return ResponseEntity.ok(porudzbinaService.getById(trenutniKorisnikId, id));
+            return ResponseEntity.ok(toPregledDTO(porudzbinaService.getById(trenutniKorisnikId, id)));
         } catch (org.springframework.security.access.AccessDeniedException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("greska", e.getMessage()));
         } catch (RuntimeException e) {
@@ -60,7 +69,7 @@ public class PorudzbinaController {
                             .porudzbinaId(item.getPorudzbina().getPorudzbinaId())
                             .status(item.getStatus())
                             .vremePromene(item.getVremePromene())
-                            .promenioKorisnikId(trenutniKorisnikId)
+                            .promenioKorisnikId(item.getPromenioKorisnikId())
                             .build())
                     .collect(Collectors.toList());
             return ResponseEntity.ok(response);
@@ -78,11 +87,29 @@ public class PorudzbinaController {
     ) {
         try {
             Porudzbina nova = porudzbinaService.create(trenutniKorisnikId, dto);
+            Map<String, Object> response = new LinkedHashMap<>();
+            response.put("poruka", "Porudzbina kreirana");
+            response.put("porudzbinaId", nova.getPorudzbinaId());
+            response.put("status", nova.getStatus());
+            response.put("ukupnaCena", nova.getUkupnaCena());
+            response.put("statusPlacanja", nova.getStatusPlacanja());
+            response.put("dostavljacId", nova.getDostavljacId());
             return ResponseEntity.status(HttpStatus.CREATED)
-                .body(Map.of(
-                    "poruka", "Porudzbina kreirana",
-                    "dostavljacId", nova.getDostavljacId()
-                ));
+                .body(response);
+        } catch (org.springframework.security.access.AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("greska", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("greska", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/preview")
+    public ResponseEntity<?> preview(
+            @RequestHeader("X-User-Id") Long trenutniKorisnikId,
+            @Valid @RequestBody CheckoutPreviewDTO dto
+    ) {
+        try {
+            return ResponseEntity.ok(porudzbinaService.preview(trenutniKorisnikId, dto));
         } catch (org.springframework.security.access.AccessDeniedException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("greska", e.getMessage()));
         } catch (RuntimeException e) {
@@ -112,5 +139,42 @@ public class PorudzbinaController {
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("greska", e.getMessage()));
         }
+    }
+
+    private PorudzbinaPregledDTO toPregledDTO(Porudzbina porudzbina) {
+        return PorudzbinaPregledDTO.builder()
+                .porudzbinaId(porudzbina.getPorudzbinaId())
+                .kupacId(porudzbina.getKupac() != null ? porudzbina.getKupac().getKorisnikId() : null)
+                .adresaDostave(porudzbina.getAdresaDostave())
+                .datumKreiranja(porudzbina.getDatumKreiranja())
+                .napomena(porudzbina.getNapomena())
+                .status(porudzbina.getStatus())
+                .nacinPlacanja(porudzbina.getNacinPlacanja())
+                .statusPlacanja(porudzbina.getStatusPlacanja())
+                .cenaArtikala(porudzbina.getCenaArtikala())
+                .cenaDostave(porudzbina.getCenaDostave())
+                .popustArtikli(porudzbina.getPopustArtikli())
+                .popustDostava(porudzbina.getPopustDostava())
+                .iznosKarticom(porudzbina.getIznosKarticom())
+                .iznosKes(porudzbina.getIznosKes())
+                .ukupnaCena(porudzbina.getUkupnaCena())
+                .kuponKod(porudzbina.getKupon() != null ? porudzbina.getKupon().getKod() : null)
+                .dostavljacId(porudzbina.getDostavljacId())
+                .stavke(porudzbina.getStavke().stream().map(this::toStavkaDTO).collect(Collectors.toList()))
+                .build();
+    }
+
+    private CheckoutStavkaDTO toStavkaDTO(StavkaPorudzbine stavka) {
+        StavkaMenija stavkaMenija = stavka.getStavkaMenija();
+        Proizvod proizvod = stavkaMenija != null ? stavkaMenija.getProizvod() : null;
+        return CheckoutStavkaDTO.builder()
+                .stavkaMenijaId(stavkaMenija != null ? stavkaMenija.getStavkaId() : null)
+                .proizvodId(proizvod != null ? proizvod.getProizvodId() : null)
+                .naziv(proizvod != null ? proizvod.getNaziv() : "Stavka menija")
+                .kolicina(stavka.getKolicina())
+                .jedinicnaCena(stavkaMenija != null ? stavkaMenija.getCena() : null)
+                .ukupnaCena(stavka.getCena())
+                .napomena(stavka.getNapomena())
+                .build();
     }
 }

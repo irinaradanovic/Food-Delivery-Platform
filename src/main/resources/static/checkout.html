@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Big Bite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root { --green:#2d6a2d; --green-lt:#3a8a3a; --cream:#faf7f2; --dark:#1a1a1a; --gray:#6b7280; --border:#e5e0d8; --danger:#dc2626; }
+        body { font-family:'DM Sans', sans-serif; background:var(--cream); min-height:100vh; color:var(--dark); }
+        nav { background:white; border-bottom:1px solid var(--border); padding:0 40px; height:68px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
+        .nav-logo { display:flex; align-items:center; gap:12px; text-decoration:none; }
+        .nav-logo-icon { width:76px; height:96px; display:flex; align-items:center; justify-content:center; }
+        .nav-logo-text { font-family:'Playfair Display', serif; font-size:20px; color:var(--dark); }
+        .nav-links { display:flex; align-items:center; gap:4px; }
+        .nav-links a { padding:8px 16px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:500; color:var(--gray); }
+        .nav-links a:hover, .nav-links a.active { background:var(--green); color:white; }
+        .nav-right { display:flex; align-items:center; gap:12px; }
+        .nav-user { font-size:13px; color:var(--gray); background:#f3f4f6; padding:6px 12px; border-radius:20px; }
+        .nav-korpa, .btn-odjava { background:none; border:1.5px solid var(--border); border-radius:8px; padding:7px 14px; font-size:13px; font-weight:500; color:var(--gray); cursor:pointer; }
+        main { max-width:1120px; margin:0 auto; padding:36px 24px 56px; }
+        .header { display:flex; justify-content:space-between; align-items:flex-end; gap:16px; margin-bottom:24px; }
+        h1 { font-family:'Playfair Display', serif; font-size:34px; }
+        .back { color:var(--green); text-decoration:none; font-weight:700; }
+        .layout { display:grid; grid-template-columns:minmax(0, 1.5fr) minmax(320px, .9fr); gap:24px; align-items:start; }
+        .panel { background:white; border:1px solid var(--border); border-radius:8px; padding:22px; }
+        .panel + .panel { margin-top:18px; }
+        .panel h2 { font-size:18px; margin-bottom:16px; }
+        .stavka { display:grid; grid-template-columns:1fr auto; gap:14px; padding:14px 0; border-bottom:1px solid var(--border); }
+        .stavka:last-child { border-bottom:0; }
+        .stavka-title { font-weight:700; }
+        .stavka-meta { color:var(--gray); font-size:13px; margin-top:4px; }
+        .qty { display:flex; align-items:center; justify-content:flex-end; gap:8px; margin-top:8px; }
+        .qty button { width:30px; height:30px; border:1px solid var(--border); background:white; border-radius:8px; cursor:pointer; font-weight:700; }
+        .price { text-align:right; font-weight:700; white-space:nowrap; }
+        label { display:block; font-size:13px; font-weight:700; color:#374151; margin-bottom:7px; }
+        input, textarea, select { width:100%; border:1.5px solid var(--border); border-radius:8px; padding:11px 12px; font:inherit; outline:none; background:white; }
+        input:focus, textarea:focus, select:focus { border-color:var(--green); }
+        textarea { resize:vertical; min-height:88px; }
+        .field { margin-bottom:14px; }
+        .radio-row { display:flex; gap:10px; flex-wrap:wrap; }
+        .radio-card { flex:1; min-width:130px; border:1.5px solid var(--border); border-radius:8px; padding:12px; cursor:pointer; }
+        .radio-card input { width:auto; margin-right:8px; }
+        .summary-row { display:flex; justify-content:space-between; gap:16px; margin:10px 0; color:#374151; }
+        .summary-row.total { border-top:1px solid var(--border); padding-top:14px; margin-top:14px; font-size:20px; font-weight:800; color:var(--dark); }
+        .summary-row.discount { color:var(--green); }
+        .btn-primary { width:100%; background:var(--green); color:white; border:0; border-radius:8px; padding:14px 18px; font:inherit; font-weight:800; cursor:pointer; margin-top:18px; }
+        .btn-primary:hover { background:var(--green-lt); }
+        .btn-primary:disabled { background:#9ca3af; cursor:not-allowed; }
+        .hint { color:var(--gray); font-size:13px; line-height:1.5; margin-top:8px; }
+        .error { color:var(--danger); font-size:13px; margin-top:10px; min-height:18px; }
+        .success { background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; border-radius:8px; padding:14px; margin-top:16px; display:none; }
+        .allergen-list { display:flex; flex-wrap:wrap; gap:8px; }
+        .tag { background:#fef2f2; color:#991b1b; border:1px solid #fecaca; border-radius:999px; padding:5px 10px; font-size:12px; font-weight:700; }
+        @media (max-width: 860px) { nav { padding:0 18px; } .layout { grid-template-columns:1fr; } .header { align-items:flex-start; flex-direction:column; } }
+    </style>
+</head>
+<body>
+<nav></nav>
+<main>
+    <div class="header">
+        <div>
+            <h1>Potvrda porudzbine</h1>
+            <p class="hint">Pregledajte korpu, adresu i placanje pre finalne potvrde.</p>
+        </div>
+        <a class="back" href="/proizvodi.html">Nazad na proizvode</a>
+    </div>
+
+    <div class="layout">
+        <section>
+            <div class="panel">
+                <h2>Artikli</h2>
+                <div id="stavke"></div>
+            </div>
+
+            <div class="panel">
+                <h2>Adresa i napomena</h2>
+                <div class="field">
+                    <label for="adresa">Adresa dostave</label>
+                    <input id="adresa" type="text" placeholder="Ulica i broj, grad">
+                    <p class="hint">Mozete koristiti sacuvanu adresu ili uneti novu za ovu porudzbinu.</p>
+                </div>
+                <div class="field">
+                    <label for="napomena">Napomena za dostavu/pripremu</label>
+                    <textarea id="napomena" placeholder="Npr. pozvati pri dolasku, bez pribora..."></textarea>
+                </div>
+                <div>
+                    <label>Alergeni iz korpe</label>
+                    <div id="alergeni" class="allergen-list"></div>
+                </div>
+            </div>
+        </section>
+
+        <aside>
+            <div class="panel">
+                <h2>Placanje</h2>
+                <div class="field">
+                    <div class="radio-row">
+                        <label class="radio-card"><input type="radio" name="placanje" value="KARTICA" checked> Kartica</label>
+                        <label class="radio-card"><input type="radio" name="placanje" value="KES"> Kes</label>
+                        <label class="radio-card"><input type="radio" name="placanje" value="KOMBINOVANO"> Kombinovano</label>
+                    </div>
+                </div>
+                <div class="field" id="kartica-field" style="display:none">
+                    <label for="iznosKarticom">Iznos karticom</label>
+                    <input id="iznosKarticom" type="number" min="1" step="1" placeholder="Unesite iznos">
+                    <p class="hint">Kes deo mora biti najmanje 100 RSD.</p>
+                </div>
+                <div class="field">
+                    <label for="kupon">Kupon</label>
+                    <input id="kupon" type="text" placeholder="Kod kupona">
+                </div>
+                <div id="summary">
+                    <div class="summary-row"><span>Artikli</span><strong id="cenaArtikala">0 RSD</strong></div>
+                    <div class="summary-row"><span>Dostava</span><strong id="cenaDostave">0 RSD</strong></div>
+                    <div class="summary-row discount"><span>Popust</span><strong id="popust">0 RSD</strong></div>
+                    <div class="summary-row"><span>Karticom</span><strong id="karticom">0 RSD</strong></div>
+                    <div class="summary-row"><span>Kes</span><strong id="kes">0 RSD</strong></div>
+                    <div class="summary-row total"><span>Ukupno</span><strong id="ukupno">0 RSD</strong></div>
+                </div>
+                <div class="error" id="greska"></div>
+                <button class="btn-primary" id="potvrdi" onclick="potvrdiPorudzbinu()">Finalno potvrdi porudzbinu</button>
+                <div class="success" id="uspeh"></div>
+            </div>
+        </aside>
+    </div>
+</main>
+
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+    function prikaziKorpu() { window.location.href = '/proizvodi.html'; }
+    zastitiStranicu();
+
+    let korpa = JSON.parse(localStorage.getItem('korpa') || '[]').filter(stavka => stavka.stavkaMenijaId);
+    let poslednjiPreview = null;
+    let debounceTimer = null;
+
+    function formatRsd(value) {
+        return (Number(value || 0)).toLocaleString('sr-RS') + ' RSD';
+    }
+
+    function izabranoPlacanje() {
+        return document.querySelector('input[name="placanje"]:checked').value;
+    }
+
+    function payloadBase() {
+        return {
+            kupacId: Number(localStorage.getItem('korisnikId')),
+            kuponKod: document.getElementById('kupon').value.trim() || null,
+            nacinPlacanja: izabranoPlacanje(),
+            iznosKarticom: document.getElementById('iznosKarticom').value ? Number(document.getElementById('iznosKarticom').value) : null,
+            stavke: korpa.map(stavka => ({
+                stavkaMenijaId: stavka.stavkaMenijaId,
+                kolicina: stavka.kolicina,
+                napomena: stavka.napomena || null
+            }))
+        };
+    }
+
+    function renderStavke() {
+        const el = document.getElementById('stavke');
+        if (korpa.length === 0) {
+            el.innerHTML = '<p class="hint">Korpa je prazna.</p>';
+            document.getElementById('potvrdi').disabled = true;
+            return;
+        }
+        el.innerHTML = korpa.map((stavka, index) => `
+            <div class="stavka">
+                <div>
+                    <div class="stavka-title">${stavka.naziv}</div>
+                    <div class="stavka-meta">${formatRsd(stavka.cena)} po komadu${stavka.napomena ? ' - ' + stavka.napomena : ''}</div>
+                    <div class="qty">
+                        <button onclick="promeniKolicinu(${index}, -1)">-</button>
+                        <strong>${stavka.kolicina}</strong>
+                        <button onclick="promeniKolicinu(${index}, 1)">+</button>
+                    </div>
+                </div>
+                <div class="price">${formatRsd((stavka.cena || 0) * stavka.kolicina)}</div>
+            </div>
+        `).join('');
+    }
+
+    function renderAlergene() {
+        const map = new Map();
+        korpa.forEach(stavka => (stavka.alergeni || []).forEach(a => map.set(a.alergenId || a.naziv, a.naziv)));
+        const el = document.getElementById('alergeni');
+        el.innerHTML = map.size
+            ? [...map.values()].map(naziv => `<span class="tag">${naziv}</span>`).join('')
+            : '<span class="hint">Nema evidentiranih alergena u korpi.</span>';
+    }
+
+    function sacuvajKorpu() {
+        localStorage.setItem('korpa', JSON.stringify(korpa));
+    }
+
+    function promeniKolicinu(index, delta) {
+        korpa[index].kolicina += delta;
+        if (korpa[index].kolicina <= 0) korpa.splice(index, 1);
+        sacuvajKorpu();
+        renderStavke();
+        renderAlergene();
+        osveziPreview();
+    }
+
+    async function ucitajKupca() {
+        const kupacId = localStorage.getItem('korisnikId');
+        const kupac = await apiFetch(`/kupci/${kupacId}`);
+        document.getElementById('adresa').value = kupac.adresa || '';
+    }
+
+    async function osveziPreview() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(async () => {
+            const greska = document.getElementById('greska');
+            greska.textContent = '';
+            document.getElementById('potvrdi').disabled = true;
+            if (korpa.length === 0) return;
+            try {
+                poslednjiPreview = await api.previewPorudzbine(payloadBase());
+                document.getElementById('cenaArtikala').textContent = formatRsd(poslednjiPreview.cenaArtikala);
+                document.getElementById('cenaDostave').textContent = formatRsd(poslednjiPreview.cenaDostave);
+                document.getElementById('popust').textContent = '-' + formatRsd((poslednjiPreview.popustArtikli || 0) + (poslednjiPreview.popustDostava || 0));
+                document.getElementById('karticom').textContent = formatRsd(poslednjiPreview.iznosKarticom);
+                document.getElementById('kes').textContent = formatRsd(poslednjiPreview.iznosKes);
+                document.getElementById('ukupno').textContent = formatRsd(poslednjiPreview.ukupnaCena);
+                document.getElementById('potvrdi').disabled = false;
+            } catch (e) {
+                greska.textContent = friendlyError(e, 'Obracun nije uspeo. Proverite podatke za placanje.');
+            }
+        }, 250);
+    }
+
+    function friendlyError(error, fallback) {
+        const message = error?.message || '';
+        return /^\d+$/.test(message) ? fallback : (message || fallback);
+    }
+
+    async function potvrdiPorudzbinu() {
+        const adresa = document.getElementById('adresa').value.trim();
+        if (!adresa) {
+            document.getElementById('greska').textContent = 'Adresa dostave je obavezna.';
+            return;
+        }
+        const payload = {
+            ...payloadBase(),
+            adresaDostave: adresa,
+            napomena: document.getElementById('napomena').value.trim() || null
+        };
+        try {
+            document.getElementById('potvrdi').disabled = true;
+            const odgovor = await api.kreirajPorudzbinu(payload);
+            localStorage.removeItem('korpa');
+            korpa = [];
+            document.getElementById('uspeh').style.display = 'block';
+            document.getElementById('uspeh').innerHTML = `Porudzbina #${odgovor.porudzbinaId} je kreirana. Status: ${odgovor.status}. `;
+            renderStavke();
+        } catch (e) {
+            document.getElementById('greska').textContent = friendlyError(e, 'Kreiranje porudzbine nije uspelo. Proverite podatke i pokusajte ponovo.');
+            document.getElementById('potvrdi').disabled = true;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        if (localStorage.getItem('uloga') !== 'KUPAC') {
+            window.location.href = '/login.html?poruka=morate-biti-prijavljeni';
+            return;
+        }
+        renderStavke();
+        renderAlergene();
+        await ucitajKupca().catch(() => {});
+        osveziPreview();
+
+        document.querySelectorAll('input[name="placanje"]').forEach(input => {
+            input.addEventListener('change', () => {
+                document.getElementById('kartica-field').style.display = izabranoPlacanje() === 'KOMBINOVANO' ? 'block' : 'none';
+                osveziPreview();
+            });
+        });
+        ['kupon', 'iznosKarticom'].forEach(id => document.getElementById(id).addEventListener('input', osveziPreview));
+    });
+</script>
+</body>
+</html>
