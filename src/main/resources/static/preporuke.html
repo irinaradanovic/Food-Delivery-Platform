@@ -577,7 +577,7 @@
                 <span class="kp-total-label">Ukupno</span>
                 <span class="kp-total-iznos" id="kp-total">0 RSD</span>
             </div>
-            <button class="kp-placanje-btn">
+            <button class="kp-placanje-btn" onclick="nastaviSaPlacanjem()">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
                     <line x1="1" y1="10" x2="23" y2="10"/>
@@ -600,16 +600,64 @@
     }
 
     let omiljeniIds = new Set();
-    let korpa = JSON.parse(localStorage.getItem('korpa') || '[]');
+    let korpa = JSON.parse(localStorage.getItem('korpa') || '[]').filter(stavka => stavka.stavkaMenijaId);
     let aktivniProizvod = null;
     let korpaModalProizvod = null;
     let korpaModalKolicina = 1;
+    let stavkeMenijaByProizvodId = new Map();
+    let stavkeMenijaRestoranId = null;
 
     const hrana = {'pizza':'','burger':'','pasta':'','piletina':'','salata':'','tiramisu':'','cheesecake':'','torta':'','palačink':'','coca':'','pepsi':'','limunad':'','sok':'','voda':'','nuggets':'','wings':'','meso':'','riba':'','supa':'','čorba':''};
     function getEmoji(naziv) {
         const n = naziv.toLowerCase();
         for (const [k, v] of Object.entries(hrana)) if (n.includes(k)) return v;
         return '';
+    }
+
+    async function ucitajMapuStavkiMenija() {
+        const restoranId = localStorage.getItem('restoranId');
+        if (stavkeMenijaRestoranId === restoranId) return;
+        stavkeMenijaRestoranId = restoranId;
+        stavkeMenijaByProizvodId = new Map();
+        try {
+            const meniji = await api.getStavkeMenijaZaRestoranKupca();
+            (meniji || []).forEach(meni => {
+                (meni.stavke || []).forEach(stavka => {
+                    if (stavka.proizvodId && stavka.stavkaMenijaId && !stavkeMenijaByProizvodId.has(stavka.proizvodId)) {
+                        stavkeMenijaByProizvodId.set(stavka.proizvodId, stavka);
+                    }
+                });
+            });
+        } catch {
+            stavkeMenijaByProizvodId = new Map();
+        }
+    }
+
+    function mapirajProizvodUStavkuMenija(proizvod) {
+        const stavka = stavkeMenijaByProizvodId.get(proizvod?.proizvodId);
+        if (!stavka) return null;
+        return {
+            ...proizvod,
+            ...stavka,
+            proizvodId: proizvod.proizvodId,
+            stavkaMenijaId: stavka.stavkaMenijaId,
+            cena: stavka.cena ?? proizvod.cena,
+            naziv: stavka.naziv || proizvod.naziv,
+            alergeni: stavka.alergeni || proizvod.alergeni || []
+        };
+    }
+
+    function napraviStavkuKorpe(stavka, kolicina, napomena, emoji) {
+        return {
+            stavkaMenijaId: stavka.stavkaMenijaId,
+            proizvodId: stavka.proizvodId,
+            naziv: stavka.naziv,
+            emoji: emoji || getEmoji(stavka.naziv || ''),
+            cena: stavka.cena || null,
+            kolicina,
+            napomena: napomena || '',
+            alergeni: stavka.alergeni || []
+        };
     }
 
     //  Korpa badge
@@ -722,7 +770,7 @@
             const payload = {
                 restoranId: parseInt(restoranId),
                 kupacId: kupacId ? parseInt(kupacId) : null,
-                stavkeMenijaIds: korpa.map(k => k.id),
+                stavkeMenijaIds: korpa.map(k => k.stavkaMenijaId),
                 maxPreporuka: 8
             };
 
@@ -756,7 +804,7 @@
 
         scroll.innerHTML = odgovor.preporuke.map(p => {
             const emoji = TIP_EMOJI_KORPA[p.tipObroka] || '🍴';
-            const uKorpi = korpa.some(k => k.id === p.stavkaId);
+            const uKorpi = korpa.some(k => k.stavkaMenijaId === p.stavkaId);
             return `
                 <div class="kp-preporuka-card">
                     <div class="kp-preporuka-img">
@@ -784,13 +832,14 @@
     }
 
     function dodajPreporukuUKorpu(p) {
-        const postojeci = korpa.find(k => k.id === p.stavkaId);
+        const postojeci = korpa.find(k => k.stavkaMenijaId === p.stavkaId);
         const emoji = TIP_EMOJI_KORPA[p.tipObroka] || '🍴';
         if (postojeci) {
             postojeci.kolicina++;
         } else {
             korpa.push({
-                id: p.stavkaId,
+                stavkaMenijaId: p.stavkaId,
+                proizvodId: p.proizvodId,
                 naziv: p.naziv,
                 emoji,
                 cena: parseFloat(p.cena) || null,
@@ -809,16 +858,18 @@
         renderKorpaPanel();
         osveziKorpaPreporuke();
 
-        try { api.zabeleziKlik(kupacId, p.stavkaId, 'KORPA'); } catch {}
+        try { api.zabeleziKlik(kupacId, p.proizvodId, 'KORPA'); } catch {}
     }
 
     function osveziKarticeDugmad() {
-        const uKorpiIds = new Set(korpa.map(k => k.id));
+        const uKorpiIds = new Set(korpa.map(k => k.stavkaMenijaId));
         document.querySelectorAll('[id^="btn-korpa-"]').forEach(btn => {
-            const id = parseInt(btn.id.replace('btn-korpa-', ''));
-            const uKorpi = uKorpiIds.has(id);
+            const proizvodId = parseInt(btn.id.replace('btn-korpa-', ''));
+            const stavka = stavkeMenijaByProizvodId.get(proizvodId);
+            const uKorpi = stavka ? uKorpiIds.has(stavka.stavkaMenijaId) : false;
             btn.textContent = uKorpi ? ' Dodato' : ' U korpu';
             btn.className = 'btn-korpa' + (uKorpi ? ' dodato' : '');
+            btn.disabled = !stavka;
         });
     }
 
@@ -870,23 +921,16 @@
 
     function potvrdiDodavanjeUKorpu() {
         const p = korpaModalProizvod;
-        if (!p) return;
+        if (!p || !p.stavkaMenijaId) return;
         const napomena = document.getElementById('km-napomena').value.trim();
 
         if (jeKupac()) try { api.zabeleziKlik(kupacId, p.proizvodId, 'KORPA'); } catch {}
 
-        const postojeci = korpa.find(k => k.id === p.proizvodId && k.napomena === napomena);
+        const postojeci = korpa.find(k => k.stavkaMenijaId === p.stavkaMenijaId && k.napomena === napomena);
         if (postojeci) {
             postojeci.kolicina += korpaModalKolicina;
         } else {
-            korpa.push({
-                id: p.proizvodId,
-                naziv: p.naziv,
-                emoji: getEmoji(p.naziv),
-                cena: p.cena || null,
-                kolicina: korpaModalKolicina,
-                napomena: napomena
-            });
+            korpa.push(napraviStavkuKorpe(p, korpaModalKolicina, napomena));
         }
 
         sacuvajKorpu();
@@ -951,7 +995,8 @@
         if (jeKupac()) try { await api.zabeleziKlik(kupacId, proizvodId, 'DETALJI'); } catch {}
         try {
             const p = await apiFetch(`/proizvodi/${proizvodId}`);
-            aktivniProizvod = p;
+            const stavka = mapirajProizvodUStavkuMenija(p);
+            aktivniProizvod = stavka || p;
 
             document.getElementById('modal-img').innerHTML = p.fotografija
                 ? `<img src="${p.fotografija}" alt="${p.naziv}">`
@@ -969,9 +1014,10 @@
             favBtn.style.display = jeKupac() ? '' : 'none';
 
             const korpaBtn = document.getElementById('modal-btn-korpa');
-            const uKorpi = korpa.some(k => k.id === p.proizvodId);
-            korpaBtn.textContent = uKorpi ? ' U korpi' : ' Dodaj u korpu';
+            const uKorpi = stavka ? korpa.some(k => k.stavkaMenijaId === stavka.stavkaMenijaId) : false;
+            korpaBtn.textContent = stavka ? (uKorpi ? ' U korpi' : ' Dodaj u korpu') : ' Nije dostupno';
             korpaBtn.className = 'modal-btn-korpa' + (uKorpi ? ' dodato' : '');
+            korpaBtn.disabled = !stavka;
 
             document.getElementById('modal-overlay').classList.add('open');
             document.body.style.overflow = 'hidden';
@@ -989,12 +1035,12 @@
 
     //  Direktno dodavanje u korpu sa kartice (fetch)
     async function otvoriKorpaModalZaId(proizvodId) {
-        try {
-            const p = await apiFetch(`/proizvodi/${proizvodId}`);
-            otvoriKorpaModal(p);
-        } catch {
-            alert('Greška pri učitavanju proizvoda.');
+        const stavka = stavkeMenijaByProizvodId.get(proizvodId);
+        if (!stavka) {
+            alert('Proizvod nije dostupan u aktivnom meniju izabranog restorana.');
+            return;
         }
+        otvoriKorpaModal(stavka);
     }
 
     //  Tab switcher
@@ -1019,8 +1065,13 @@
             `;
             return;
         }
-        const uKorpiIds = new Set(korpa.map(k => k.id));
-        grid.innerHTML = lista.map((p, idx) => `
+        const uKorpiIds = new Set(korpa.map(k => k.stavkaMenijaId));
+        grid.innerHTML = lista.map((p, idx) => {
+            const stavka = mapirajProizvodUStavkuMenija(p);
+            const stavkaMenijaId = stavka?.stavkaMenijaId;
+            const cena = stavka?.cena ?? p.cena;
+            const uKorpi = stavkaMenijaId ? uKorpiIds.has(stavkaMenijaId) : false;
+            return `
             <div class="card">
                 ${idx < 3 && badge ? `<div class="card-badge">${badge}</div>` : ''}
                 <div class="card-img-placeholder">
@@ -1033,8 +1084,8 @@
                     </div>
                     <span class="card-kat">${p.kategorija?.naziv || 'Ostalo'}</span>
                     <div class="card-cena-row">
-                        ${p.cena > 0
-            ? `<span class="card-cena">${p.cena.toLocaleString('sr-RS')} <small style="font-size:13px;font-weight:500;color:var(--gray)">RSD</small></span>`
+                        ${cena > 0
+            ? `<span class="card-cena">${cena.toLocaleString('sr-RS')} <small style="font-size:13px;font-weight:500;color:var(--gray)">RSD</small></span>`
             : `<span class="card-cena-besplatno">Besplatno</span>`
         }
                         ${p.kolicina && p.mernaJedinica ? `<span class="card-cena-unit">/ ${p.kolicina} ${p.mernaJedinica}</span>` : ''}
@@ -1043,20 +1094,37 @@
                         <button class="btn-detalji" onclick="otvoriDetalje(${p.proizvodId})">
                              Detaljnije
                         </button>
-                        <button class="btn-korpa ${uKorpiIds.has(p.proizvodId) ? 'dodato' : ''}"
+                        <button class="btn-korpa ${uKorpi ? 'dodato' : ''}"
                                 id="btn-korpa-${p.proizvodId}"
-                                onclick="otvoriKorpaModalZaId(${p.proizvodId})">
-                            ${uKorpiIds.has(p.proizvodId) ? ' Dodato' : ' U korpu'}
+                                onclick="otvoriKorpaModalZaId(${p.proizvodId})"
+                                ${stavkaMenijaId ? '' : 'disabled'}>
+                            ${stavkaMenijaId ? (uKorpi ? ' Dodato' : ' U korpu') : ' Nije dostupno'}
                         </button>
                     </div>
                 </div>
             </div>
-        `).join('');
+        `;
+        }).join('');
+    }
+    async function nastaviSaPlacanjem(){
+        if(!jeKupac()){
+            window.location.href = '/login.html?poruka=morate-biti-prijavljeni';
+            return;
+        }
+        korpa = korpa.filter(stavka => stavka.stavkaMenijaId);
+        sacuvajKorpu();
+        if (korpa.length === 0) {
+            alert('Korpa je prazna.');
+            return;
+        }
+        window.location.href = '/checkout.html';
+
     }
 
     //  Učitavanje preporuka
     async function ucitajPreporuke() {
         await ucitajOmiljene();
+        await ucitajMapuStavkiMenija();
 
         // Za goste: sakrij tab "Za tebe" i defaultuj na "Sezonski"
         const tabPersonalizovano = document.getElementById('tab-btn-personalizovano');
@@ -1127,7 +1195,7 @@
     });
 
     document.addEventListener('DOMContentLoaded', () => {
-        azurirajKorpaBadge();
+        sacuvajKorpu();
         ucitajPreporuke();
     });
 </script>
