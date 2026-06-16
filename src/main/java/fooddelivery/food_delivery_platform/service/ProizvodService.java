@@ -1,14 +1,18 @@
 package fooddelivery.food_delivery_platform.service;
 
-import fooddelivery.food_delivery_platform.model.Proizvod;
-import fooddelivery.food_delivery_platform.model.StavkaMenija;
+import fooddelivery.food_delivery_platform.dto.MeniProizvodiDTO;
+import fooddelivery.food_delivery_platform.model.*;
+import fooddelivery.food_delivery_platform.repository.MeniRepository;
 import fooddelivery.food_delivery_platform.repository.ProizvodRepository;
 import fooddelivery.food_delivery_platform.repository.StavkaMenijaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +22,9 @@ public class ProizvodService {
 
     @Autowired
     private StavkaMenijaRepository stavkaMenijaRepository;
+
+    @Autowired
+    private MeniRepository meniRepository;
 
     public List<Proizvod> getAll() { return proizvodRepository.findAll(); }
 
@@ -49,18 +56,54 @@ public class ProizvodService {
     public void delete(Long id) { proizvodRepository.deleteById(id); }
 
     // Kupac - svi proizvodi iz aktivnih menija restorana (uz vremenski filter)
-    public List<Proizvod> getProizvodiZaKupca(Long restoranId) {
+    // uz informacije  o meniju
+    public List<MeniProizvodiDTO> getProizvodiZaKupca(Long restoranId) {
         //return proizvodRepository.findProizvodiIzAktivnihMenija(restoranId, LocalTime.now());
 
         // pronalazimo stavke menija koje su aktivne za restoran
-        List<StavkaMenija> aktivneStavke = stavkaMenijaRepository.findAktivneStavkeZaRestoran(restoranId);
+        /*List<StavkaMenija> aktivneStavke = stavkaMenijaRepository.findAktivneStavkeZaRestoran(restoranId);
 
         // uzimamo cenu svakog proizvoda iz stavki menija
         return aktivneStavke.stream().map(stavka -> {
             Proizvod p = stavka.getProizvod();
             p.setCena(stavka.getCena());
             return p;
+        }).toList();   */
+
+        List<Meni> aktivniMeniji = meniRepository.findByRestoranRestoranIdAndAktivanTrue(restoranId);
+        List<StavkaMenija> aktivneStavkeRestorana = stavkaMenijaRepository.findAktivneStavkeZaRestoran(restoranId);
+
+        // grupisi stavke po meniId
+        Map<Long, List<StavkaMenija>> stavkePoMeniju = aktivneStavkeRestorana.stream()
+                .collect(Collectors.groupingBy(s -> s.getMeni().getMeniId()));
+
+        return aktivniMeniji.stream().map(meni -> {
+            MeniProizvodiDTO dto = new MeniProizvodiDTO();
+            dto.setMeniId(meni.getMeniId());
+            dto.setNaziv(meni.getNaziv());
+            dto.setOpis(meni.getOpis());
+
+            // ako je vremenski ili sezonski, popuni info
+            if (meni instanceof VremenskiMeni v) {
+                dto.setVremeOd(v.getVremeOd());
+                dto.setVremeDo(v.getVremeDo());
+            } else if (meni instanceof SezonskiMeni s) {
+                dto.setPocetakSezone(s.getPocetakSezone());
+                dto.setKrajSezone(s.getKrajSezone());
+            }
+
+            List<StavkaMenija> stavkeZaOvajMeni = stavkePoMeniju.getOrDefault(meni.getMeniId(), new ArrayList<>());
+
+            List<Proizvod> proizvodi = stavkeZaOvajMeni.stream().map(stavka -> {
+                Proizvod p = stavka.getProizvod();
+                p.setCena(stavka.getCena());
+                return p;
+            }).toList();
+
+            dto.setProizvodi(proizvodi);
+            return dto;
         }).toList();
+
     }
 
     // Kupac - pretraga po nazivu unutar aktivnih menija restorana (uz vremenski filter)

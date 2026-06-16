@@ -20,7 +20,8 @@ public interface StavkaMenijaRepository extends JpaRepository<StavkaMenija, Long
             "JOIN s.meni m " +
             "WHERE m.restoran.restoranId = :restoranId " +
             "AND m.aktivan = true " +
-            "AND s.obrisan = false")
+            "AND s.obrisan = false" +
+            " AND s.dostupno = true")
     List<StavkaMenija> findAktivneStavkeZaRestoran(@Param("restoranId") Long restoranId);
 
     @Query("SELECT s FROM StavkaMenija s " +
@@ -35,4 +36,6 @@ public interface StavkaMenijaRepository extends JpaRepository<StavkaMenija, Long
             "JOIN proizvodi p ON s.proizvod_id = p.proizvod_id " +
             "WHERE p.kategorija_id = :kategorijaId", nativeQuery = true)
     Object[] findAverageTimeByKategorija(@Param("kategorijaId") Long kategorijaId);
+
+
 }
