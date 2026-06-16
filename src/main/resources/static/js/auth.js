@@ -33,7 +33,11 @@ function zastitiStranicu() {
 
     // Stranice koje zahtevaju prijavu (nije dozvoljeno gostima)
     const samoPrijavljeni = [
-        'omiljeni'
+        'omiljeni',
+        'checkout',
+        'moje-porudzbine',
+        'porudzbine',
+        'dostavljac-porudzbine'
     ];
 
     if (!uloga) {
@@ -51,9 +55,22 @@ function zastitiStranicu() {
         trenutnaStranica.includes('kategorije') ||
         trenutnaStranica.includes('omiljeni') ||
         trenutnaStranica.includes('proizvodi') ||
-        trenutnaStranica.includes('preporuke')
+        trenutnaStranica.includes('preporuke') ||
+        trenutnaStranica.includes('checkout') ||
+        trenutnaStranica.includes('moje-porudzbine')
     )) {
         window.location.href = '/izbor-restorana.html';
+    }
+
+    if (uloga === 'DOSTAVLJAC' && (
+        trenutnaStranica.includes('kategorije') ||
+        trenutnaStranica.includes('omiljeni') ||
+        trenutnaStranica.includes('proizvodi') ||
+        trenutnaStranica.includes('preporuke') ||
+        trenutnaStranica.includes('checkout') ||
+        trenutnaStranica.endsWith('/porudzbine.html')
+    )) {
+        window.location.href = '/dostavljac-porudzbine.html';
     }
 
     // Kupac ili Gost bez izabranog restorana
@@ -79,6 +96,13 @@ function osveziNavigaciju() {
     if (uloga === 'MENADZER') {
         linkoviHtml = `
             <a href="/izbor-restorana.html" id="nav-restorani">Moji restorani</a>
+            <a href="/porudzbine.html" id="nav-porudzbine">Porudzbine</a>
+        `;
+    } else if (uloga === 'DOSTAVLJAC') {
+        linkoviHtml = `
+            <a href="/dostavljac-porudzbine.html" id="nav-dostavljac-porudzbine">Porudzbine</a>
+            <a href="/dostave.html" id="nav-dostave">Dostave</a>
+            <a href="/mapa.html" id="nav-mapa">Mapa</a>
         `;
     } else {
         // KUPAC ili GOST
@@ -88,6 +112,7 @@ function osveziNavigaciju() {
             <a href="/kategorije.html" id="nav-kategorije">Kategorije</a>
             <a href="/preporuke.html" id="nav-preporuke">Preporuke</a>
             ${uloga === 'KUPAC' ? `
+            <a href="/moje-porudzbine.html" id="nav-moje-porudzbine">Moje porudzbine</a>
             <a href="/omiljeni.html" id="nav-omiljeni">Omiljeni</a>
             ` : ''}
         `;
@@ -98,7 +123,7 @@ function osveziNavigaciju() {
     if (!uloga) {
         // GOST — prikaži Login i Registracija
         navDesnoHtml = `
-            ${uloga !== 'MENADZER' ? `
+            ${uloga !== 'MENADZER' && uloga !== 'DOSTAVLJAC' ? `
             <button class="nav-korpa" onclick="prikaziKorpu ? prikaziKorpu() : null">
                 🛒 Korpa
                 <span class="korpa-badge" id="korpa-badge"></span>
@@ -108,7 +133,7 @@ function osveziNavigaciju() {
         `;
     } else {
         navDesnoHtml = `
-            ${uloga !== 'MENADZER' ? `
+            ${uloga !== 'MENADZER' && uloga !== 'DOSTAVLJAC' ? `
             <button class="nav-korpa" onclick="prikaziKorpu()">
                 🛒 Korpa
                 <span class="korpa-badge" id="korpa-badge"></span>
@@ -119,7 +144,7 @@ function osveziNavigaciju() {
     }
 
     navElement.innerHTML = `
-        <a href="${uloga === 'MENADZER' ? '/izbor-restorana.html' : '/proizvodi.html'}" class="nav-logo">
+        <a href="${uloga === 'MENADZER' ? '/izbor-restorana.html' : (uloga === 'DOSTAVLJAC' ? '/dostavljac-porudzbine.html' : '/proizvodi.html')}" class="nav-logo">
             <div class="nav-logo-icon">
                 <img src="/asset/logo.png" alt="Big Bite" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
             </div>

@@ -251,6 +251,7 @@
     const sesija = getSesija();
     if (sesija.uloga === 'KUPAC') window.location.href = '/proizvodi.html';
     if (sesija.uloga === 'MENADZER') window.location.href = '/izbor-restorana.html';
+    if (sesija.uloga === 'DOSTAVLJAC') window.location.href = '/dostavljac-porudzbine.html';
 
     // Prikaži info poruku ako je korisnik preusmereni sa zaštićene stranice
     const urlParams = new URLSearchParams(window.location.search);
@@ -284,6 +285,8 @@
                 window.location.href = '/izbor-restorana.html';
             } else if (korisnik.uloga === 'KUPAC') {
                 window.location.href = '/proizvodi.html';
+            } else if (korisnik.uloga === 'DOSTAVLJAC') {
+                window.location.href = '/dostavljac-porudzbine.html';
             } else {
                 throw new Error('Nepoznata uloga');
             }

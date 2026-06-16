@@ -940,7 +940,7 @@
                 <span class="kp-total-label">Ukupno</span>
                 <span class="kp-total-iznos" id="kp-total">0 RSD</span>
             </div>
-            <button class="kp-placanje-btn">
+            <button class="kp-placanje-btn" onclick="nastaviNaCheckout()">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
                     <line x1="1" y1="10" x2="23" y2="10"/>
@@ -961,6 +961,7 @@
     // Filter state - globalne varijable
     let aktivniFilteri = {};
     let sviProizvodiCache = [];
+    let sviProizvodiOriginal = [];
     let sveKategorije = [];
     let sviAlergeni = [];
     let sviMenijiCache = [];
@@ -971,8 +972,8 @@
 
 
     let omiljeniIds = new Set();
-    // Korpa: [{id, naziv, emoji, cena, kolicina, napomena}]
-    let korpa = JSON.parse(localStorage.getItem('korpa') || '[]');
+    // Korpa: [{id, stavkaMenijaId, proizvodId, naziv, emoji, cena, kolicina, napomena}]
+    let korpa = JSON.parse(localStorage.getItem('korpa') || '[]').filter(stavka => stavka.stavkaMenijaId);
     let aktivniProizvod = null;
     let korpaModalProizvod = null;
     let korpaModalKolicina = 1;
@@ -997,6 +998,18 @@
     function sacuvajKorpu() {
         localStorage.setItem('korpa', JSON.stringify(korpa));
         azurirajKorpaBadge();
+    }
+
+    function nastaviNaCheckout() {
+        if (!jeKupac()) {
+            window.location.href = '/login.html?poruka=morate-biti-prijavljeni';
+            return;
+        }
+        if (korpa.length === 0) {
+            alert('Korpa je prazna.');
+            return;
+        }
+        window.location.href = '/checkout.html';
     }
 
     //  Panel korpe
@@ -1079,7 +1092,7 @@
     }
 
     function osveziKarticeDugmad() {
-        const uKorpiIds = new Set(korpa.map(k => k.id));
+        const uKorpiIds = new Set(korpa.map(k => k.stavkaMenijaId));
         document.querySelectorAll('[id^="btn-korpa-"]').forEach(btn => {
             const id = parseInt(btn.id.replace('btn-korpa-', ''));
             const uKorpi = uKorpiIds.has(id);
@@ -1145,17 +1158,22 @@
         if (jeKupac()) try { api.zabeleziKlik(getKupacId(), p.proizvodId, 'KORPA'); } catch {}
 
         // Ako već postoji ista stavka (isti id + ista napomena) – povećaj količinu
-        const postojeci = korpa.find(k => k.id === p.proizvodId && k.napomena === napomena);
+        const postojeci = korpa.find(k => k.stavkaMenijaId === p.stavkaMenijaId && k.napomena === napomena);
         if (postojeci) {
             postojeci.kolicina += korpaModalKolicina;
         } else {
             korpa.push({
-                id: p.proizvodId,
+                id: p.stavkaMenijaId,
+                stavkaMenijaId: p.stavkaMenijaId,
+                proizvodId: p.proizvodId,
                 naziv: p.naziv,
                 emoji: getEmoji(p.naziv),
                 cena: p.cena || null,
                 kolicina: korpaModalKolicina,
-                napomena: napomena
+                napomena: napomena,
+                opis: p.opis || '',
+                fotografija: p.fotografija || '',
+                alergeni: p.alergeni || []
             });
         }
 
@@ -1187,17 +1205,13 @@
         grid.innerHTML = '<div class="empty-state"><div class="icon"></div><p>Učitavanje...</p></div>';
         await ucitajOmiljene();
         try {
-            const meniji = await api.getProizvodiZaKupca();
-            console.log('meniji:', meniji)
-            //const lista = await api.getProizvodiZaKupca();
-            //sviProizvodiCache = lista || [];
-            sviProizvodiCache = meniji.flatMap(m => m.proizvodi || []);
-            sviMenijiCache = meniji;
+            const lista = await api.getStavkeMenijaZaRestoranKupca();
+            sviProizvodiCache = lista || [];
+            sviProizvodiOriginal = lista || [];
             aktivniFilteri = {};
             azurirajFilterBadge();
             renderAktivneFilterTagove();
-            //prikaziProizvode(sviProizvodiCache);
-            prikaziMenijeSaProizvodima(meniji)
+            prikaziProizvode(sviProizvodiCache);
         } catch {
             grid.innerHTML = '<div class="empty-state"><div class="icon"></div><p>Greška pri učitavanju.</p></div>';
         }
@@ -1205,19 +1219,17 @@
 
     async function pretraziProizvode() {
         const upit = document.getElementById('pretraga').value.trim();
-        //if (!upit) { ucitajProizvode(); return; }
-        if (!upit) {
-            prikaziMenijeSaProizvodima(sviMenijiCache);
-            return;
-        }
+        if (!upit) { ucitajProizvode(); return; }
 
         if (jeKupac()) {
             api.zabeleziPretragu(getKupacId(), upit).catch(() => {});
         }
 
         try {
-            const lista = await api.searchProizvodiZaKupca(upit);
-            sviProizvodiCache = lista || [];
+            sviProizvodiCache = sviProizvodiOriginal.filter(p =>
+                (p.naziv || '').toLowerCase().includes(upit.toLowerCase()) ||
+                (p.opis || '').toLowerCase().includes(upit.toLowerCase())
+            );
             // Primeni i aktivne filtere na rezultate pretrage
             if (Object.keys(aktivniFilteri).length > 0) {
                 primeniFiltriranjeFrontend();
@@ -1230,103 +1242,65 @@
         }
     }
 
-    function prikaziMenijeSaProizvodima(meniji) {
-        const grid = document.getElementById('grid');
-        if (!meniji || meniji.length === 0) {
-            grid.innerHTML = '<div class="empty-state"><div class="icon"></div><p>Nema dostupnih menija.</p></div>';
-            return;
-        }
-        const uKorpiIds = new Set(korpa.map(k => k.id));
-        grid.innerHTML = meniji.map(meni => {
-            const metaInfo = buildMeniMeta(meni);
-            const proizvodiHtml = (meni.proizvodi || []).map(p => buildProizvodKartica(p, uKorpiIds)).join('');
-
-            return `
-            <div class="meni-sekcija">
-                <div class="meni-header">
-                    <div class="meni-header-left">
-                        <h2 class="meni-naziv">${meni.naziv}</h2>
-                        ${meni.opis ? `<p class="meni-opis">${meni.opis}</p>` : ''}
-                    </div>
-                    ${metaInfo ? `<div class="meni-meta">${metaInfo}</div>` : ''}
-                </div>
-                <div class="grid meni-grid">
-                    ${proizvodiHtml || '<div class="empty-state" style="padding:40px 0"><p>Nema dostupnih proizvoda.</p></div>'}
-                </div>
-            </div>
-        `;
-        }).join('');
-    }
-
-    function buildMeniMeta(meni) {
-        if (meni.vremeOd && meni.vremeDo) {
-            return `<span class="meni-tag meni-tag-vreme">🕐 ${meni.vremeOd.substring(0,5)} – ${meni.vremeDo.substring(0,5)}</span>`;
-        }
-        if (meni.pocetakSezone && meni.krajSezone) {
-            const od = new Date(meni.pocetakSezone).toLocaleDateString({day:'numeric', month:'short'});
-            const do_ = new Date(meni.krajSezone).toLocaleDateString({day:'numeric', month:'short'});
-            return `<span class="meni-tag meni-tag-sezona">${od} – ${do_}</span>`;
-        }
-        return '';
-    }
-
-    function buildProizvodKartica(p, uKorpiIds) {
-        return `
-        <div class="card">
-            <div class="card-img-placeholder">
-                ${p.fotografija ? `<img src="${p.fotografija}" alt="${p.naziv}" loading="lazy">` : getEmoji(p.naziv)}
-            </div>
-            <div class="card-body">
-                <div class="card-top">
-                    <div class="card-name">${p.naziv}</div>
-                    ${jeKupac() ? `<button class="btn-fav" onclick="toggleOmiljeni(${p.proizvodId}, this)">${omiljeniIds.has(p.proizvodId) ? '❤️' : '🤍'}</button>` : ''}
-                </div>
-                <span class="card-kat">${p.kategorija?.naziv || 'Ostalo'}</span>
-                <div class="card-cena-row">
-                    ${p.cena > 0
-            ? `<span class="card-cena">${p.cena.toLocaleString('sr-RS')} <small style="font-size:13px;font-weight:500;color:var(--gray)">RSD</small></span>`
-            : `<span class="card-cena-besplatno">Besplatno</span>`
-        }
-                    ${p.kolicina && p.mernaJedinica ? `<span class="card-cena-unit">/ ${p.kolicina} ${p.mernaJedinica}</span>` : ''}
-                </div>
-                <div class="card-actions">
-                    <button class="btn-detalji" onclick="otvoriDetalje(${p.proizvodId})">Detaljnije</button>
-                    <button class="btn-korpa ${uKorpiIds.has(p.proizvodId) ? 'dodato' : ''}"
-                            id="btn-korpa-${p.proizvodId}"
-                            onclick="otvoriKorpaModalZaId(${p.proizvodId})">
-                        ${uKorpiIds.has(p.proizvodId) ? '✓ Dodato' : '+ U korpu'}
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-    }
-
     function prikaziProizvode(lista) {
         const grid = document.getElementById('grid');
         if (!lista.length) {
             grid.innerHTML = '<div class="empty-state"><div class="icon"></div><p>Nema rezultata.</p></div>';
             return;
         }
-        const uKorpiIds = new Set(korpa.map(k => k.id));
-        grid.innerHTML = lista.map(p => buildProizvodKartica(p, uKorpiIds)).join('');
+        const uKorpiIds = new Set(korpa.map(k => k.stavkaMenijaId));
+        grid.innerHTML = lista.map(p => `
+            <div class="card">
+                <div class="card-img-placeholder">
+                    ${p.fotografija ? `<img src="${p.fotografija}" alt="${p.naziv}" loading="lazy">` : getEmoji(p.naziv)}
+                </div>
+                <div class="card-body">
+                    <div class="card-top">
+                        <div class="card-name">${p.naziv}</div>
+                        ${jeKupac() ? `<button class="btn-fav" onclick="toggleOmiljeni(${p.proizvodId}, this)">${omiljeniIds.has(p.proizvodId) ? '❤️' : '🤍'}</button>` : ''}
+                    </div>
+                    <span class="card-kat">${p.kategorija?.naziv || 'Ostalo'}</span>
+                    <div class="card-cena-row">
+                        ${p.cena > 0
+            ? `<span class="card-cena">${p.cena.toLocaleString('sr-RS')} <small style="font-size:13px;font-weight:500;color:var(--gray)">RSD</small></span>`
+            : `<span class="card-cena-besplatno">Besplatno</span>`
+        }
+                        ${p.kolicina && p.mernaJedinica ? `<span class="card-cena-unit">/ ${p.kolicina} ${p.mernaJedinica}</span>` : ''}
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-detalji" onclick="otvoriDetalje(${p.stavkaMenijaId})">
+                             Detaljnije
+                        </button>
+                        <button class="btn-korpa ${uKorpiIds.has(p.stavkaMenijaId) ? 'dodato' : ''}"
+                                id="btn-korpa-${p.stavkaMenijaId}"
+                                onclick="otvoriKorpaModalZaId(${p.stavkaMenijaId})">
+                            ${uKorpiIds.has(p.stavkaMenijaId) ? ' Dodato' : ' U korpu'}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
     }
 
     // Otvori korpa modal sa kartice (trebamo fetch proizvoda ako nemamo objekat)
-    async function otvoriKorpaModalZaId(proizvodId) {
-        try {
-            const p = await apiFetch(`/proizvodi/${proizvodId}`);
-            otvoriKorpaModal(p);
-        } catch {
+    async function otvoriKorpaModalZaId(stavkaMenijaId) {
+        const p = sviProizvodiCache.find(item => item.stavkaMenijaId === stavkaMenijaId);
+        if (!p) {
             alert('Greška pri učitavanju proizvoda.');
+            return;
         }
+        otvoriKorpaModal(p);
     }
 
     //  Detalji modal
-    async function otvoriDetalje(proizvodId) {
-        if (jeKupac()) try { await api.zabeleziKlik(getKupacId(), proizvodId, 'DETALJI'); } catch {}
+    async function otvoriDetalje(stavkaMenijaId) {
+        const p = sviProizvodiCache.find(item => item.stavkaMenijaId === stavkaMenijaId);
+        if (!p) {
+            alert('Greška pri učitavanju detalja.');
+            return;
+        }
+        if (jeKupac()) try { await api.zabeleziKlik(getKupacId(), p.proizvodId, 'DETALJI'); } catch {}
         try {
-            const p = await apiFetch(`/proizvodi/${proizvodId}`);
             aktivniProizvod = p;
 
             document.getElementById('modal-img').innerHTML = p.fotografija
@@ -1345,7 +1319,7 @@
             favBtn.style.display = jeKupac() ? '' : 'none';
 
             const korpaBtn = document.getElementById('modal-btn-korpa');
-            const uKorpi = korpa.some(k => k.id === p.proizvodId);
+            const uKorpi = korpa.some(k => k.stavkaMenijaId === p.stavkaMenijaId);
             korpaBtn.textContent = uKorpi ? ' U korpi' : ' Dodaj u korpu';
             korpaBtn.className = 'modal-btn-korpa' + (uKorpi ? ' dodato' : '');
 
@@ -1531,8 +1505,7 @@
         aktivniFilteri = {};
         azurirajFilterBadge();
         renderAktivneFilterTagove();
-        //ucitajProizvode();
-        prikaziMenijeSaProizvodima(sviMenijiCache);
+        ucitajProizvode();
     }
 
 

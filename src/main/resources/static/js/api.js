@@ -5,7 +5,16 @@ async function apiFetch(url, options = {}) {
         headers: { 'Content-Type': 'application/json' },
         ...options
     });
-    if (!res.ok) throw new Error(`${res.status}`);
+    if (!res.ok) {
+        let message = 'Zahtev nije uspeo. Pokusajte ponovo.';
+        try {
+            const data = await res.json();
+            message = data.greska || data.poruka || message;
+        } catch (_) {
+            // Keep the generic message when the server does not return JSON.
+        }
+        throw new Error(message);
+    }
     if (res.status === 204) return null;
     return res.json();
 }
@@ -66,6 +75,11 @@ const api = {
     // ── Stavke menija ──────────────────────────────────────
     getStavkeMenija: (meniId) => apiFetch(`/stavke-menija/meni/${meniId}`),
     getStavkeMenijaZaKupca: (meniId) => apiFetch(`/stavke-menija/kupac/meni/${meniId}`),
+    getStavkeMenijaZaRestoranKupca: () => {
+        const restoranId = localStorage.getItem('restoranId');
+        if (!restoranId) return Promise.resolve([]);
+        return apiFetch(`/stavke-menija/kupac/restoran/${restoranId}`);
+    },
 
     // ── Omiljeni ───────────────────────────────────────────
     getOmiljeni: (kupacId) => apiFetch(`/omiljeni/${kupacId}`),
@@ -83,10 +97,40 @@ const api = {
 
     // ── Porudžbine ─────────────────────────────────────────
     kreirajPorudzbinu: (payload) =>
-        apiFetch('/porudzbine', { method: 'POST', body: JSON.stringify(payload) }),
-    getPorudzbine: (kupacId) => apiFetch(`/porudzbine/kupac/${kupacId}`),
+        apiFetch('/porudzbine', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-User-Id': localStorage.getItem('korisnikId') },
+            body: JSON.stringify(payload)
+        }),
+    previewPorudzbine: (payload) =>
+        apiFetch('/porudzbine/preview', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-User-Id': localStorage.getItem('korisnikId') },
+            body: JSON.stringify(payload)
+        }),
+    getPorudzbine: (kupacId) =>
+        apiFetch(`/porudzbine?kupacId=${kupacId}`, {
+            headers: { 'Content-Type': 'application/json', 'X-User-Id': localStorage.getItem('korisnikId') }
+        }),
+    getPorudzbineTrenutnogKorisnika: () =>
+        apiFetch('/porudzbine', {
+            headers: { 'Content-Type': 'application/json', 'X-User-Id': localStorage.getItem('korisnikId') }
+        }),
+    getIstorijaStatusaPorudzbine: (porudzbinaId) =>
+        apiFetch(`/porudzbine/${porudzbinaId}/istorija-statusa`, {
+            headers: { 'Content-Type': 'application/json', 'X-User-Id': localStorage.getItem('korisnikId') }
+        }),
 
     // ── Preporuke ──────────────────────────────────────────
+    getPorudzbineMenadzera: () =>
+        api.getPorudzbineTrenutnogKorisnika(),
+    promeniStatusPorudzbine: (porudzbinaId, noviStatus) =>
+        apiFetch(`/porudzbine/${porudzbinaId}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'X-User-Id': localStorage.getItem('korisnikId') },
+            body: JSON.stringify({ noviStatus })
+        }),
+
     getPreporuke: (kupacId, limit = 10) =>
         apiFetch(`/preporuke/kupac/${kupacId}?limit=${limit}`),
 

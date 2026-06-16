@@ -47,6 +47,31 @@ public class Porudzbina {
     @Enumerated(EnumType.STRING)
     private StatusPorudzbine status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "nacin_placanja")
+    private NacinPlacanja nacinPlacanja;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status_placanja")
+    private StatusPlacanja statusPlacanja;
+
+    @Column(name = "cena_artikala")
+    private BigDecimal cenaArtikala;
+
+    @Column(name = "cena_dostave")
+    private BigDecimal cenaDostave;
+
+    @Column(name = "popust_artikli")
+    private BigDecimal popustArtikli;
+
+    @Column(name = "popust_dostava")
+    private BigDecimal popustDostava;
+
+    @Column(name = "iznos_karticom")
+    private BigDecimal iznosKarticom;
+
+    @Column(name = "iznos_kes")
+    private BigDecimal iznosKes;
 
     @Column(name = "ukupna_cena")
     private BigDecimal ukupnaCena;

@@ -33,4 +33,6 @@ public class StavkaPorudzbine {
     private Integer kolicina;
 
     private BigDecimal cena;
+
+    private String napomena;
 }

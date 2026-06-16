@@ -2,6 +2,7 @@ package fooddelivery.food_delivery_platform.service;
 
 import fooddelivery.food_delivery_platform.dto.CenovnikMasovniUpdateDTO;
 import fooddelivery.food_delivery_platform.dto.IzmenaStavkeMenijaDTO;
+import fooddelivery.food_delivery_platform.dto.KupacStavkaMenijaDTO;
 import fooddelivery.food_delivery_platform.dto.NovaStavkaMenijaDTO;
 import fooddelivery.food_delivery_platform.model.Meni;
 import fooddelivery.food_delivery_platform.model.StavkaMenija;
@@ -68,6 +69,36 @@ public class StavkaMenijaService {
             throw new AccessDeniedException("Trazeni meni nije aktivan.");
         }
         return stavkaMenijaRepository.findByMeniMeniIdAndObrisanFalse(meniId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<KupacStavkaMenijaDTO> getAktivneStavkeZaRestoranKupac(Long restoranId) {
+        return stavkaMenijaRepository.findAktivneStavkeZaRestoran(restoranId)
+                .stream()
+                .filter(stavka -> stavka.isDostupno() && !stavka.isObrisan())
+                .map(this::toKupacStavkaMenijaDTO)
+                .toList();
+    }
+
+    private KupacStavkaMenijaDTO toKupacStavkaMenijaDTO(StavkaMenija stavka) {
+        Proizvod proizvod = stavka.getProizvod();
+        return KupacStavkaMenijaDTO.builder()
+                .stavkaMenijaId(stavka.getStavkaId())
+                .proizvodId(proizvod != null ? proizvod.getProizvodId() : null)
+                .naziv(proizvod != null ? proizvod.getNaziv() : null)
+                .opis(proizvod != null ? proizvod.getOpis() : null)
+                .kalorije(proizvod != null ? proizvod.getKalorije() : null)
+                .cena(stavka.getCena())
+                .fotografija(proizvod != null ? proizvod.getFotografija() : null)
+                .kolicina(proizvod != null ? proizvod.getKolicina() : null)
+                .mernaJedinica(proizvod != null ? proizvod.getMernaJedinica() : null)
+                .kategorija(proizvod != null ? proizvod.getKategorija() : null)
+                .alergeni(proizvod != null ? proizvod.getAlergeni() : List.of())
+                .sastojci(proizvod != null ? proizvod.getSastojci() : List.of())
+                .vremePripremeMin(stavka.getVremePripremeMin())
+                .vremePripremeMax(stavka.getVremePripremeMax())
+                .dostupno(stavka.isDostupno())
+                .build();
     }
 
     @Transactional
