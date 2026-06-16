@@ -324,22 +324,16 @@ public class StavkaMenijaService {
         }
     }
 
-    public Map<String, Integer> calculateAvgPreparationTime(Long kategorijaId) {
-        Object[] rezultat = stavkaMenijaRepository.findAverageTimeByKategorija(kategorijaId);
 
+    public Map<String, Integer> calculateAvgPreparationTime(Long kategorijaId) {
         Map<String, Integer> mapa = new HashMap<>();
 
-        if (rezultat != null && rezultat.length >= 2) {
-            double min = ((Number) rezultat[0]).doubleValue();
-            double max = ((Number) rezultat[1]).doubleValue();
+        Double min = stavkaMenijaRepository.findAvgMinByKategorija(kategorijaId);
+        Double max = stavkaMenijaRepository.findAvgMaxByKategorija(kategorijaId);
 
-            if (min > 0 && max > 0) {
-                mapa.put("min", (int) min);
-                mapa.put("max", (int) max);
-            } else {
-                mapa.put("min", 15);
-                mapa.put("max", 25);
-            }
+        if (min != null && max != null && min > 0 && max > 0) {
+            mapa.put("min", (int) Math.round(min));
+            mapa.put("max", (int) Math.round(max));
         } else {
             mapa.put("min", 15);
             mapa.put("max", 25);
