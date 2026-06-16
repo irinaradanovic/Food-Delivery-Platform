@@ -64,6 +64,7 @@ public class PorudzbinaService {
     private final KlikRepository klikRepository;
     private final DostavaRepository dostavaRepository;
     private final DostavljacRepository dostavljacRepository;
+    private final RacunService racunService;
 
     private static final Map<StatusPorudzbine, Set<StatusPorudzbine>> DOZVOLJENI_PRELASCI = Map.of(
             StatusPorudzbine.KREIRANA, Set.of(StatusPorudzbine.POTVRDJENA, StatusPorudzbine.OTKAZANA),
@@ -211,12 +212,16 @@ public class PorudzbinaService {
         if (!mozeDaMenjaStatus(korisnik, trenutniKorisnikId, porudzbina, noviStatus)) {
             throw new AccessDeniedException("Nemate ovlascenje da menjate status ove porudzbine.");
         }
-
         porudzbina.setStatus(noviStatus);
         azurirajPlacanjeZaStatus(porudzbina, noviStatus);
         sinhronizujDostavuZaStatus(porudzbina, noviStatus);
         dodajIstorijuStatusa(porudzbina, noviStatus, trenutniKorisnikId);
         Porudzbina sacuvana = porudzbinaRepository.save(porudzbina);
+        if (noviStatus == StatusPorudzbine.POTVRDJENA) {
+            racunService.izdajRacunAkoNePostoji(sacuvana, trenutniKorisnikId);
+        } else if (noviStatus == StatusPorudzbine.OTKAZANA) {
+            racunService.stornirajAkoPostoji(sacuvana, trenutniKorisnikId);
+        }
         applyDostavljacIzDostave(sacuvana);
         return sacuvana;
     }
