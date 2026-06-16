@@ -12,7 +12,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class MeniProizvodiDTO {
+public class MeniSaStavkamaDTO {
     private Long meniId;
     private String naziv;
     private String opis;
@@ -22,5 +22,5 @@ public class MeniProizvodiDTO {
     // za VremenskiMeni
     private LocalTime vremeOd;
     private LocalTime vremeDo;
-    private List<Proizvod> proizvodi;
+    private List<KupacStavkaMenijaDTO> stavke;
 }

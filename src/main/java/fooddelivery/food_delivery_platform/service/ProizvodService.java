@@ -1,6 +1,6 @@
 package fooddelivery.food_delivery_platform.service;
 
-import fooddelivery.food_delivery_platform.dto.MeniProizvodiDTO;
+import fooddelivery.food_delivery_platform.dto.MeniSaStavkamaDTO;
 import fooddelivery.food_delivery_platform.model.*;
 import fooddelivery.food_delivery_platform.repository.MeniRepository;
 import fooddelivery.food_delivery_platform.repository.ProizvodRepository;
@@ -54,57 +54,6 @@ public class ProizvodService {
     }
 
     public void delete(Long id) { proizvodRepository.deleteById(id); }
-
-    // Kupac - svi proizvodi iz aktivnih menija restorana (uz vremenski filter)
-    // uz informacije  o meniju
-    public List<MeniProizvodiDTO> getProizvodiZaKupca(Long restoranId) {
-        //return proizvodRepository.findProizvodiIzAktivnihMenija(restoranId, LocalTime.now());
-
-        // pronalazimo stavke menija koje su aktivne za restoran
-        /*List<StavkaMenija> aktivneStavke = stavkaMenijaRepository.findAktivneStavkeZaRestoran(restoranId);
-
-        // uzimamo cenu svakog proizvoda iz stavki menija
-        return aktivneStavke.stream().map(stavka -> {
-            Proizvod p = stavka.getProizvod();
-            p.setCena(stavka.getCena());
-            return p;
-        }).toList();   */
-
-        List<Meni> aktivniMeniji = meniRepository.findByRestoranRestoranIdAndAktivanTrue(restoranId);
-        List<StavkaMenija> aktivneStavkeRestorana = stavkaMenijaRepository.findAktivneStavkeZaRestoran(restoranId);
-
-        // grupisi stavke po meniId
-        Map<Long, List<StavkaMenija>> stavkePoMeniju = aktivneStavkeRestorana.stream()
-                .collect(Collectors.groupingBy(s -> s.getMeni().getMeniId()));
-
-        return aktivniMeniji.stream().map(meni -> {
-            MeniProizvodiDTO dto = new MeniProizvodiDTO();
-            dto.setMeniId(meni.getMeniId());
-            dto.setNaziv(meni.getNaziv());
-            dto.setOpis(meni.getOpis());
-
-            // ako je vremenski ili sezonski, popuni info
-            if (meni instanceof VremenskiMeni v) {
-                dto.setVremeOd(v.getVremeOd());
-                dto.setVremeDo(v.getVremeDo());
-            } else if (meni instanceof SezonskiMeni s) {
-                dto.setPocetakSezone(s.getPocetakSezone());
-                dto.setKrajSezone(s.getKrajSezone());
-            }
-
-            List<StavkaMenija> stavkeZaOvajMeni = stavkePoMeniju.getOrDefault(meni.getMeniId(), new ArrayList<>());
-
-            List<Proizvod> proizvodi = stavkeZaOvajMeni.stream().map(stavka -> {
-                Proizvod p = stavka.getProizvod();
-                p.setCena(stavka.getCena());
-                return p;
-            }).toList();
-
-            dto.setProizvodi(proizvodi);
-            return dto;
-        }).toList();
-
-    }
 
     // Kupac - pretraga po nazivu unutar aktivnih menija restorana (uz vremenski filter)
     public List<Proizvod> searchProizvodiZaKupca(Long restoranId, String naziv) {

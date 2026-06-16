@@ -1,9 +1,6 @@
 package fooddelivery.food_delivery_platform.service;
 
-import fooddelivery.food_delivery_platform.dto.CenovnikMasovniUpdateDTO;
-import fooddelivery.food_delivery_platform.dto.IzmenaStavkeMenijaDTO;
-import fooddelivery.food_delivery_platform.dto.KupacStavkaMenijaDTO;
-import fooddelivery.food_delivery_platform.dto.NovaStavkaMenijaDTO;
+import fooddelivery.food_delivery_platform.dto.*;
 import fooddelivery.food_delivery_platform.model.Meni;
 import fooddelivery.food_delivery_platform.model.StavkaMenija;
 import fooddelivery.food_delivery_platform.model.Restoran;
@@ -25,6 +22,7 @@ import java.util.*;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class StavkaMenijaService {
@@ -72,12 +70,38 @@ public class StavkaMenijaService {
     }
 
     @Transactional(readOnly = true)
-    public List<KupacStavkaMenijaDTO> getAktivneStavkeZaRestoranKupac(Long restoranId) {
-        return stavkaMenijaRepository.findAktivneStavkeZaRestoran(restoranId)
-                .stream()
-                .filter(stavka -> stavka.isDostupno() && !stavka.isObrisan())
-                .map(this::toKupacStavkaMenijaDTO)
-                .toList();
+    public List<MeniSaStavkamaDTO> getAktivneStavkeZaRestoranKupac(Long restoranId) {
+        List<Meni> aktivniMeniji = meniRepository.findByRestoranRestoranIdAndAktivanTrue(restoranId);
+        List<StavkaMenija> aktivneStavkeRestorana = stavkaMenijaRepository.findAktivneStavkeZaRestoran(restoranId);
+        // grupisi stavke po meniId
+        Map<Long, List<StavkaMenija>> stavkePoMeniju = aktivneStavkeRestorana.stream()
+                .collect(Collectors.groupingBy(s -> s.getMeni().getMeniId()));
+
+        return aktivniMeniji.stream().map(meni -> {
+            MeniSaStavkamaDTO dto = new MeniSaStavkamaDTO();
+            dto.setMeniId(meni.getMeniId());
+            dto.setNaziv(meni.getNaziv());
+            dto.setOpis(meni.getOpis());
+
+            // ako je vremenski ili sezonski, popuni info
+            if (meni instanceof VremenskiMeni v) {
+                dto.setVremeOd(v.getVremeOd());
+                dto.setVremeDo(v.getVremeDo());
+            } else if (meni instanceof SezonskiMeni s) {
+                dto.setPocetakSezone(s.getPocetakSezone());
+                dto.setKrajSezone(s.getKrajSezone());
+            }
+            List<StavkaMenija> stavkeZaOvajMeni = stavkePoMeniju.getOrDefault(meni.getMeniId(), new ArrayList<>());
+
+            List<KupacStavkaMenijaDTO> mapiraneStavke = stavkeZaOvajMeni.stream()
+                    .filter(stavka -> stavka.isDostupno() && !stavka.isObrisan())
+                    .map(this::toKupacStavkaMenijaDTO)
+                    .toList();
+
+            dto.setStavke(mapiraneStavke);
+            return dto;
+        }).toList();
+
     }
 
     private KupacStavkaMenijaDTO toKupacStavkaMenijaDTO(StavkaMenija stavka) {

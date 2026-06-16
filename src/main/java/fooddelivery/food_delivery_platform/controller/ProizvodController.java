@@ -1,6 +1,6 @@
 package fooddelivery.food_delivery_platform.controller;
 
-import fooddelivery.food_delivery_platform.dto.MeniProizvodiDTO;
+import fooddelivery.food_delivery_platform.dto.MeniSaStavkamaDTO;
 import fooddelivery.food_delivery_platform.model.Proizvod;
 import fooddelivery.food_delivery_platform.service.ProizvodService;
 import lombok.RequiredArgsConstructor;
@@ -49,12 +49,6 @@ public class ProizvodController {
     @GetMapping("/kategorija/{kategorijaId}")
     public ResponseEntity<List<Proizvod>> getByKategorija(@PathVariable Long kategorijaId) {
         return ResponseEntity.ok(proizvodService.getByKategorija(kategorijaId));
-    }
-
-    // Kupac - svi proizvodi iz aktivnih menija restorana sa meni info
-    @GetMapping("/kupac/restoran/{restoranId}")
-    public ResponseEntity<List<MeniProizvodiDTO>> getProizvodiZaKupca(@PathVariable Long restoranId) {
-        return ResponseEntity.ok(proizvodService.getProizvodiZaKupca(restoranId));
     }
 
     // Kupac - pretraga po nazivu unutar aktivnih menija restorana

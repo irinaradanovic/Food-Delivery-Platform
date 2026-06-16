@@ -1205,13 +1205,17 @@
         grid.innerHTML = '<div class="empty-state"><div class="icon"></div><p>Učitavanje...</p></div>';
         await ucitajOmiljene();
         try {
-            const lista = await api.getStavkeMenijaZaRestoranKupca();
-            sviProizvodiCache = lista || [];
-            sviProizvodiOriginal = lista || [];
+            const meniji = await api.getStavkeMenijaZaRestoranKupca();
+            //sviProizvodiCache = lista || [];
+            //sviProizvodiOriginal = lista || [];
+            sviProizvodiCache = meniji.flatMap(m => m.stavke || []);
+            sviProizvodiOriginal = meniji.flatMap(m => m.stavke || []);
+            sviMenijiCache = meniji;
             aktivniFilteri = {};
             azurirajFilterBadge();
             renderAktivneFilterTagove();
-            prikaziProizvode(sviProizvodiCache);
+            //prikaziProizvode(sviProizvodiCache);
+            prikaziMenijeSaProizvodima(meniji)
         } catch {
             grid.innerHTML = '<div class="empty-state"><div class="icon"></div><p>Greška pri učitavanju.</p></div>';
         }
@@ -1219,7 +1223,11 @@
 
     async function pretraziProizvode() {
         const upit = document.getElementById('pretraga').value.trim();
-        if (!upit) { ucitajProizvode(); return; }
+        //if (!upit) { ucitajProizvode(); return; }
+        if (!upit) {
+            prikaziMenijeSaProizvodima(sviMenijiCache);
+            return;
+        }
 
         if (jeKupac()) {
             api.zabeleziPretragu(getKupacId(), upit).catch(() => {});
@@ -1242,6 +1250,79 @@
         }
     }
 
+    function prikaziMenijeSaProizvodima(meniji) {
+        const grid = document.getElementById('grid');
+        if (!meniji || meniji.length === 0) {
+            grid.innerHTML = '<div class="empty-state"><div class="icon"></div><p>Nema dostupnih menija.</p></div>';
+            return;
+        }
+        const uKorpiIds = new Set(korpa.map(k => k.id));
+        grid.innerHTML = meniji.map(meni => {
+            const metaInfo = buildMeniMeta(meni);
+            const proizvodiHtml = (meni.stavke || []).map(p => buildProizvodKartica(p, uKorpiIds)).join('');
+
+            return `
+            <div class="meni-sekcija">
+                <div class="meni-header">
+                    <div class="meni-header-left">
+                        <h2 class="meni-naziv">${meni.naziv}</h2>
+                        ${meni.opis ? `<p class="meni-opis">${meni.opis}</p>` : ''}
+                    </div>
+                    ${metaInfo ? `<div class="meni-meta">${metaInfo}</div>` : ''}
+                </div>
+                <div class="grid meni-grid">
+                    ${proizvodiHtml || '<div class="empty-state" style="padding:40px 0"><p>Nema dostupnih proizvoda.</p></div>'}
+                </div>
+            </div>
+        `;
+        }).join('');
+    }
+
+    function buildMeniMeta(meni) {
+        if (meni.vremeOd && meni.vremeDo) {
+            return `<span class="meni-tag meni-tag-vreme">🕐 ${meni.vremeOd.substring(0,5)} - ${meni.vremeDo.substring(0,5)}</span>`;
+        }
+        if (meni.pocetakSezone && meni.krajSezone) {
+            const od = new Date(meni.pocetakSezone).toLocaleDateString({day:'numeric', month:'short'});
+            const do_ = new Date(meni.krajSezone).toLocaleDateString({day:'numeric', month:'short'});
+            return `<span class="meni-tag meni-tag-sezona">${od} - ${do_}</span>`;
+        }
+        return '';
+    }
+
+    function buildProizvodKartica(p, uKorpiIds) {
+        return `
+        <div class="card">
+            <div class="card-img-placeholder">
+                ${p.fotografija ? `<img src="${p.fotografija}" alt="${p.naziv}" loading="lazy">` : getEmoji(p.naziv)}
+            </div>
+            <div class="card-body">
+                <div class="card-top">
+                    <div class="card-name">${p.naziv}</div>
+                    ${jeKupac() ? `<button class="btn-fav" onclick="toggleOmiljeni(${p.proizvodId}, this)">${omiljeniIds.has(p.proizvodId) ? '❤️' : '🤍'}</button>` : ''}
+                </div>
+                <span class="card-kat">${p.kategorija?.naziv || 'Ostalo'}</span>
+                <div class="card-cena-row">
+                    ${p.cena > 0
+            ? `<span class="card-cena">${p.cena.toLocaleString('sr-RS')} <small style="font-size:13px;font-weight:500;color:var(--gray)">RSD</small></span>`
+            : `<span class="card-cena-besplatno">Besplatno</span>`
+        }
+                    ${p.kolicina && p.mernaJedinica ? `<span class="card-cena-unit">/ ${p.kolicina} ${p.mernaJedinica}</span>` : ''}
+                </div>
+                <div class="card-actions">
+                    <button class="btn-detalji" onclick="otvoriDetalje(${p.stavkaMenijaId})">Detaljnije</button>
+                    <button class="btn-korpa ${uKorpiIds.has(p.stavkaMenijaId) ? 'dodato' : ''}"
+                            id="btn-korpa-${p.stavkaMenijaId}"
+                            onclick="otvoriKorpaModalZaId(${p.stavkaMenijaId})">
+                        ${uKorpiIds.has(p.stavkaMenijaId) ? '✓ Dodato' : '+ U korpu'}
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    }
+
+
     function prikaziProizvode(lista) {
         const grid = document.getElementById('grid');
         if (!lista.length) {
@@ -1249,40 +1330,9 @@
             return;
         }
         const uKorpiIds = new Set(korpa.map(k => k.stavkaMenijaId));
-        grid.innerHTML = lista.map(p => `
-            <div class="card">
-                <div class="card-img-placeholder">
-                    ${p.fotografija ? `<img src="${p.fotografija}" alt="${p.naziv}" loading="lazy">` : getEmoji(p.naziv)}
-                </div>
-                <div class="card-body">
-                    <div class="card-top">
-                        <div class="card-name">${p.naziv}</div>
-                        ${jeKupac() ? `<button class="btn-fav" onclick="toggleOmiljeni(${p.proizvodId}, this)">${omiljeniIds.has(p.proizvodId) ? '❤️' : '🤍'}</button>` : ''}
-                    </div>
-                    <span class="card-kat">${p.kategorija?.naziv || 'Ostalo'}</span>
-                    <div class="card-cena-row">
-                        ${p.cena > 0
-            ? `<span class="card-cena">${p.cena.toLocaleString('sr-RS')} <small style="font-size:13px;font-weight:500;color:var(--gray)">RSD</small></span>`
-            : `<span class="card-cena-besplatno">Besplatno</span>`
-        }
-                        ${p.kolicina && p.mernaJedinica ? `<span class="card-cena-unit">/ ${p.kolicina} ${p.mernaJedinica}</span>` : ''}
-                    </div>
-                    <div class="card-actions">
-                        <button class="btn-detalji" onclick="otvoriDetalje(${p.stavkaMenijaId})">
-                             Detaljnije
-                        </button>
-                        <button class="btn-korpa ${uKorpiIds.has(p.stavkaMenijaId) ? 'dodato' : ''}"
-                                id="btn-korpa-${p.stavkaMenijaId}"
-                                onclick="otvoriKorpaModalZaId(${p.stavkaMenijaId})">
-                            ${uKorpiIds.has(p.stavkaMenijaId) ? ' Dodato' : ' U korpu'}
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `).join('');
+        grid.innerHTML = lista.map(p => buildProizvodKartica(p, uKorpiIds)).join('');
     }
 
-    // Otvori korpa modal sa kartice (trebamo fetch proizvoda ako nemamo objekat)
     async function otvoriKorpaModalZaId(stavkaMenijaId) {
         const p = sviProizvodiCache.find(item => item.stavkaMenijaId === stavkaMenijaId);
         if (!p) {
@@ -1505,7 +1555,8 @@
         aktivniFilteri = {};
         azurirajFilterBadge();
         renderAktivneFilterTagove();
-        ucitajProizvode();
+        //ucitajProizvode();
+        prikaziMenijeSaProizvodima(sviMenijiCache);
     }
 
 
