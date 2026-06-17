@@ -127,51 +127,7 @@ public class KorpaPreporukaService {
                 .poruka(poruka)
                 .build();
     }
-
-
-    private Map<Long, Integer> izracunajKorelacije(List<Long> korpaStavkeMenijaIds, Long kupacId) {
-        Map<Long, Integer> korelacije = new HashMap<>();
-        if (korpaStavkeMenijaIds == null || korpaStavkeMenijaIds.isEmpty()) return korelacije;
-
-        // Pretvori korpa stavkeMenijaIds u set proizvodIds za pouzdano poređenje
-        Set<Long> korpaProizvodIds = korpaStavkeMenijaIds.stream()
-                .map(id -> stavkaMenijaRepository.findById(id)
-                        .map(sm -> sm.getProizvod() != null ? sm.getProizvod().getProizvodId() : null)
-                        .orElse(null))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
-
-        List<Porudzbina> porudzbine = kupacId != null
-                ? porudzbinaRepository.findByKupac_KorisnikIdOrderByDatumKreiranjaDesc(kupacId)
-                : porudzbinaRepository.findAll();
-
-        for (Porudzbina p : porudzbine) {
-            List<StavkaPorudzbine> stavke = stavkaPorudzbineRepository
-                    .findByPorudzbinaPorudzbinaId(p.getPorudzbinaId());
-
-            // Grupišemo po proizvodId — isto kao što grupišemo korpu
-            Map<Long, Long> stavkaToProizvod = stavke.stream()
-                    .filter(sp -> sp.getStavkaMenija() != null
-                            && sp.getStavkaMenija().getProizvod() != null)
-                    .collect(Collectors.toMap(
-                            sp -> sp.getStavkaMenija().getStavkaId(),
-                            sp -> sp.getStavkaMenija().getProizvod().getProizvodId(),
-                            (a, b) -> a  // duplikati stavkaId su nemogući, ali radi sigurnosti
-                    ));
-
-            Set<Long> proizvodiUPorudzbini = new HashSet<>(stavkaToProizvod.values());
-
-            boolean preklapanje = proizvodiUPorudzbini.stream()
-                    .anyMatch(korpaProizvodIds::contains);
-
-            if (preklapanje) {
-                proizvodiUPorudzbini.stream()
-                        .filter(pid -> !korpaProizvodIds.contains(pid))
-                        .forEach(pid -> korelacije.merge(pid, 1, Integer::sum));
-            }
-        }
-        return korelacije;
-    }
+    
 
     private List<StavkaMenija> dohvatiAktivneStavke(Long restoranId) {
         return meniRepository.findByRestoranRestoranIdAndAktivanTrue(restoranId).stream()

@@ -154,7 +154,6 @@ const api = {
         apiFetch(`/preporuke/kupac/${kupacId}?limit=${limit}`),
 
     // ── Tracking ───────────────────────────────────────────
-    // Nikad ne baca grešku — tracking ne sme blokirati UI
     zabeleziKlik: (kupacId, proizvodId, tipAkcije = 'PREGLED') => {
         if (!kupacId || !proizvodId) return Promise.resolve();
         return apiFetch(`/tracking/klik/${kupacId}/proizvodi/${proizvodId}`, {
