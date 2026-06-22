@@ -19,8 +19,8 @@ INSERT INTO korisnici (korisnik_id, ime, prezime, telefon, lozinka, email, datum
                                                                                                  (7, 'Stefan', 'Stavanović', '065222333', 'password123', 'stefan@test.com', '2026-05-25', 'DOSTAVLJAC');
 
 INSERT INTO dostavljaci (korisnik_id, ime, prezime, telefon, trenutna_lat, trenutna_lng, status, prosecna_ocena, broj_dostava) VALUES
-                                                                                                                   (6, 'Ivana', 'Ivanovic', '064000111', 45.2671, 19.8335, 'DOSTUPAN', 4.85, 124),
-                                                                                                                   (7, 'Stefan', 'Stavanovic', '065222333', 45.2551, 19.8452, 'DOSTUPAN', 4.60, 98);
+                                                                                                                                   (6, 'Ivana', 'Ivanovic', '064000111', 45.2671, 19.8335, 'DOSTUPAN', 4.85, 124),
+                                                                                                                                   (7, 'Stefan', 'Stavanovic', '065222333', 45.2551, 19.8452, 'DOSTUPAN', 4.60, 98);
 
 /*INSERT INTO kupci VALUES ('Narodnog fronta 16, Novi Sad', NULL, 4);
 INSERT INTO kupci VALUES ('Narodnog fronta 19, Novi Sad', NULL, 5); */
@@ -129,11 +129,11 @@ INSERT INTO meniji (meni_id, naziv, opis, tip_menija, verzija, aktivan, datum_od
 
 -- Restoran 2: VREMENSKI (Doručak od 08:00 do 11:00)
 INSERT INTO meniji (meni_id, naziv, opis, tip_menija, verzija, aktivan, datum_od, vreme_od, vreme_do, restoran_id, grupni_meni_id) VALUES
-    (2, 'Jutarnji Meni Napoli', 'Najbolji doručak u gradu', 'VREMENSKI', 'v1', true, '2026-05-26', '08:00:00', '11:00:00', 2, 2);
+    (2, 'Jutarnji Meni Napoli', 'Najbolji doručak u gradu', 'VREMENSKI', 'v1', true, '2026-05-26', '08:00:00', '13:00:00', 2, 2);
 
 -- Restoran 3: SEZONSKI (Letnji meni)
 INSERT INTO meniji (meni_id, naziv, opis, tip_menija, verzija, aktivan, datum_od, pocetak_sezone, kraj_sezone, restoran_id, grupni_meni_id) VALUES
-    (3, 'Letnji Meni 2026 Green', 'Laka letnja osveženja i obroci', 'SEZONSKI', 'v1', true, '2026-05-26', '2026-07-01', '2026-08-31', 3, 3);
+    (3, 'Letnji Meni 2026 Green', 'Laka letnja osveženja i obroci', 'SEZONSKI', 'v1', true, '2026-05-26', '2026-06-01', '2026-08-31', 3, 3);
 
 -- Povezivanje Menija i Proizvoda
 INSERT INTO stavke_menija (stavka_id, meni_id, proizvod_id, cena, dostupno, vreme_pripreme_min, vreme_pripreme_max, obrisan) VALUES
@@ -179,11 +179,7 @@ VALUES
 
 
 
--- Klikovi (korisnik_id: 5, proizvod_id: mapirani na postojece proizvode 1-16)
--- pid 21->3 (Pizza Capricciosa), pid 25->5 (Pizza Puttanesca), pid 27->4 (Pizza Marinara),
--- pid 30->16 (White Pasta), pid 39->6 (Cezar Salata), pid 47,48->7 (Avocado Med. Salata),
--- pid 44->13 (Hrskava Piletina), pid 42->3 (Pizza Capricciosa), pid 18->10 (Tiramisu),
--- pid 17->16 (White Pasta), pid 29->5 (Pizza Puttanesca), pid 20->7 (Avocado Med. Salata)
+
 INSERT INTO klikovi (klik_id, tip_akcije, vreme_klika, korisnik_id, proizvod_id) VALUES
                                                                                      (1,  'PREGLED',          '2026-05-24 11:18:19.77089',   5, 3),
                                                                                      (2,  'PREGLED',          '2026-05-24 11:18:20.970097',  5, 3),
@@ -234,7 +230,6 @@ INSERT INTO klikovi (klik_id, tip_akcije, vreme_klika, korisnik_id, proizvod_id)
                                                                                      (47, 'KORPA',            '2026-05-25 23:53:24.247347',  5, 7),
                                                                                      (48, 'UKLONI_IZ_KORPE',  '2026-05-25 23:53:27.653239',  5, 7);
 
--- Pretrage (korisnik_id: stari 1->4, stari 2->5)
 INSERT INTO pretrage (pretraga_id, tekst_upita, tip_pretrage, vreme_pretrage, korisnik_id) VALUES
                                                                                                (1,  'pica',       'OPSTA', '2026-05-24 10:43:09.564465', 4),
                                                                                                (2,  'marg',       'OPSTA', '2026-05-24 11:19:54.241524', 5),
@@ -446,3 +441,43 @@ SELECT setval(pg_get_serial_sequence('klikovi', 'klik_id'), MAX(klik_id)) FROM k
 SELECT setval(pg_get_serial_sequence('pretrage', 'pretraga_id'), MAX(pretraga_id)) FROM pretrage;
 SELECT setval(pg_get_serial_sequence('omiljeni_proizvodi', 'omiljeni_id'), MAX(omiljeni_id)) FROM omiljeni_proizvodi;
 SELECT setval(pg_get_serial_sequence('omiljene_kategorije', 'omiljena_kategorija_id'), MAX(omiljena_kategorija_id)) FROM omiljene_kategorije;
+
+
+INSERT INTO prikazane_preporuke
+(kupac_id, proizvod_id, tip_preporuke, prikazano_u, realizovano_u, uspesna)
+VALUES
+-- Kupac 5, sesija 1 (08:50) — personalizovane, pre porudzbina 1 i 2
+(5,  1, 'PERSONALIZOVANA', '2026-05-25 08:50:00', '2026-05-25 09:08:06', true),
+(5,  2, 'PERSONALIZOVANA', '2026-05-25 08:50:00', '2026-05-25 09:08:06', true),
+(5, 14, 'PERSONALIZOVANA', '2026-05-25 08:50:00', '2026-05-25 09:08:18', true),
+(5, 15, 'PERSONALIZOVANA', '2026-05-25 08:50:00', '2026-05-25 09:08:18', true),
+(5,  6, 'PERSONALIZOVANA', '2026-05-25 08:50:00', NULL,                  false),
+(5, 12, 'PERSONALIZOVANA', '2026-05-25 08:50:00', NULL,                  false),
+-- Kupac 5, sesija 2 (09:05) — trend, pre porudzbine 3
+(5,  3, 'TREND', '2026-05-25 09:05:00', '2026-05-25 09:09:25', true),
+(5,  4, 'TREND', '2026-05-25 09:05:00', '2026-05-25 09:09:25', true),
+(5,  9, 'TREND', '2026-05-25 09:05:00', '2026-05-25 09:09:25', true),
+(5, 10, 'TREND', '2026-05-25 09:05:00', '2026-05-25 09:09:25', true),
+(5, 11, 'TREND', '2026-05-25 09:05:00', NULL,                   false),
+-- Kupac 5, sesija 3 (09:07) — sezonske
+(5, 11, 'SEZONSKA', '2026-05-25 09:07:00', NULL, false),
+(5,  7, 'SEZONSKA', '2026-05-25 09:07:00', NULL, false),
+(5, 16, 'SEZONSKA', '2026-05-25 09:07:00', NULL, false),
+-- Kupac 5, sesija 4 (09:08) — vremenske (samo proizvodi iz vremenskog menija: 14,15,3,4,9,10)
+(5,  3, 'VREMENSKA', '2026-05-25 09:08:00', '2026-05-25 09:09:25', true),
+(5,  9, 'VREMENSKA', '2026-05-25 09:08:00', '2026-05-25 09:09:25', true),
+(5, 14, 'VREMENSKA', '2026-05-25 09:08:00', '2026-05-25 09:08:18', true),
+(5, 15, 'VREMENSKA', '2026-05-25 09:08:00', '2026-05-25 09:08:18', true),
+(5,  4, 'VREMENSKA', '2026-05-25 09:08:00', NULL,                  false),
+(5, 10, 'VREMENSKA', '2026-05-25 09:08:00', NULL,                  false),
+-- Kupac 4 (Marko) — pregledao, nije narucio
+(4,  1, 'PERSONALIZOVANA', '2026-05-26 14:10:00', NULL, false),
+(4,  3, 'PERSONALIZOVANA', '2026-05-26 14:10:00', NULL, false),
+(4,  6, 'PERSONALIZOVANA', '2026-05-26 14:10:00', NULL, false),
+(4, 12, 'PERSONALIZOVANA', '2026-05-26 14:10:00', NULL, false),
+(4,  2, 'TREND',           '2026-05-26 14:11:00', NULL, false),
+(4,  5, 'TREND',           '2026-05-26 14:11:00', NULL, false),
+(4,  6, 'SEZONSKA',        '2026-05-26 14:12:00', NULL, false),
+(4, 16, 'SEZONSKA',        '2026-05-26 14:12:00', NULL, false);
+
+SELECT setval(pg_get_serial_sequence('prikazane_preporuke', 'id'), MAX(id)) FROM prikazane_preporuke;

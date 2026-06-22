@@ -14,4 +14,5 @@ public interface PorudzbinaRepository extends JpaRepository<Porudzbina, Long> {
     List<Porudzbina> findByPorudzbinaIdInOrderByDatumKreiranjaDesc(List<Long> porudzbinaIds);
     List<Porudzbina> findByStatusOrderByDatumKreiranjaDesc(StatusPorudzbine status);
     List<Porudzbina> findByStatusAndDatumKreiranjaBefore(StatusPorudzbine status, LocalDateTime datumKreiranja);
+    List<Porudzbina> findByKupac_KorisnikIdAndDatumKreiranjaAfterOrderByDatumKreiranjaDesc(Long kupacId, LocalDateTime od);
 }

@@ -38,7 +38,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import fooddelivery.food_delivery_platform.repository.PrikazanaPreporukaRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
@@ -64,6 +64,7 @@ public class PorudzbinaService {
     private final KlikRepository klikRepository;
     private final DostavaRepository dostavaRepository;
     private final DostavljacRepository dostavljacRepository;
+    private final PrikazanaPreporukaRepository prikazanaPreporukaRepository;
     private final RacunService racunService;
 
     private static final Map<StatusPorudzbine, Set<StatusPorudzbine>> DOZVOLJENI_PRELASCI = Map.of(
@@ -191,6 +192,7 @@ public class PorudzbinaService {
 
         Porudzbina sacuvana = porudzbinaRepository.save(porudzbina);
         zabeleziKupovinu(kupac, kupljeniProizvodi);
+        oznaciPreporukeKaoUspesne(kupac.getKorisnikId(), kupljeniProizvodi);
         return sacuvana;
     }
 
@@ -544,6 +546,16 @@ public class PorudzbinaService {
                 });
     }
 
+    private void oznaciPreporukeKaoUspesne(Long kupacId, List<Proizvod> kupljeniProizvodi) {
+        if (kupljeniProizvodi == null || kupljeniProizvodi.isEmpty()) return;
+
+        List<Long> proizvodiIds = kupljeniProizvodi.stream()
+                .map(Proizvod::getProizvodId)
+                .distinct()
+                .toList();
+
+        prikazanaPreporukaRepository.oznaciKaoUspesne(kupacId, proizvodiIds, LocalDateTime.now());
+    }
     private void oslobodiDostavljaca(Dostava dostava, boolean uvecajBrojDostava) {
         Dostavljac dostavljac = dostava.getDostavljac();
         if (dostavljac == null) {
