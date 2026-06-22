@@ -16,14 +16,22 @@ public class PreporukaAnalitikaController {
 
     /**
      * GET /api/preporuke/analitika/kupac/{kupacId}?dani=30
-     *
-     * Čita iz prikazane_preporuke — tačno šta je prikazano kupcu
-     * i da li je naručio. Nema rekonstrukcije.
+     * Analitika za jednog kupca.
      */
     @GetMapping("/kupac/{kupacId}")
-    public ResponseEntity<PreporukaAnalitikaDTO> getAnalitika(
+    public ResponseEntity<PreporukaAnalitikaDTO> getAnalitikaZaKupca(
             @PathVariable Long kupacId,
             @RequestParam(defaultValue = "30") int dani) {
         return ResponseEntity.ok(analitikaService.izracunajAnalitiku(kupacId, dani));
+    }
+
+    /**
+     * GET /api/preporuke/analitika/svi?dani=30
+     * Analitika za sve kupce zajedno.
+     */
+    @GetMapping("/svi")
+    public ResponseEntity<PreporukaAnalitikaDTO> getAnalitikaZaSve(
+            @RequestParam(defaultValue = "30") int dani) {
+        return ResponseEntity.ok(analitikaService.izracunajAnalitikunZaSve(dani));
     }
 }

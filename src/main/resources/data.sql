@@ -2,6 +2,9 @@ ALTER TABLE stavke_menija
     ADD CONSTRAINT uq_meni_proizvod UNIQUE (meni_id, proizvod_id);
 -- Menadzeri
 INSERT INTO korisnici (korisnik_id, ime, prezime, telefon, lozinka, email, datum_reg, uloga) VALUES
+    (99, 'Admin', 'Admin', '060000000', 'admin123', 'admin@bigbite.com', '2026-05-25', 'ADMIN');
+
+INSERT INTO korisnici (korisnik_id, ime, prezime, telefon, lozinka, email, datum_reg, uloga) VALUES
                                                                                                  (1, 'Marko', 'Marković', '064123456', 'password123', 'menadzer1@test.com', '2026-05-25', 'MENADZER'),
                                                                                                  (2, 'Nikola', 'Nikolić', '065987654', 'password123', 'menadzer2@test.com', '2026-05-25', 'MENADZER'),
                                                                                                  (3, 'Jovana', 'Jovanić', '063111222', 'password123', 'menadzer3@test.com', '2026-05-25', 'MENADZER');
@@ -179,7 +182,11 @@ VALUES
 
 
 
-
+-- Klikovi (korisnik_id: 5, proizvod_id: mapirani na postojece proizvode 1-16)
+-- pid 21->3 (Pizza Capricciosa), pid 25->5 (Pizza Puttanesca), pid 27->4 (Pizza Marinara),
+-- pid 30->16 (White Pasta), pid 39->6 (Cezar Salata), pid 47,48->7 (Avocado Med. Salata),
+-- pid 44->13 (Hrskava Piletina), pid 42->3 (Pizza Capricciosa), pid 18->10 (Tiramisu),
+-- pid 17->16 (White Pasta), pid 29->5 (Pizza Puttanesca), pid 20->7 (Avocado Med. Salata)
 INSERT INTO klikovi (klik_id, tip_akcije, vreme_klika, korisnik_id, proizvod_id) VALUES
                                                                                      (1,  'PREGLED',          '2026-05-24 11:18:19.77089',   5, 3),
                                                                                      (2,  'PREGLED',          '2026-05-24 11:18:20.970097',  5, 3),
@@ -230,6 +237,7 @@ INSERT INTO klikovi (klik_id, tip_akcije, vreme_klika, korisnik_id, proizvod_id)
                                                                                      (47, 'KORPA',            '2026-05-25 23:53:24.247347',  5, 7),
                                                                                      (48, 'UKLONI_IZ_KORPE',  '2026-05-25 23:53:27.653239',  5, 7);
 
+-- Pretrage (korisnik_id: stari 1->4, stari 2->5)
 INSERT INTO pretrage (pretraga_id, tekst_upita, tip_pretrage, vreme_pretrage, korisnik_id) VALUES
                                                                                                (1,  'pica',       'OPSTA', '2026-05-24 10:43:09.564465', 4),
                                                                                                (2,  'marg',       'OPSTA', '2026-05-24 11:19:54.241524', 5),
@@ -442,6 +450,24 @@ SELECT setval(pg_get_serial_sequence('pretrage', 'pretraga_id'), MAX(pretraga_id
 SELECT setval(pg_get_serial_sequence('omiljeni_proizvodi', 'omiljeni_id'), MAX(omiljeni_id)) FROM omiljeni_proizvodi;
 SELECT setval(pg_get_serial_sequence('omiljene_kategorije', 'omiljena_kategorija_id'), MAX(omiljena_kategorija_id)) FROM omiljene_kategorije;
 
+-- ═══════════════════════════════════════════════════════════════════════════
+-- Prikazane preporuke — istorijski seed podaci
+--
+-- Mapiranje stavke_menija -> proizvod_id:
+--   stavka 1 -> proizvod 1  (Classic Burger)
+--   stavka 2 -> proizvod 2  (Monster Burger)
+--   stavka 5 -> proizvod 14 (Omelette Klasik)
+--   stavka 6 -> proizvod 15 (Avocado Toast)
+--   stavka 7 -> proizvod 3  (Pizza Capricciosa)
+--   stavka 8 -> proizvod 4  (Pizza Marinara)
+--   stavka 9 -> proizvod 9  (Domaca Kafa)
+--   stavka 10-> proizvod 10 (Tiramisu)
+--
+-- Kupac 5 (Nenad) narucio u porudzbinama 1-7 na 2026-05-25:
+--   porudzbina 1: proizvod 1, 2
+--   porudzbina 2: proizvod 14, 15
+--   porudzbina 3: proizvod 3, 4, 9, 10
+-- ═══════════════════════════════════════════════════════════════════════════
 
 INSERT INTO prikazane_preporuke
 (kupac_id, proizvod_id, tip_preporuke, prikazano_u, realizovano_u, uspesna)

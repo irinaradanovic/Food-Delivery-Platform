@@ -287,6 +287,8 @@
                 window.location.href = '/proizvodi.html';
             } else if (korisnik.uloga === 'DOSTAVLJAC') {
                 window.location.href = '/dostavljac-porudzbine.html';
+            } else if (korisnik.uloga === 'ADMIN') {
+                window.location.href = '/analitika-preporuka.html';
             } else {
                 throw new Error('Nepoznata uloga');
             }

@@ -23,39 +23,38 @@ public class PreporukaAnalitikaService {
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
     /**
-     * Čita direktno iz prikazane_preporuke — tačno šta je prikazano i
-     * da li je kupac to naručio. Nema rekonstrukcije, nema pretpostavki.
+     * Analitika za jednog kupca.
      */
     public PreporukaAnalitikaDTO izracunajAnalitiku(Long kupacId, int dani) {
-
         LocalDateTime od = LocalDateTime.now().minusDays(dani);
-
-        // Sve preporuke kupca u periodu (i uspešne i neuspešne)
         List<PrikazanaPreporuka> sve = prikazanaRepo
                 .findByKupac_KorisnikIdAndPrikazanoUAfterOrderByPrikazanoUDesc(kupacId, od);
+        return izracunajIzListe(sve);
+    }
 
-        if (sve.isEmpty()) {
-            return praznaAnalitika();
-        }
+    /**
+     * Analitika za sve kupce zajedno.
+     */
+    public PreporukaAnalitikaDTO izracunajAnalitikunZaSve(int dani) {
+        LocalDateTime od = LocalDateTime.now().minusDays(dani);
+        List<PrikazanaPreporuka> sve = prikazanaRepo
+                .findByPrikazanoUAfterOrderByPrikazanoUDesc(od);
+        return izracunajIzListe(sve);
+    }
 
-        // ── Razdvajanje po tipu ────────────────────────────────────────────
+    // ── Zajednička logika ──────────────────────────────────────────────────
+
+    private PreporukaAnalitikaDTO izracunajIzListe(List<PrikazanaPreporuka> sve) {
+        if (sve.isEmpty()) return praznaAnalitika();
+
         Map<PrikazanaPreporuka.TipPreporuke, List<PrikazanaPreporuka>> poTipu =
                 sve.stream().collect(Collectors.groupingBy(PrikazanaPreporuka::getTipPreporuke));
-
-        TipPreporukeStatDTO personalizovane =
-                izracunajTip(poTipu.get(PrikazanaPreporuka.TipPreporuke.PERSONALIZOVANA));
-        TipPreporukeStatDTO trend =
-                izracunajTip(poTipu.get(PrikazanaPreporuka.TipPreporuke.TREND));
-        TipPreporukeStatDTO sezonske =
-                izracunajTip(poTipu.get(PrikazanaPreporuka.TipPreporuke.SEZONSKA));
-        TipPreporukeStatDTO vremenske =
-                izracunajTip(poTipu.get(PrikazanaPreporuka.TipPreporuke.VREMENSKA));
 
         int ukupnoPrikazano = sve.size();
         long ukupnoUspesnih = sve.stream().filter(PrikazanaPreporuka::getUspesna).count();
         double ukupnaStopa  = zaokruzi((double) ukupnoUspesnih / ukupnoPrikazano * 100);
 
-        // ── Po kategoriji ──────────────────────────────────────────────────
+        // Po kategoriji
         Map<String, int[]> katMap = new LinkedHashMap<>();
         for (PrikazanaPreporuka p : sve) {
             if (p.getProizvod() == null) continue;
@@ -80,7 +79,7 @@ public class PreporukaAnalitikaService {
                 .sorted(Comparator.comparingDouble(KategorijaPreporukeStatDTO::getStopa).reversed())
                 .collect(Collectors.toList());
 
-        // ── Detalji — svaka preporuka kao red ─────────────────────────────
+        // Detalji
         List<PreporukaDetaljDTO> detalji = sve.stream()
                 .map(p -> {
                     String naziv = p.getProizvod() != null ? p.getProizvod().getNaziv() : "N/A";
@@ -102,25 +101,24 @@ public class PreporukaAnalitikaService {
                 .ukupnoPrikazano(ukupnoPrikazano)
                 .ukupnoUspesnih((int) ukupnoUspesnih)
                 .ukupnaStopa(ukupnaStopa)
-                .personalizovane(personalizovane)
-                .trend(trend)
-                .sezonske(sezonske)
-                .vremenske(vremenske)
+                .personalizovane(izracunajTip(poTipu.get(PrikazanaPreporuka.TipPreporuke.PERSONALIZOVANA)))
+                .trend(izracunajTip(poTipu.get(PrikazanaPreporuka.TipPreporuke.TREND)))
+                .sezonske(izracunajTip(poTipu.get(PrikazanaPreporuka.TipPreporuke.SEZONSKA)))
+                .vremenske(izracunajTip(poTipu.get(PrikazanaPreporuka.TipPreporuke.VREMENSKA)))
                 .poKategoriji(poKategoriji)
                 .detalji(detalji)
                 .build();
     }
 
     private TipPreporukeStatDTO izracunajTip(List<PrikazanaPreporuka> lista) {
-        if (lista == null || lista.isEmpty()) {
-            return TipPreporukeStatDTO.builder()
-                    .prikazano(0).uspesnih(0).stopa(0.0).build();
-        }
-        int prikazano  = lista.size();
-        int uspesnih   = (int) lista.stream().filter(PrikazanaPreporuka::getUspesna).count();
-        double stopa   = zaokruzi((double) uspesnih / prikazano * 100);
+        if (lista == null || lista.isEmpty())
+            return TipPreporukeStatDTO.builder().prikazano(0).uspesnih(0).stopa(0.0).build();
+        int prikazano = lista.size();
+        int uspesnih  = (int) lista.stream().filter(PrikazanaPreporuka::getUspesna).count();
         return TipPreporukeStatDTO.builder()
-                .prikazano(prikazano).uspesnih(uspesnih).stopa(stopa).build();
+                .prikazano(prikazano).uspesnih(uspesnih)
+                .stopa(zaokruzi((double) uspesnih / prikazano * 100))
+                .build();
     }
 
     private PreporukaAnalitikaDTO praznaAnalitika() {

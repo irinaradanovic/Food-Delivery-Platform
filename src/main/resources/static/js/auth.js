@@ -50,12 +50,15 @@ function zastitiStranicu() {
         return;
     }
 
+    // Admin sme svuda — bez ograničenja
+    if (uloga === 'ADMIN') return;
+
     // Menadzer ne sme na kupacke stranice
     if (uloga === 'MENADZER' && (
         trenutnaStranica.includes('kategorije') ||
         trenutnaStranica.includes('omiljeni') ||
         trenutnaStranica.includes('proizvodi') ||
-        (trenutnaStranica.includes('preporuke') && !trenutnaStranica.includes('analitika-preporuka')) ||
+        trenutnaStranica.includes('preporuke') ||
         trenutnaStranica.includes('checkout') ||
         trenutnaStranica.includes('moje-porudzbine')
     )) {
@@ -66,7 +69,7 @@ function zastitiStranicu() {
         trenutnaStranica.includes('kategorije') ||
         trenutnaStranica.includes('omiljeni') ||
         trenutnaStranica.includes('proizvodi') ||
-        (trenutnaStranica.includes('preporuke') && !trenutnaStranica.includes('analitika-preporuka')) ||
+        trenutnaStranica.includes('preporuke') ||
         trenutnaStranica.includes('checkout') ||
         trenutnaStranica.endsWith('/porudzbine.html')
     )) {
@@ -93,7 +96,11 @@ function osveziNavigaciju() {
 
     let linkoviHtml = '';
 
-    if (uloga === 'MENADZER') {
+    if (uloga === 'ADMIN') {
+        linkoviHtml = `
+            <a href="/analitika-preporuka.html" id="nav-analitika-preporuka">Analitika preporuka</a>
+        `;
+    } else if (uloga === 'MENADZER') {
         linkoviHtml = `
             <a href="/izbor-restorana.html" id="nav-restorani">Moji restorani</a>
             <a href="/porudzbine.html" id="nav-porudzbine">Porudzbine</a>
@@ -114,7 +121,6 @@ function osveziNavigaciju() {
             ${uloga === 'KUPAC' ? `
             <a href="/moje-porudzbine.html" id="nav-moje-porudzbine">Moje porudzbine</a>
             <a href="/omiljeni.html" id="nav-omiljeni">Omiljeni</a>
-            <a href="/analitika-preporuka.html" id="nav-analitika-preporuka">Analitika preporuka</a>
             ` : ''}
         `;
     }
