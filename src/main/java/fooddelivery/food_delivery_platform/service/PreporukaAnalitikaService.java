@@ -105,6 +105,7 @@ public class PreporukaAnalitikaService {
                 .trend(izracunajTip(poTipu.get(PrikazanaPreporuka.TipPreporuke.TREND)))
                 .sezonske(izracunajTip(poTipu.get(PrikazanaPreporuka.TipPreporuke.SEZONSKA)))
                 .vremenske(izracunajTip(poTipu.get(PrikazanaPreporuka.TipPreporuke.VREMENSKA)))
+                .korpa(izracunajTip(poTipu.get(PrikazanaPreporuka.TipPreporuke.KORPA)))
                 .poKategoriji(poKategoriji)
                 .detalji(detalji)
                 .build();
@@ -126,7 +127,7 @@ public class PreporukaAnalitikaService {
                 .prikazano(0).uspesnih(0).stopa(0.0).build();
         return PreporukaAnalitikaDTO.builder()
                 .ukupnoPrikazano(0).ukupnoUspesnih(0).ukupnaStopa(0.0)
-                .personalizovane(prazan).trend(prazan).sezonske(prazan).vremenske(prazan)
+                .personalizovane(prazan).trend(prazan).sezonske(prazan).vremenske(prazan).korpa(prazan)
                 .poKategoriji(Collections.emptyList())
                 .detalji(Collections.emptyList())
                 .build();

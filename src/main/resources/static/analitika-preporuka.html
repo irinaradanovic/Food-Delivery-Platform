@@ -276,6 +276,11 @@
             <div class="kpi-value">${d.vremenske.stopa}%</div>
             <div class="kpi-sub">${d.vremenske.uspesnih} / ${d.vremenske.prikazano} prikazanih</div>
         </div>
+        <div class="kpi-card c-green" style="border-top-color: #7c3aed;">
+            <div class="kpi-label">Korpa</div>
+            <div class="kpi-value">${d.korpa.stopa}%</div>
+            <div class="kpi-sub">${d.korpa.uspesnih} / ${d.korpa.prikazano} prikazanih</div>
+        </div>
     `;
     }
 
@@ -286,6 +291,7 @@
             { naziv: 'TREND',           stat: d.trend           },
             { naziv: 'SEZONSKA',        stat: d.sezonske        },
             { naziv: 'VREMENSKA',       stat: d.vremenske       },
+            { naziv: 'KORPA',           stat: d.korpa           },
         ];
         document.getElementById('tipovi-tbody').innerHTML = tipovi
             .filter(t => t.stat.prikazano > 0)
@@ -430,6 +436,7 @@
                 ['TREND',           d.trend.prikazano,           d.trend.uspesnih,           `${d.trend.stopa}%`],
                 ['SEZONSKA',        d.sezonske.prikazano,        d.sezonske.uspesnih,        `${d.sezonske.stopa}%`],
                 ['VREMENSKA',       d.vremenske.prikazano,       d.vremenske.uspesnih,       `${d.vremenske.stopa}%`],
+                ['KORPA',           d.korpa.prikazano,           d.korpa.uspesnih,           `${d.korpa.stopa}%`],
             ].filter(r => r[1] > 0);
 
             doc.setFont('helvetica', 'bold');

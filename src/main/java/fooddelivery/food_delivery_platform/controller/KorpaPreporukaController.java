@@ -2,10 +2,20 @@ package fooddelivery.food_delivery_platform.controller;
 
 import fooddelivery.food_delivery_platform.dto.KorpaPreporukaRequestDTO;
 import fooddelivery.food_delivery_platform.dto.KorpaPreporukaResponseDTO;
+import fooddelivery.food_delivery_platform.model.Korisnik;
+import fooddelivery.food_delivery_platform.model.PrikazanaPreporuka;
+import fooddelivery.food_delivery_platform.model.Proizvod;
+import fooddelivery.food_delivery_platform.repository.KorisnikRepository;
+import fooddelivery.food_delivery_platform.repository.PrikazanaPreporukaRepository;
+import fooddelivery.food_delivery_platform.repository.ProizvodRepository;
 import fooddelivery.food_delivery_platform.service.KorpaPreporukaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/korpa-preporuke")
@@ -14,10 +24,47 @@ import org.springframework.web.bind.annotation.*;
 public class KorpaPreporukaController {
 
     private final KorpaPreporukaService korpaPreporukaService;
+    private final PrikazanaPreporukaRepository prikazanaRepo;
+    private final KorisnikRepository korisnikRepository;
+    private final ProizvodRepository proizvodRepository;
 
     @PostMapping
     public ResponseEntity<KorpaPreporukaResponseDTO> getKorpaPreporuke(
             @RequestBody KorpaPreporukaRequestDTO request) {
-        return ResponseEntity.ok(korpaPreporukaService.getPreporuke(request));
+
+        KorpaPreporukaResponseDTO response = korpaPreporukaService.getPreporuke(request);
+
+        // Snimi prikazane korpa-preporuke ako je kupac poznat
+        if (request.getKupacId() != null && response.getPreporuke() != null) {
+            snimiPrikazane(request.getKupacId(), response.getPreporuke());
+        }
+
+        return ResponseEntity.ok(response);
+    }
+
+    private void snimiPrikazane(Long kupacId,
+                                List<KorpaPreporukaResponseDTO.PreporukaStavkaDTO> stavke) {
+
+        Korisnik kupac = korisnikRepository.findById(kupacId).orElse(null);
+        if (kupac == null) return;
+
+        LocalDateTime sada = LocalDateTime.now();
+
+        List<PrikazanaPreporuka> zapisi = stavke.stream()
+                .map(s -> {
+                    Proizvod p = proizvodRepository.findById(s.getProizvodId()).orElse(null);
+                    if (p == null) return null;
+                    return PrikazanaPreporuka.builder()
+                            .kupac(kupac)
+                            .proizvod(p)
+                            .tipPreporuke(PrikazanaPreporuka.TipPreporuke.KORPA)
+                            .prikazanoU(sada)
+                            .uspesna(false)
+                            .build();
+                })
+                .filter(Objects::nonNull)
+                .toList();
+
+        prikazanaRepo.saveAll(zapisi);
     }
 }

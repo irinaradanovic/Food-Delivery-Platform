@@ -504,6 +504,13 @@ VALUES
 (4,  2, 'TREND',           '2026-05-26 14:11:00', NULL, false),
 (4,  5, 'TREND',           '2026-05-26 14:11:00', NULL, false),
 (4,  6, 'SEZONSKA',        '2026-05-26 14:12:00', NULL, false),
-(4, 16, 'SEZONSKA',        '2026-05-26 14:12:00', NULL, false);
+(4, 16, 'SEZONSKA',        '2026-05-26 14:12:00', NULL, false),
+-- Kupac 5, korpa preporuke (prikazane dok je pregledao korpu pre porudzbine 3)
+(5,  9, 'KORPA', '2026-05-25 09:06:00', '2026-05-25 09:09:25', true),
+(5, 10, 'KORPA', '2026-05-25 09:06:00', '2026-05-25 09:09:25', true),
+(5, 11, 'KORPA', '2026-05-25 09:06:00', NULL,                  false),
+-- Kupac 4, korpa preporuke (nije narucio)
+(4,  9, 'KORPA', '2026-05-26 14:13:00', NULL, false),
+(4, 10, 'KORPA', '2026-05-26 14:13:00', NULL, false);
 
 SELECT setval(pg_get_serial_sequence('prikazane_preporuke', 'id'), MAX(id)) FROM prikazane_preporuke;

@@ -21,6 +21,7 @@ public class PreporukaAnalitikaDTO {
     private TipPreporukeStatDTO trend;
     private TipPreporukeStatDTO sezonske;
     private TipPreporukeStatDTO vremenske;
+    private TipPreporukeStatDTO korpa;
 
     private List<KategorijaPreporukeStatDTO> poKategoriji;
     private List<PreporukaDetaljDTO>         detalji;
