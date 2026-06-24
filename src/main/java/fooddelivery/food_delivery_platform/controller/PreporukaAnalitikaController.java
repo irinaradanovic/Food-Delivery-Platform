@@ -14,10 +14,7 @@ public class PreporukaAnalitikaController {
 
     private final PreporukaAnalitikaService analitikaService;
 
-    /**
-     * GET /api/preporuke/analitika/kupac/{kupacId}?dani=30
-     * Analitika za jednog kupca.
-     */
+
     @GetMapping("/kupac/{kupacId}")
     public ResponseEntity<PreporukaAnalitikaDTO> getAnalitikaZaKupca(
             @PathVariable Long kupacId,
@@ -25,10 +22,7 @@ public class PreporukaAnalitikaController {
         return ResponseEntity.ok(analitikaService.izracunajAnalitiku(kupacId, dani));
     }
 
-    /**
-     * GET /api/preporuke/analitika/svi?dani=30
-     * Analitika za sve kupce zajedno.
-     */
+
     @GetMapping("/svi")
     public ResponseEntity<PreporukaAnalitikaDTO> getAnalitikaZaSve(
             @RequestParam(defaultValue = "30") int dani) {

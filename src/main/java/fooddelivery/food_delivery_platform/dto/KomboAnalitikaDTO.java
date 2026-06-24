@@ -25,7 +25,7 @@ public class KomboAnalitikaDTO {
 
     @Data @Builder @NoArgsConstructor @AllArgsConstructor
     public static class PoklapatjeStatDTO {
-        private int brojNarucenihStavki;  // 0, 1, 2, 3...
+        private int brojNarucenihStavki;
         private int brojKomboa;
         private double udeo;              // % od ukupno prikazanih
     }

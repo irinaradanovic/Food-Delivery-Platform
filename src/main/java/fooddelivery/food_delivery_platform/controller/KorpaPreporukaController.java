@@ -34,7 +34,6 @@ public class KorpaPreporukaController {
 
         KorpaPreporukaResponseDTO response = korpaPreporukaService.getPreporuke(request);
 
-        // Snimi prikazane korpa-preporuke ako je kupac poznat
         if (request.getKupacId() != null && response.getPreporuke() != null) {
             snimiPrikazane(request.getKupacId(), response.getPreporuke());
         }

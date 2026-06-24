@@ -64,7 +64,6 @@ public class PreporukaController {
         return ResponseEntity.ok(preporuke);
     }
 
-    // ─── Privatna metoda — snima prikazane preporuke ───────────────────────────
     private void snimiPrikazane(List<Proizvod> proizvodi, Long kupacId, TipPreporuke tip) {
         if (proizvodi == null || proizvodi.isEmpty()) return;
 

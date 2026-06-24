@@ -22,9 +22,9 @@ public class PreporukaAnalitikaService {
 
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
-    /**
-     * Analitika za jednog kupca.
-     */
+
+    // Analitika za jednog kupca.
+
     public PreporukaAnalitikaDTO izracunajAnalitiku(Long kupacId, int dani) {
         LocalDateTime od = LocalDateTime.now().minusDays(dani);
         List<PrikazanaPreporuka> sve = prikazanaRepo
@@ -32,9 +32,9 @@ public class PreporukaAnalitikaService {
         return izracunajIzListe(sve);
     }
 
-    /**
-     * Analitika za sve kupce zajedno.
-     */
+
+    //  Analitika za sve kupce zajedno.
+
     public PreporukaAnalitikaDTO izracunajAnalitikunZaSve(int dani) {
         LocalDateTime od = LocalDateTime.now().minusDays(dani);
         List<PrikazanaPreporuka> sve = prikazanaRepo
@@ -42,7 +42,6 @@ public class PreporukaAnalitikaService {
         return izracunajIzListe(sve);
     }
 
-    // ── Zajednička logika ──────────────────────────────────────────────────
 
     private PreporukaAnalitikaDTO izracunajIzListe(List<PrikazanaPreporuka> sve) {
         if (sve.isEmpty()) return praznaAnalitika();

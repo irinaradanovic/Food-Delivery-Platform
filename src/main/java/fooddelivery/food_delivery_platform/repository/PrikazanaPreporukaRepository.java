@@ -27,7 +27,7 @@ public interface PrikazanaPreporukaRepository extends JpaRepository<PrikazanaPre
     List<PrikazanaPreporuka> findByTipPreporukeAndPrikazanoUAfterOrderByPrikazanoUDesc(
             PrikazanaPreporuka.TipPreporuke tip, LocalDateTime od);
 
-    // Batch update — označi kao uspešne sve preporuke kupca za date proizvode
+    // označi kao uspešne sve preporuke kupca za date proizvode
     @Modifying
     @Query("""
         UPDATE PrikazanaPreporuka p

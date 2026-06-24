@@ -32,7 +32,6 @@ public class KomboController {
 
         List<KomboResultDTO> komboi = komboService.predloziKomboe(request);
 
-        // Snimi prikazane komboe ako je kupac poznat
         if (kupacId != null && !komboi.isEmpty()) {
             snimiPrikazaneKomboe(kupacId, komboi);
         }
