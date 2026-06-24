@@ -514,3 +514,53 @@ VALUES
 (4, 10, 'KORPA', '2026-05-26 14:13:00', NULL, false);
 
 SELECT setval(pg_get_serial_sequence('prikazane_preporuke', 'id'), MAX(id)) FROM prikazane_preporuke;
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- Prikazani komboi — istorijski seed podaci
+--
+-- Stavke menija i njihovi proizvodi:
+--   1->P1(ClassicBurger), 2->P2(MonsterBurger), 3->P12(BuffaloWings)
+--   4->P8(CocaCola), 5->P14(Omelette), 6->P15(AvocadoToast)
+--   7->P3(Capricciosa), 8->P4(Marinara), 9->P9(Kafa), 10->P10(Tiramisu)
+--   11->P6(CezarSalata), 12->P7(AvocadoMediteran), 14->P11(Cheesecake)
+--
+-- Kupac 5 je narucio stavke: 1,2,5,6,7,8,9,10
+-- ═══════════════════════════════════════════════════════════════════════════
+
+-- Kombo 1: Burger+Wings+Kola (stavke 1,3,4) — kupac 5 narucio 1/3 (samo burger)
+INSERT INTO prikazani_komboi (kupac_id, prikazano_u, realizovano_u, uspesna, broj_narucenih_stavki)
+VALUES (5, '2026-05-25 08:49:00', '2026-05-25 09:08:06', true, 1);
+INSERT INTO prikazani_kombo_stavke (kombo_id, stavka_menija_id)
+VALUES (1, 1), (1, 3), (1, 4);
+
+-- Kombo 2: Pizza+Kafa+Tiramisu (stavke 7,9,10) — kupac 5 narucio 3/3 (sve)
+INSERT INTO prikazani_komboi (kupac_id, prikazano_u, realizovano_u, uspesna, broj_narucenih_stavki)
+VALUES (5, '2026-05-25 09:04:00', '2026-05-25 09:09:25', true, 3);
+INSERT INTO prikazani_kombo_stavke (kombo_id, stavka_menija_id)
+VALUES (2, 7), (2, 9), (2, 10);
+
+-- Kombo 3: Omelette+AvocadoToast+Kafa (stavke 5,6,9) — kupac 5 narucio 3/3
+INSERT INTO prikazani_komboi (kupac_id, prikazano_u, realizovano_u, uspesna, broj_narucenih_stavki)
+VALUES (5, '2026-05-25 08:49:00', '2026-05-25 09:08:18', true, 3);
+INSERT INTO prikazani_kombo_stavke (kombo_id, stavka_menija_id)
+VALUES (3, 5), (3, 6), (3, 9);
+
+-- Kombo 4: CezarSalata+Wings+Cheesecake (stavke 11,3,14) — kupac 5 narucio 0/3 (nista)
+INSERT INTO prikazani_komboi (kupac_id, prikazano_u, realizovano_u, uspesna, broj_narucenih_stavki)
+VALUES (5, '2026-05-25 09:04:00', NULL, false, 0);
+INSERT INTO prikazani_kombo_stavke (kombo_id, stavka_menija_id)
+VALUES (4, 11), (4, 3), (4, 14);
+
+-- Kombo 5: MonsterBurger+Pizza+Tiramisu (stavke 2,8,10) — kupac 5 narucio 3/3
+INSERT INTO prikazani_komboi (kupac_id, prikazano_u, realizovano_u, uspesna, broj_narucenih_stavki)
+VALUES (5, '2026-05-25 09:05:00', '2026-05-25 09:09:25', true, 3);
+INSERT INTO prikazani_kombo_stavke (kombo_id, stavka_menija_id)
+VALUES (5, 2), (5, 8), (5, 10);
+
+-- Kombo 6: kupac 4 — nije narucio nista
+INSERT INTO prikazani_komboi (kupac_id, prikazano_u, realizovano_u, uspesna, broj_narucenih_stavki)
+VALUES (4, '2026-05-26 14:10:00', NULL, false, 0);
+INSERT INTO prikazani_kombo_stavke (kombo_id, stavka_menija_id)
+VALUES (6, 7), (6, 9), (6, 14);
+
+SELECT setval(pg_get_serial_sequence('prikazani_komboi', 'id'), MAX(id)) FROM prikazani_komboi;

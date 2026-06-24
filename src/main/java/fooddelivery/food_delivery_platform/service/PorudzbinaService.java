@@ -13,6 +13,7 @@ import fooddelivery.food_delivery_platform.model.Kupac;
 import fooddelivery.food_delivery_platform.model.Meni;
 import fooddelivery.food_delivery_platform.model.NacinPlacanja;
 import fooddelivery.food_delivery_platform.model.Porudzbina;
+import fooddelivery.food_delivery_platform.model.PrikazaniKombo;
 import fooddelivery.food_delivery_platform.model.Proizvod;
 import fooddelivery.food_delivery_platform.model.Dostava;
 import fooddelivery.food_delivery_platform.model.Dostavljac;
@@ -31,6 +32,8 @@ import fooddelivery.food_delivery_platform.repository.KorisnikRepository;
 import fooddelivery.food_delivery_platform.repository.KupacRepository;
 import fooddelivery.food_delivery_platform.repository.KuponRepository;
 import fooddelivery.food_delivery_platform.repository.PorudzbinaRepository;
+import fooddelivery.food_delivery_platform.repository.PrikazanaPreporukaRepository;
+import fooddelivery.food_delivery_platform.repository.PrikazaniKomboRepository;
 import fooddelivery.food_delivery_platform.repository.StavkaMenijaRepository;
 import fooddelivery.food_delivery_platform.repository.StatusPorudzbineIstorijaRepository;
 import lombok.RequiredArgsConstructor;
@@ -38,15 +41,17 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import fooddelivery.food_delivery_platform.repository.PrikazanaPreporukaRepository;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -64,8 +69,9 @@ public class PorudzbinaService {
     private final KlikRepository klikRepository;
     private final DostavaRepository dostavaRepository;
     private final DostavljacRepository dostavljacRepository;
-    private final PrikazanaPreporukaRepository prikazanaPreporukaRepository;
     private final RacunService racunService;
+    private final PrikazanaPreporukaRepository prikazanaPreporukaRepository;
+    private final PrikazaniKomboRepository prikazaniKomboRepository;
 
     private static final Map<StatusPorudzbine, Set<StatusPorudzbine>> DOZVOLJENI_PRELASCI = Map.of(
             StatusPorudzbine.KREIRANA, Set.of(StatusPorudzbine.POTVRDJENA, StatusPorudzbine.OTKAZANA),
@@ -168,6 +174,8 @@ public class PorudzbinaService {
                 .build();
 
         List<Proizvod> kupljeniProizvodi = new ArrayList<>();
+        Set<Long> naruceneStavkeMenijaIds = new HashSet<>();
+
         for (ObracunStavka obracunStavka : obracun.stavke()) {
             StavkaPorudzbine stavka = StavkaPorudzbine.builder()
                     .porudzbina(porudzbina)
@@ -177,6 +185,8 @@ public class PorudzbinaService {
                     .napomena(obracunStavka.napomena())
                     .build();
             porudzbina.getStavke().add(stavka);
+
+            naruceneStavkeMenijaIds.add(obracunStavka.stavkaMenija().getStavkaId());
 
             if (obracunStavka.stavkaMenija().getProizvod() != null) {
                 kupljeniProizvodi.add(obracunStavka.stavkaMenija().getProizvod());
@@ -193,6 +203,7 @@ public class PorudzbinaService {
         Porudzbina sacuvana = porudzbinaRepository.save(porudzbina);
         zabeleziKupovinu(kupac, kupljeniProizvodi);
         oznaciPreporukeKaoUspesne(kupac.getKorisnikId(), kupljeniProizvodi);
+        oznaciKomboeKaoUspesne(kupac.getKorisnikId(), naruceneStavkeMenijaIds);
         return sacuvana;
     }
 
@@ -240,8 +251,48 @@ public class PorudzbinaService {
         }
     }
 
+
+    /*
+      Označava sve nerealizovane preporuke kupca kao uspešne
+      za one proizvode koji su se našli u ovoj narudžbini.
+     */
+    private void oznaciPreporukeKaoUspesne(Long kupacId, List<Proizvod> kupljeniProizvodi) {
+        if (kupljeniProizvodi == null || kupljeniProizvodi.isEmpty()) return;
+        List<Long> proizvodiIds = kupljeniProizvodi.stream()
+                .map(Proizvod::getProizvodId)
+                .distinct()
+                .collect(Collectors.toList());
+        prikazanaPreporukaRepository.oznaciKaoUspesne(kupacId, proizvodiIds, LocalDateTime.now());
+    }
+
+    /*
+      Označava kombo kao uspešan ako je kupac naručio bar jednu stavku iz njega.
+      Beleži i koliko stavki je tačno naručeno (brojNarucenihStavki).
+     */
+    private void oznaciKomboeKaoUspesne(Long kupacId, Set<Long> naruceneStavkeMenijaIds) {
+        if (naruceneStavkeMenijaIds == null || naruceneStavkeMenijaIds.isEmpty()) return;
+
+        List<PrikazaniKombo> kandidati = prikazaniKomboRepository
+                .findByKupac_KorisnikIdAndUspesnaFalseOrderByPrikazanoUDesc(kupacId);
+
+        LocalDateTime sada = LocalDateTime.now();
+
+        for (PrikazaniKombo kombo : kandidati) {
+            long poklapanja = kombo.getStavkeMenijaIds().stream()
+                    .filter(naruceneStavkeMenijaIds::contains)
+                    .count();
+            if (poklapanja > 0) {
+                kombo.setUspesna(true);
+                kombo.setBrojNarucenihStavki((int) poklapanja);
+                kombo.setRealizovanoU(sada);
+            }
+        }
+
+        prikazaniKomboRepository.saveAll(kandidati);
+    }
+
     private Obracun obracunaj(List<StavkaPorudzbineDTO> stavkeDto, String kuponKod, NacinPlacanja nacinPlacanja,
-                             BigDecimal trazeniIznosKarticom, boolean uvecajUpotrebuKupona) {
+                              BigDecimal trazeniIznosKarticom, boolean uvecajUpotrebuKupona) {
         if (nacinPlacanja == null) {
             throw new RuntimeException("Nacin placanja je obavezan.");
         }
@@ -546,16 +597,6 @@ public class PorudzbinaService {
                 });
     }
 
-    private void oznaciPreporukeKaoUspesne(Long kupacId, List<Proizvod> kupljeniProizvodi) {
-        if (kupljeniProizvodi == null || kupljeniProizvodi.isEmpty()) return;
-
-        List<Long> proizvodiIds = kupljeniProizvodi.stream()
-                .map(Proizvod::getProizvodId)
-                .distinct()
-                .toList();
-
-        prikazanaPreporukaRepository.oznaciKaoUspesne(kupacId, proizvodiIds, LocalDateTime.now());
-    }
     private void oslobodiDostavljaca(Dostava dostava, boolean uvecajBrojDostava) {
         Dostavljac dostavljac = dostava.getDostavljac();
         if (dostavljac == null) {

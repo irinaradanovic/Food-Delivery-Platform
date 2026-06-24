@@ -173,6 +173,43 @@
         </div>
     </div>
 
+    <!-- KOMBO ANALITIKA -->
+    <div class="panel" id="sec-kombo" style="display:none; margin-bottom:24px;">
+        <div class="panel-title">Kombo preporuke</div>
+        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:20px;">
+            <div class="kpi-card c-green" style="padding:16px 18px;">
+                <div class="kpi-label">Prikazano komboa</div>
+                <div class="kpi-value" id="kombo-prikazano" style="font-size:30px;">—</div>
+            </div>
+            <div class="kpi-card c-blue" style="padding:16px 18px;">
+                <div class="kpi-label">Uspešnih (≥1 stavka)</div>
+                <div class="kpi-value" id="kombo-uspesnih" style="font-size:30px;">—</div>
+            </div>
+            <div class="kpi-card c-amber" style="padding:16px 18px;">
+                <div class="kpi-label">Stopa uspešnosti</div>
+                <div class="kpi-value" id="kombo-stopa" style="font-size:30px;">—</div>
+            </div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px;">
+            <div>
+                <div style="font-weight:600; font-size:14px; margin-bottom:10px; color:var(--dark);">Distribucija poklapanja</div>
+                <table class="tip-tabela" id="kombo-dist-table">
+                    <thead><tr><th>Naručenih stavki</th><th>Br. komboa</th><th>Udeo</th></tr></thead>
+                    <tbody id="kombo-dist-tbody"></tbody>
+                </table>
+            </div>
+            <div>
+                <div style="font-weight:600; font-size:14px; margin-bottom:10px; color:var(--dark);">Detalji po kombu</div>
+                <div style="overflow-y:auto; max-height:220px;">
+                    <table class="tip-tabela" id="kombo-det-table">
+                        <thead><tr><th>ID</th><th>Stavki</th><th>Naručeno</th><th>Prikazano</th><th>Uspešan</th></tr></thead>
+                        <tbody id="kombo-det-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- DETALJI -->
     <div class="panel" id="sec-detalji" style="display:none;">
         <div class="panel-title">Sve prikazane preporuke</div>
@@ -203,6 +240,7 @@
 
 <script>
     let kupacId = null;
+    let poslednjiKombo = null;
 
     async function ucitaj() {
         const inputId = document.getElementById('inp-kupac-id').value.trim();
@@ -215,6 +253,7 @@
         prikaziLoader();
         document.getElementById('sec-tipovi').style.display  = 'none';
         document.getElementById('sec-detalji').style.display = 'none';
+        document.getElementById('sec-kombo').style.display   = 'none';
         document.getElementById('empty-state').style.display = 'none';
 
         let data;
@@ -241,6 +280,9 @@
         renderTipovi(data);
         renderKategorije(data.poKategoriji || []);
         renderDetalji(data.detalji || []);
+
+        // Ucitaj kombo analitiku paralelno
+        ucitajKombo(inputId, dani);
     }
 
     function prikaziLoader() {
@@ -276,7 +318,7 @@
             <div class="kpi-value">${d.vremenske.stopa}%</div>
             <div class="kpi-sub">${d.vremenske.uspesnih} / ${d.vremenske.prikazano} prikazanih</div>
         </div>
-        <div class="kpi-card c-green" style="border-top-color: #7c3aed;">
+        <div class="kpi-card c-green" style="border-top-color: var(--green);">
             <div class="kpi-label">Korpa</div>
             <div class="kpi-value">${d.korpa.stopa}%</div>
             <div class="kpi-sub">${d.korpa.uspesnih} / ${d.korpa.prikazano} prikazanih</div>
@@ -382,12 +424,14 @@
             doc.text('Analitika preporuka', 14, y);
 
             y += 6;
-            const dani = document.getElementById('sel-dani');
-            const periodTekst = dani.options[dani.selectedIndex].text;
+            const daniSel   = document.getElementById('sel-dani');
+            const periodTekst = daniSel.options[daniSel.selectedIndex].text;
+            const kupacInput  = document.getElementById('inp-kupac-id').value.trim();
+            const kupacTekst  = kupacInput ? `Kupac ID: ${kupacInput}` : 'Svi kupci';
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(9);
             doc.setTextColor(...gray);
-            doc.text(`Period: ${periodTekst}   |   Datum izvestaja: ${new Date().toLocaleDateString('sr-RS')}`, 14, y);
+            doc.text(`${kupacTekst}   |   Period: ${periodTekst}   |   Datum: ${new Date().toLocaleDateString('sr-RS')}`, 14, y);
 
             // ── Horizontalna linija ────────────────────────────────────────────
             y += 5;
@@ -396,19 +440,23 @@
             doc.line(14, y, W - 14, y);
             y += 8;
 
-            // ── KPI blokovi (2x2) ─────────────────────────────────────────────
+            // ── KPI blokovi (3x2) ─────────────────────────────────────────────
             const kpiPodaci = [
-                { label: 'Ukupna stopa',     vrednost: `${d.ukupnaStopa}%`,       sub: `${d.ukupnoUspesnih} / ${d.ukupnoPrikazano} prikazanih` },
-                { label: 'Personalizovane',  vrednost: `${d.personalizovane.stopa}%`, sub: `${d.personalizovane.uspesnih} / ${d.personalizovane.prikazano}` },
-                { label: 'Trend',            vrednost: `${d.trend.stopa}%`,        sub: `${d.trend.uspesnih} / ${d.trend.prikazano}` },
-                { label: 'Sezonske',         vrednost: `${d.sezonske.stopa}%`,     sub: `${d.sezonske.uspesnih} / ${d.sezonske.prikazano}` },
+                { label: 'Ukupna stopa',    vrednost: `${d.ukupnaStopa}%`,           sub: `${d.ukupnoUspesnih} / ${d.ukupnoPrikazano} prikazanih` },
+                { label: 'Personalizovane', vrednost: `${d.personalizovane.stopa}%`, sub: `${d.personalizovane.uspesnih} / ${d.personalizovane.prikazano}` },
+                { label: 'Trend',           vrednost: `${d.trend.stopa}%`,           sub: `${d.trend.uspesnih} / ${d.trend.prikazano}` },
+                { label: 'Sezonske',        vrednost: `${d.sezonske.stopa}%`,        sub: `${d.sezonske.uspesnih} / ${d.sezonske.prikazano}` },
+                { label: 'Vremenske',       vrednost: `${d.vremenske.stopa}%`,       sub: `${d.vremenske.uspesnih} / ${d.vremenske.prikazano}` },
+                { label: 'Korpa',           vrednost: `${d.korpa.stopa}%`,           sub: `${d.korpa.uspesnih} / ${d.korpa.prikazano}` },
             ];
-            const kpiW = (W - 28 - 9) / 2;
+            const cols = 3;
+            const kpiGap = 5;
+            const kpiW = (W - 28 - (cols - 1) * kpiGap) / cols;
             const kpiH = 22;
             kpiPodaci.forEach((k, i) => {
-                const col = i % 2;
-                const row = Math.floor(i / 2);
-                const x = 14 + col * (kpiW + 9);
+                const col = i % cols;
+                const row = Math.floor(i / cols);
+                const x  = 14 + col * (kpiW + kpiGap);
                 const ky = y + row * (kpiH + 4);
                 doc.setFillColor(248, 245, 240);
                 doc.setDrawColor(...border);
@@ -417,18 +465,18 @@
                 doc.setFillColor(...green);
                 doc.rect(x, ky, kpiW, 1.5, 'F');
                 doc.setFont('helvetica', 'bold');
-                doc.setFontSize(16);
+                doc.setFontSize(15);
                 doc.setTextColor(...dark);
                 doc.text(k.vrednost, x + kpiW / 2, ky + 11, { align: 'center' });
                 doc.setFont('helvetica', 'bold');
-                doc.setFontSize(7);
+                doc.setFontSize(6.5);
                 doc.setTextColor(...gray);
                 doc.text(k.label.toUpperCase(), x + kpiW / 2, ky + 16, { align: 'center' });
                 doc.setFont('helvetica', 'normal');
-                doc.setFontSize(7);
+                doc.setFontSize(6.5);
                 doc.text(k.sub, x + kpiW / 2, ky + 20, { align: 'center' });
             });
-            y += 2 * (kpiH + 4) + 8;
+            y += Math.ceil(kpiPodaci.length / cols) * (kpiH + 4) + 8;
 
             // ── Tabela po tipu ─────────────────────────────────────────────────
             const tipoviRed = [
@@ -513,6 +561,99 @@
                 });
             }
 
+            // ── Kombo preporuke ────────────────────────────────────────────────
+            if (poslednjiKombo && poslednjiKombo.ukupnoPrikazano > 0) {
+                const k = poslednjiKombo;
+
+                // Nova strana ako nema dovoljno mesta
+                if (y > doc.internal.pageSize.getHeight() - 60) {
+                    doc.addPage();
+                    y = 18;
+                }
+
+                // Naslov sekcije
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(11);
+                doc.setTextColor(...dark);
+                doc.text('Kombo preporuke', 14, y);
+                y += 4;
+
+                // KPI red za kombo (3 broja u redu)
+                const komboKpi = [
+                    { label: 'Prikazano komboa', val: k.ukupnoPrikazano },
+                    { label: 'Uspesnih (≥1 stavka)', val: k.ukupnoUspesnih },
+                    { label: 'Stopa uspesnosti', val: `${k.stopaUspesnosti}%` },
+                ];
+                const kKpiW = (W - 28 - 10) / 3;
+                const kKpiH = 18;
+                komboKpi.forEach((item, i) => {
+                    const x = 14 + i * (kKpiW + 5);
+                    doc.setFillColor(248, 245, 240);
+                    doc.setDrawColor(...border);
+                    doc.setLineWidth(0.3);
+                    doc.roundedRect(x, y, kKpiW, kKpiH, 2, 2, 'FD');
+                    doc.setFillColor(...green);
+                    doc.rect(x, y, kKpiW, 1.5, 'F');
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(13);
+                    doc.setTextColor(...dark);
+                    doc.text(String(item.val), x + kKpiW / 2, y + 9, { align: 'center' });
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(6.5);
+                    doc.setTextColor(...gray);
+                    doc.text(item.label.toUpperCase(), x + kKpiW / 2, y + 14, { align: 'center' });
+                });
+                y += kKpiH + 6;
+
+                // Distribucija poklapanja
+                if (k.distribucijaPoklapanja && k.distribucijaPoklapanja.length) {
+                    const distLabels = { 0: 'Nijedna stavka', 1: '1 stavka', 2: '2 stavke', 3: '3 stavke' };
+                    doc.autoTable({
+                        startY: y,
+                        head: [['Naručenih stavki iz komba', 'Broj komboa', 'Udeo']],
+                        body: k.distribucijaPoklapanja.map(d => [
+                            distLabels[d.brojNarucenihStavki] || `${d.brojNarucenihStavki} stavki`,
+                            d.brojKomboa,
+                            `${d.udeo}%`,
+                        ]),
+                        theme: 'grid',
+                        headStyles: { fillColor: green, textColor: [255,255,255], fontSize: 8, fontStyle: 'bold' },
+                        bodyStyles: { fontSize: 8, textColor: dark },
+                        alternateRowStyles: { fillColor: [250, 247, 242] },
+                        columnStyles: { 2: { fontStyle: 'bold' } },
+                        margin: { left: 14, right: 14 },
+                    });
+                    y = doc.lastAutoTable.finalY + 6;
+                }
+
+                // Detalji po kombu
+                if (k.detalji && k.detalji.length) {
+                    doc.autoTable({
+                        startY: y,
+                        head: [['Kombo ID', 'Ukupno stavki', 'Naručeno stavki', 'Prikazano u', 'Realizovano u', 'Uspešan']],
+                        body: k.detalji.map(d => [
+                            `#${d.komboId}`,
+                            d.ukupnoStavki,
+                            d.narucenihStavki,
+                            d.prikazanoU,
+                            d.realizovanoU || '—',
+                            d.uspesna ? 'Da' : 'Ne',
+                        ]),
+                        theme: 'grid',
+                        headStyles: { fillColor: green, textColor: [255,255,255], fontSize: 7, fontStyle: 'bold' },
+                        bodyStyles: { fontSize: 7, textColor: dark },
+                        alternateRowStyles: { fillColor: [250, 247, 242] },
+                        didParseCell: (data) => {
+                            if (data.column.index === 5 && data.section === 'body') {
+                                data.cell.styles.textColor = data.cell.raw === 'Da' ? [45, 106, 45] : gray;
+                            }
+                        },
+                        margin: { left: 14, right: 14 },
+                    });
+                    y = doc.lastAutoTable.finalY + 8;
+                }
+            }
+
             // ── Footer na svakoj stranici ──────────────────────────────────────
             const pageCount = doc.internal.getNumberOfPages();
             for (let i = 1; i <= pageCount; i++) {
@@ -538,6 +679,67 @@
             btn.classList.remove('loading');
             btn.innerHTML = '&#11015; Preuzmi PDF';
         }
+    }
+
+    async function ucitajKombo(inputId, dani) {
+        const url = inputId
+            ? `/api/kombo/analitika/kupac/${inputId}?dani=${dani}`
+            : `/api/kombo/analitika/svi?dani=${dani}`;
+        try {
+            const r = await fetch(url);
+            if (!r.ok) {
+                console.warn(`Kombo analitika: HTTP ${r.status} — da li je KomboAnalitikaController kopiran u projekat?`);
+                return;
+            }
+            const k = await r.json();
+            poslednjiKombo = k;
+            renderKombo(k);
+        } catch(e) {
+            console.error('Kombo analitika greška:', e);
+        }
+    }
+
+    function renderKombo(k) {
+        if (!k || !k.ukupnoPrikazano) {
+            document.getElementById('sec-kombo').style.display = 'none';
+            return;
+        }
+        document.getElementById('sec-kombo').style.display = 'block';
+        document.getElementById('kombo-prikazano').textContent = k.ukupnoPrikazano;
+        const uspEl = document.getElementById('kombo-uspesnih');
+        uspEl.textContent = k.ukupnoUspesnih;
+        uspEl.style.color = k.ukupnoUspesnih > 0 ? 'var(--green)' : 'var(--dark)';
+        document.getElementById('kombo-stopa').textContent     = `${k.stopaUspesnosti}%`;
+
+        // Distribucija
+        const labels = { 0: 'Nijedna', 1: '1 stavka', 2: '2 stavke', 3: '3 stavke' };
+        document.getElementById('kombo-dist-tbody').innerHTML =
+            (k.distribucijaPoklapanja || []).map(d => `
+            <tr>
+                <td>${labels[d.brojNarucenihStavki] || `${d.brojNarucenihStavki} stavki`}</td>
+                <td>${d.brojKomboa}</td>
+                <td>
+                    <div style="display:flex;align-items:center;gap:6px;">
+                        <div class="prog-bg" style="flex:1;"><div class="prog-fill" style="width:${Math.min(d.udeo,100)}%;"></div></div>
+                        <span style="font-size:12px;color:var(--gray);min-width:38px;">${d.udeo}%</span>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+
+        // Detalji
+        document.getElementById('kombo-det-tbody').innerHTML =
+            (k.detalji || []).map(d => `
+            <tr>
+                <td>#${d.komboId}</td>
+                <td>${d.ukupnoStavki}</td>
+                <td>${d.narucenihStavki}</td>
+                <td style="font-size:12px;color:var(--gray);">${esc(d.prikazanoU)}</td>
+                <td>${d.uspesna
+                ? '<span class="check-yes">✓</span>'
+                : '<span class="check-no">✗</span>'}</td>
+            </tr>
+        `).join('');
     }
 
     function pilKlasa(s) { return s >= 50 ? 'p-green' : s >= 25 ? 'p-amber' : 'p-rose'; }

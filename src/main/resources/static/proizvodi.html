@@ -1765,7 +1765,8 @@
                 iskljuciAlergeneIds: aktivniFilteri.alergenId ? [aktivniFilteri.alergenId] : []
             };
 
-            const komboi = await apiFetch('/kombo/predlozi', {
+            const kupacParam = jeKupac() ? `?kupacId=${kupacId}` : '';
+            const komboi = await apiFetch(`/kombo/predlozi${kupacParam}`, {
                 method: 'POST',
                 body: JSON.stringify(payload)
             });
