@@ -126,7 +126,7 @@ public class StavkaMenijaService {
     }
 
     @Transactional
-    public void addMenuItem(Long meniId, Long trenutniKorisnikId, NovaStavkaMenijaDTO request, MultipartFile slika) throws IOException {
+    public Long addMenuItem(Long meniId, Long trenutniKorisnikId, NovaStavkaMenijaDTO request, MultipartFile slika) throws IOException {
         Meni meni = meniRepository.findById(meniId)
                 .orElseThrow(() -> new IllegalArgumentException("Meni ne postoji."));
 
@@ -192,8 +192,21 @@ public class StavkaMenijaService {
         proizvod = proizvodRepository.save(proizvod);
 
 
+        // nova verzija pri dodavanju stavki
+        Meni noviMeni = meniService.cloneMenu(meni);
+        String novaVerzija = meniService.findNextVersion(meni.getGrupniMeniId());
+        noviMeni.setVerzija(novaVerzija);
+        noviMeni.setAktivan(true);
+        noviMeni.setDatumOd(LocalDate.now()); // datum pocetka aktivacije menija
+
+        meniRepository.save(noviMeni);
+        meniRepository.flush();
+        // okida se triger koji deaktivira staru verziju
+
+        meniService.copyMenuItems(meni.getMeniId(), noviMeni);
+
         StavkaMenija stavkaMenija = StavkaMenija.builder()
-                .meni(meni)
+                .meni(noviMeni)
                 .proizvod(proizvod)
                 .vremePripremeMin(request.getVremePripremeMin())
                 .vremePripremeMax(request.getVremePripremeMax())
@@ -202,6 +215,11 @@ public class StavkaMenijaService {
                 .obrisan(false)
                 .build();
         stavkaMenijaRepository.save(stavkaMenija);
+        stavkaMenijaRepository.flush();
+
+        return noviMeni.getMeniId();
+
+
     }
 
 

@@ -57,14 +57,14 @@ public class StavkaMenijaController {
     }
 
     @PostMapping("/meni/{meniId}")
-    public ResponseEntity<Void> addMenuItem(
+    public ResponseEntity<Map<String, Long>> addMenuItem(
             @PathVariable Long meniId,
             @RequestHeader("X-User-Id") Long trenutniKorisnikId,
             @RequestPart("podaci") NovaStavkaMenijaDTO dto,
             @RequestPart(value = "slika", required = false) MultipartFile slika) throws IOException {
 
-        stavkaMenijaService.addMenuItem(meniId, trenutniKorisnikId, dto, slika);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        Long novaVerzijaMenijaId = stavkaMenijaService.addMenuItem(meniId, trenutniKorisnikId, dto, slika);
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("noviMeniId", novaVerzijaMenijaId));
     }
 
     @DeleteMapping("/meni/{meniId}/stavka/{stavkaId}")

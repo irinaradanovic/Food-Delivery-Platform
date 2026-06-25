@@ -120,9 +120,16 @@
             <button type="button" onclick="vratiSeNazad()" class="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold rounded-xl transition cursor-pointer">
                 Otkaži
             </button>
-            <button type="submit" class="px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-md transition cursor-pointer">
-                Sačuvaj stavku
-            </button>
+
+            <div class="relative group">
+                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-56 p-2 bg-gray-900 text-white text-xs text-center rounded-lg shadow-lg z-10 after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-4 after:border-transparent after:border-t-gray-900">
+                    Čuvanjem ove stavke automatski se kreira i aktivira nova verzija menija!
+                </div>
+
+                <button type="submit" class="px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-md transition cursor-pointer">
+                    Sačuvaj stavku
+                </button>
+            </div>
         </div>
 
     </form>
@@ -312,8 +319,9 @@
             });
 
             if (response.ok) {
-                alert("Nova stavka uspešno dodata u meni i sačuvana u bazi podataka!");
-                vratiSeNazad();
+                const rezultat = await response.json();
+                alert("Nova stavka uspešno dodata. Kreirana je nova verzija menija.");
+                window.location.href = `detalji-menija.html?meniId=${rezultat.noviMeniId}`;
             } else {
                 const errText = await response.text();
                 alert("Greška prilikom čuvanja: " + (errText || "Nemate pravo pristupa."));
