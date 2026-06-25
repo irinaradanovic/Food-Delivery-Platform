@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RestController
@@ -32,6 +33,7 @@ public class KomboController {
 
         List<KomboResultDTO> komboi = komboService.predloziKomboe(request);
 
+        // Snimi prikazane komboe ako je kupac poznat
         if (kupacId != null && !komboi.isEmpty()) {
             snimiPrikazaneKomboe(kupacId, komboi);
         }
@@ -44,6 +46,7 @@ public class KomboController {
         if (kupac == null) return;
 
         LocalDateTime sada = LocalDateTime.now();
+        LocalDateTime prozor = sada.minusMinutes(1);
         final Korisnik finalKupac = kupac;
 
         List<PrikazaniKombo> zapisi = komboi.stream()
@@ -51,6 +54,11 @@ public class KomboController {
                     List<Long> stavkeIds = k.getStavke().stream()
                             .map(KomboResultDTO.KomboStavkaDTO::getStavkaId)
                             .collect(Collectors.toList());
+                    // Preskoči ako je isti kombo (iste stavke) već prikazan u poslednjem min
+                    boolean vecPostoji = prikazaniKomboRepository
+                            .existsByKupac_KorisnikIdAndStavkeMenijaIdsAndPrikazanoUAfter(
+                                    kupacId, stavkeIds, prozor);
+                    if (vecPostoji) return null;
                     return PrikazaniKombo.builder()
                             .kupac(finalKupac)
                             .stavkeMenijaIds(stavkeIds)
@@ -59,8 +67,11 @@ public class KomboController {
                             .brojNarucenihStavki(0)
                             .build();
                 })
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
-        prikazaniKomboRepository.saveAll(zapisi);
+        if (!zapisi.isEmpty()) {
+            prikazaniKomboRepository.saveAll(zapisi);
+        }
     }
 }

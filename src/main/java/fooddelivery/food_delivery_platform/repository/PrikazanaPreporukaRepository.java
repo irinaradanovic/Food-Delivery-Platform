@@ -23,6 +23,12 @@ public interface PrikazanaPreporukaRepository extends JpaRepository<PrikazanaPre
     // Analitika — SVE preporuke svih kupaca u periodu
     List<PrikazanaPreporuka> findByPrikazanoUAfterOrderByPrikazanoUDesc(LocalDateTime od);
 
+    // Proveri da li postoji vec snimljena preporuka za kupca, proizvod i tip u zadatom periodu
+    boolean existsByKupac_KorisnikIdAndProizvod_ProizvodIdAndTipPreporukeAndPrikazanoUAfter(
+            Long kupacId, Long proizvodId,
+            PrikazanaPreporuka.TipPreporuke tip,
+            LocalDateTime od);
+
     // Analitika — globalne preporuke bez filtera po kupcu
     List<PrikazanaPreporuka> findByTipPreporukeAndPrikazanoUAfterOrderByPrikazanoUDesc(
             PrikazanaPreporuka.TipPreporuke tip, LocalDateTime od);

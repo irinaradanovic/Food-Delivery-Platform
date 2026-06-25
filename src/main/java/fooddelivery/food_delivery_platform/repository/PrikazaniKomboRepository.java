@@ -9,9 +9,14 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.List;
 
 @Repository
 public interface PrikazaniKomboRepository extends JpaRepository<PrikazaniKombo, Long> {
+
+    // Proveri da li postoji vec snimljen kombo za kupca sa istim stavkama u zadatom periodu
+    boolean existsByKupac_KorisnikIdAndStavkeMenijaIdsAndPrikazanoUAfter(
+            Long kupacId, List<Long> stavkeMenijaIds, LocalDateTime od);
 
     // Nerealizovani komboi kupca — kandidati za označavanje pri narudžbini
     List<PrikazaniKombo> findByKupac_KorisnikIdAndUspesnaFalseOrderByPrikazanoUDesc(Long kupacId);

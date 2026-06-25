@@ -34,6 +34,7 @@ public class KorpaPreporukaController {
 
         KorpaPreporukaResponseDTO response = korpaPreporukaService.getPreporuke(request);
 
+        // Snimi prikazane korpa-preporuke ako je kupac poznat
         if (request.getKupacId() != null && response.getPreporuke() != null) {
             snimiPrikazane(request.getKupacId(), response.getPreporuke());
         }
@@ -48,11 +49,20 @@ public class KorpaPreporukaController {
         if (kupac == null) return;
 
         LocalDateTime sada = LocalDateTime.now();
+        // Prozor od minut — ako je isti proizvod vec prikazan u ovom periodu, preskoči
+        LocalDateTime prozor = sada.minusMinutes(1);
 
         List<PrikazanaPreporuka> zapisi = stavke.stream()
                 .map(s -> {
                     Proizvod p = proizvodRepository.findById(s.getProizvodId()).orElse(null);
                     if (p == null) return null;
+                    // Proveri duplikat
+                    boolean vecPostoji = prikazanaRepo
+                            .existsByKupac_KorisnikIdAndProizvod_ProizvodIdAndTipPreporukeAndPrikazanoUAfter(
+                                    kupacId, p.getProizvodId(),
+                                    PrikazanaPreporuka.TipPreporuke.KORPA,
+                                    prozor);
+                    if (vecPostoji) return null;
                     return PrikazanaPreporuka.builder()
                             .kupac(kupac)
                             .proizvod(p)
@@ -64,6 +74,8 @@ public class KorpaPreporukaController {
                 .filter(Objects::nonNull)
                 .toList();
 
-        prikazanaRepo.saveAll(zapisi);
+        if (!zapisi.isEmpty()) {
+            prikazanaRepo.saveAll(zapisi);
+        }
     }
 }

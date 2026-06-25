@@ -73,9 +73,18 @@ public class PreporukaController {
         }
 
         LocalDateTime sada = LocalDateTime.now();
+        LocalDateTime prozor = sada.minusMinutes(1);
         final Korisnik finalKupac = kupac;
 
         List<PrikazanaPreporuka> zapisi = proizvodi.stream()
+                .filter(p -> {
+                    // Ako nema kupca (gost) — uvek snimi
+                    if (kupacId == null) return true;
+                    // Preskoči ako je isti kupac već video ovu preporuku u poslednjem min
+                    return !prikazanaRepo
+                            .existsByKupac_KorisnikIdAndProizvod_ProizvodIdAndTipPreporukeAndPrikazanoUAfter(
+                                    kupacId, p.getProizvodId(), tip, prozor);
+                })
                 .map(p -> PrikazanaPreporuka.builder()
                         .kupac(finalKupac)
                         .proizvod(p)
@@ -85,6 +94,8 @@ public class PreporukaController {
                         .build())
                 .toList();
 
-        prikazanaRepo.saveAll(zapisi);
+        if (!zapisi.isEmpty()) {
+            prikazanaRepo.saveAll(zapisi);
+        }
     }
 }
