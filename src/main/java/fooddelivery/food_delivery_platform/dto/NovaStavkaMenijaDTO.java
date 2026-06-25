@@ -23,4 +23,6 @@ public class NovaStavkaMenijaDTO {
     private Integer vremePripremeMin;
     private Integer vremePripremeMax;
     private BigDecimal cena;
+
+    private Long kopirajIzStavkeId;
 }

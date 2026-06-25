@@ -40,5 +40,9 @@ public interface StavkaMenijaRepository extends JpaRepository<StavkaMenija, Long
             "WHERE s.proizvod.kategorija.kategorijaId = :kategorijaId AND s.obrisan = false")
     Double findAvgMaxByKategorija(@Param("kategorijaId") Long kategorijaId);
 
+    @Query("SELECT sm FROM StavkaMenija sm JOIN FETCH sm.proizvod p JOIN FETCH sm.meni m " +
+            "WHERE m.restoran.restoranId = :restoranId AND m.aktivan = true AND sm.obrisan = false")
+    List<StavkaMenija> findStavkeZaAktivneMenijeRestorana(@Param("restoranId") Long restoranId);
+
 
 }

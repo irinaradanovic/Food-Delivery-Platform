@@ -5,6 +5,7 @@ import fooddelivery.food_delivery_platform.dto.IzmenaStavkeMenijaDTO;
 import fooddelivery.food_delivery_platform.dto.NovaStavkaMenijaDTO;
 import fooddelivery.food_delivery_platform.model.Meni;
 import fooddelivery.food_delivery_platform.model.StavkaMenija;
+import fooddelivery.food_delivery_platform.service.MeniService;
 import fooddelivery.food_delivery_platform.service.StavkaMenijaService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,22 @@ public class StavkaMenijaController {
 
     @Autowired
     private StavkaMenijaService stavkaMenijaService;
+
+    @Autowired
+    private MeniService meniService;
+
+    //menadzer
+    @GetMapping("/aktivne-iz-restorana/{meniId}")
+    public ResponseEntity<List<StavkaMenija>> getAktivneStavkeIzRestorana(
+            @PathVariable Long meniId,
+            @RequestHeader("X-User-Id") Long trenutniKorisnikId) {
+
+        Meni meni = meniService.getById(meniId);
+
+        List<StavkaMenija> stavke = stavkaMenijaService.findStavkeZaAktivneMenijeRestorana(meni.getRestoran().getRestoranId());
+
+        return ResponseEntity.ok(stavke);
+    }
 
     @GetMapping("/{id}")
     public StavkaMenija getStavkaMenija(@PathVariable Long id) {

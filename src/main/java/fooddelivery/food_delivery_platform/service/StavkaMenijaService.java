@@ -55,6 +55,10 @@ public class StavkaMenijaService {
         return stavkaMenijaRepository.findByMeniMeniIdAndObrisanFalse(meniId);
     }
 
+    public List<StavkaMenija> findStavkeZaAktivneMenijeRestorana(Long restoranId){
+        return stavkaMenijaRepository.findStavkeZaAktivneMenijeRestorana(restoranId);
+    }
+
     public StavkaMenija getItemById(Long id) {
         return stavkaMenijaRepository.findById(id).orElse(null);
     }
@@ -177,19 +181,29 @@ public class StavkaMenijaService {
         }
 
 
-        Proizvod proizvod = Proizvod.builder()
-                .naziv(request.getNaziv())
-                .opis(request.getOpis())
-                .kalorije(request.getKalorije())
-                .cena(request.getCena()) // Osnovna cena na proizvodu
-                .fotografija(putanjaSlikeUBazi)
-                .kolicina(request.getKolicina())
-                .mernaJedinica(request.getMernaJedinica())
-                .kategorija(kategorija)
-                .sastojci(konacniSastojci)
-                .alergeni(konacniAlergeni)
-                .build();
-        proizvod = proizvodRepository.save(proizvod);
+        Proizvod proizvod;
+        if (request.getKopirajIzStavkeId() != null) {
+            StavkaMenija staraStavka = stavkaMenijaRepository.findById(request.getKopirajIzStavkeId())
+                    .orElseThrow(() -> new IllegalArgumentException("Izabrana stavka menija ne postoji."));
+
+            proizvod = staraStavka.getProizvod();
+        } else {
+            proizvod = Proizvod.builder()
+                    .naziv(request.getNaziv())
+                    .opis(request.getOpis())
+                    .kalorije(request.getKalorije())
+                    .cena(request.getCena())
+                    .fotografija(putanjaSlikeUBazi)
+                    .kolicina(request.getKolicina())
+                    .mernaJedinica(request.getMernaJedinica())
+                    .kategorija(kategorija)
+                    .sastojci(konacniSastojci)
+                    .alergeni(konacniAlergeni)
+                    .build();
+            proizvod = proizvodRepository.save(proizvod);
+        }
+
+
 
 
         // nova verzija pri dodavanju stavki
