@@ -44,9 +44,6 @@ public interface MeniRepository extends JpaRepository<Meni, Long> {
     + " WHERE TYPE(m) = SezonskiMeni ")
     List<SezonskiMeni> findAllSeasonalMenus();
 
-    // pronalazi sve verzije istog  menija
-    List<Meni> findByGrupniMeniIdOrderByMeniIdDesc(Long grupniMeniId);
-
     Meni findMeniByMeniId(Long id);
 
 

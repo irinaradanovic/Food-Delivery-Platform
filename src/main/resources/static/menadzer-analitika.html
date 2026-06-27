@@ -89,6 +89,83 @@
         </div>
     </div>
 
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-6">
+        <div class="border-b pb-2 border-gray-100">
+            <h2 class="text-xl font-bold text-gray-800">
+                D. Uporedna analitika
+            </h2>
+            <p class="text-gray-400 text-xs mt-0.5">Izaberite bilo koje dve verzije kako biste ih uporedili.</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-4 bg-gray-50 p-4 rounded-xl border border-gray-200 text-sm">
+            <div class="flex items-center gap-2">
+                <label class="font-medium text-gray-600">Verzija A:</label>
+                <select id="select-verzija-a" class="bg-white border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-500"></select>
+            </div>
+            <div class="flex items-center gap-2">
+                <label class="font-medium text-gray-600">Verzija B:</label>
+                <select id="select-verzija-b" class="bg-white border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-500"></select>
+            </div>
+            <button onclick="uporediVerzije()" class="px-5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg shadow-sm cursor-pointer transition ml-auto">
+                Uporedi
+            </button>
+        </div>
+
+        <div id="komparacija-rezultat-kontejner" class="hidden overflow-hidden rounded-xl border border-gray-200 shadow-sm">
+            <table class="w-full text-left border-collapse text-sm">
+                <thead>
+                <tr class="bg-gray-100 text-gray-700 border-b border-gray-200 font-semibold">
+                    <th class="p-4 w-1/3">Metrika / Podatak</th>
+                    <th id="th-verzija-a" class="p-4 w-1/3 text-emerald-800 bg-emerald-50/50">Verzija A</th>
+                    <th id="th-verzija-b" class="p-4 w-1/3 text-indigo-800 bg-indigo-50/50">Verzija B</th>
+                </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 bg-white text-gray-700 font-medium">
+                <tr>
+                    <td class="p-4 text-gray-500 font-normal">Period aktivnosti</td>
+                    <td id="td-period-a" class="p-4"></td>
+                    <td id="td-period-b" class="p-4"></td>
+                </tr>
+                <tr>
+                    <td class="p-4 text-gray-500 font-normal">Razlog verzionisanja</td>
+                    <td id="td-razlog-a" class="p-4"></td>
+                    <td id="td-razlog-b" class="p-4"></td>
+                </tr>
+                <tr class="bg-gray-50/30">
+                    <td class="p-4 text-gray-500 font-normal">Ukupan broj stavki na meniju</td>
+                    <td id="td-stavke-a" class="p-4 font-semibold"></td>
+                    <td id="td-stavke-b" class="p-4 font-semibold"></td>
+                </tr>
+                <tr>
+                    <td class="p-4 text-gray-500 font-normal">Broj kategorija</td>
+                    <td id="td-kategorije-a" class="p-4"></td>
+                    <td id="td-kategorije-b" class="p-4"></td>
+                </tr>
+                <tr>
+                    <td class="p-4 text-gray-500 font-normal">Prosečna cena artikla</td>
+                    <td id="td-cena-a" class="p-4 text-gray-900 font-semibold"></td>
+                    <td id="td-cena-b" class="p-4 text-gray-900 font-semibold"></td>
+                </tr>
+                <tr class="bg-amber-50/20 font-semibold text-gray-900">
+                    <td class="p-4 text-gray-500 font-normal">Ukupan broj započetih porudžbina</td>
+                    <td id="td-porudzbine-a" class="p-4"></td>
+                    <td id="td-porudzbine-b" class="p-4"></td>
+                </tr>
+                <tr class="font-semibold text-gray-900">
+                    <td class="p-4 text-gray-500 font-normal">Realizovane (potvrđene) porudžbine</td>
+                    <td id="td-potvrdjene-a" class="p-4 text-emerald-600"></td>
+                    <td id="td-potvrdjene-b" class="p-4 text-indigo-600"></td>
+                </tr>
+                <tr class="bg-emerald-50/10 font-bold text-base text-gray-900 border-t border-gray-200">
+                    <td class="p-4 text-gray-600 font-medium">Ukupna zarada (RSD)</td>
+                    <td id="td-zarada-a" class="p-4 text-emerald-700 bg-emerald-50/30"></td>
+                    <td id="td-zarada-b" class="p-4 text-indigo-700 bg-indigo-50/30"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
 </div>
 
 <script src="./js/api.js"></script>
@@ -125,6 +202,8 @@
             renderujStabilnost(dataStabilnost);
             renderujHroniku(dataHronika);
 
+            popuniSelectOpcije(grupniMeniId);
+
         } catch (error) {
             console.error("Greška pri učitavanju analitike:", error);
             document.getElementById('glavni-naslov').innerText = "Greška pri učitavanju analitičkih podataka.";
@@ -156,7 +235,6 @@
         });
 
         const kontejnerZakljucka = document.getElementById('zakljucak-cene-kontejner');
-        // Promenjeno iz crvene u umerenu žutu/amber varijantu
         if (data.procenatPoRazlogu['IZMENA_CENOVNIKA'] > 50) {
             kontejnerZakljucka.className = "p-4 rounded-xl mt-4 text-sm font-medium bg-amber-50 text-amber-800 border border-amber-200";
         } else {
@@ -172,7 +250,6 @@
 
         const upozorenjeKontejner = document.getElementById('stabilnost-upozorenje');
 
-        // Prag (treshold) pomeren na fleksibilnijih i realnijih 20%
         if (data.rollbackRate > 20) {
             procenatPolje.className = "text-6xl font-black mt-2 text-amber-600";
             upozorenjeKontejner.className = "p-4 rounded-xl text-sm font-medium bg-amber-50 text-amber-800 border border-amber-200 shadow-sm";
@@ -193,6 +270,90 @@
         } else {
             tekstPolje.parentElement.className = "p-4 bg-gray-50 rounded-xl border border-gray-200 text-gray-600";
         }
+    }
+
+    async function popuniSelectOpcije(grupniId) {
+        try {
+            const response = await apiFetch(`/meni/grupa/${grupniId}`);
+
+            const selectA = document.getElementById('select-verzija-a');
+            const selectB = document.getElementById('select-verzija-b');
+
+            selectA.innerHTML = '';
+            selectB.innerHTML = '';
+
+            if(!response || response.length === 0) return;
+
+            response.forEach((meni, index) => {
+                const period = formatirajPeriod(meni.datumOd, meni.datumDo);
+                const optText = `${meni.verzija} (${period})`;
+
+                const optA = new Option(optText, meni.meniId);
+                const optB = new Option(optText, meni.meniId);
+
+                if(index === 0) optA.selected = true;
+                if(index === 1 || response.length === 1) optB.selected = true;
+
+                selectA.add(optA);
+                selectB.add(optB);
+            });
+        } catch(e) {
+            console.log("Greska u popuniSelectOpcije: " + e.message);
+        }
+    }
+
+    async function uporediVerzije() {
+        const idA = document.getElementById('select-verzija-a').value;
+        const idB = document.getElementById('select-verzija-b').value;
+
+        if (!idA || !idB) {
+            alert("Morate odabrati obe verzije za poređenje.");
+            return;
+        }
+
+        try {
+            const data = await apiFetch(`/menadzer/analitika/komparacija?meniIdA=${idA}&meniIdB=${idB}`);
+
+            document.getElementById('th-verzija-a').innerText = `Verzija ${data.meniA.verzija}`;
+            document.getElementById('th-verzija-b').innerText = `Verzija ${data.meniB.verzija}`;
+
+            document.getElementById('td-period-a').innerText = formatirajPeriod(data.meniA.datumOd, data.meniA.datumDo);
+            document.getElementById('td-period-b').innerText = formatirajPeriod(data.meniB.datumOd, data.meniB.datumDo);
+
+            document.getElementById('td-razlog-a').innerText = formatirajNazivRazloga(data.meniA.razlogVerzionisanja);
+            document.getElementById('td-razlog-b').innerText = formatirajNazivRazloga(data.meniB.razlogVerzionisanja);
+
+            document.getElementById('td-stavke-a').innerText = `${data.meniA.brojStavki}`;
+            document.getElementById('td-stavke-b').innerText = `${data.meniB.brojStavki}`;
+
+            document.getElementById('td-kategorije-a').innerText = data.meniA.brojKategorija;
+            document.getElementById('td-kategorije-b').innerText = data.meniB.brojKategorija;
+
+            document.getElementById('td-cena-a').innerText = `${data.meniA.prosecnaCenaStavki.toFixed(2)} RSD`;
+            document.getElementById('td-cena-b').innerText = `${data.meniB.prosecnaCenaStavki.toFixed(2)} RSD`;
+
+            document.getElementById('td-porudzbine-a').innerText = `${data.meniA.ukupanBrojPorudzbina}x`;
+            document.getElementById('td-porudzbine-b').innerText = `${data.meniB.ukupanBrojPorudzbina}x`;
+
+            document.getElementById('td-potvrdjene-a').innerText = `${data.meniA.brojPotvrdjenihPorudzbina}x`;
+            document.getElementById('td-potvrdjene-b').innerText = `${data.meniB.brojPotvrdjenihPorudzbina}x`;
+
+            document.getElementById('td-zarada-a').innerText = `${data.meniA.ukupnaZarada.toLocaleString('sr-RS')} RSD`;
+            document.getElementById('td-zarada-b').innerText = `${data.meniB.ukupnaZarada.toLocaleString('sr-RS')} RSD`;
+
+            document.getElementById('komparacija-rezultat-kontejner').classList.remove('hidden');
+
+        } catch (error) {
+            console.error("Greška pri poređenju verzija:", error);
+            alert("Došlo je do greške prilikom preuzimanja podataka za komparaciju.");
+        }
+    }
+
+    function formatirajPeriod(od, doDate) {
+        if (!od) return "Nepoznato";
+        const dOd = new Date(od).toLocaleDateString('sr-RS');
+        const dDo = doDate ? new Date(doDate).toLocaleDateString('sr-RS') : "Aktivna";
+        return `${dOd} - ${dDo}`;
     }
 
     function formatirajNazivRazloga(razlog) {

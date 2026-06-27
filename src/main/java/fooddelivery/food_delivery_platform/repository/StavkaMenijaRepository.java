@@ -45,4 +45,30 @@ public interface StavkaMenijaRepository extends JpaRepository<StavkaMenija, Long
     List<StavkaMenija> findStavkeZaAktivneMenijeRestorana(@Param("restoranId") Long restoranId);
 
 
+    long countByMeniMeniIdAndObrisanFalse(Long meniId);
+
+    @Query("SELECT COUNT(DISTINCT sm.proizvod.kategorija) FROM StavkaMenija sm " +
+            "WHERE sm.meni.meniId = :meniId AND sm.obrisan = false")
+    long countJedinstveneKategorijeZaMeni(@Param("meniId") Long meniId);
+
+    @Query("SELECT COALESCE(AVG(sm.cena), 0.0) FROM StavkaMenija sm " +
+            "WHERE sm.meni.meniId = :meniId AND sm.obrisan = false")
+    double getProsecnaCenaZaMeni(@Param("meniId") Long meniId);
+
+    @Query("SELECT sm FROM StavkaMenija sm " +
+            "JOIN sm.meni m " +
+            "WHERE m.grupniMeniId = :grupniMeniId " +
+            "AND sm.proizvod.proizvodId = :proizvodId " +
+            "AND sm.obrisan = false " +
+            "ORDER BY m.meniId ASC")
+    List<StavkaMenija> findIstorijaCenaStavke(
+            @Param("grupniMeniId") Long grupniMeniId,
+            @Param("proizvodId") Long proizvodId
+    );
+
+    @Query("SELECT DISTINCT sm.proizvod FROM StavkaMenija sm " +
+            "WHERE sm.meni.grupniMeniId = :grupniMeniId AND sm.obrisan = false")
+    List<Proizvod> findJedinstveniProizvodiUGrupiMenija(@Param("grupniMeniId") Long grupniMeniId);
+
+
 }
