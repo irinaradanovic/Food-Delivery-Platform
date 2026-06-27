@@ -2,6 +2,7 @@ package fooddelivery.food_delivery_platform.controller;
 
 import fooddelivery.food_delivery_platform.dto.MeniUpdateDTO;
 import fooddelivery.food_delivery_platform.model.Meni;
+import fooddelivery.food_delivery_platform.model.Proizvod;
 import fooddelivery.food_delivery_platform.model.Restoran;
 import fooddelivery.food_delivery_platform.model.SezonskiMeni;
 import fooddelivery.food_delivery_platform.service.MeniService;
@@ -94,6 +95,11 @@ public class MeniController {
     @GetMapping("/grupa/{grupniId}")
     public List<Meni> getMenuVersionHstory(@PathVariable Long grupniId) {
         return meniService.getMenuVersionHstory(grupniId);
+    }
+
+    @GetMapping("/grupa/{grupniId}/proizvodi")
+    public List<Proizvod> findJedinstveniProizvodiUGrupiMenija(@PathVariable Long grupniId) {
+        return meniService.findJedinstveniProizvodiUGrupiMenija(grupniId);
     }
 
     @PutMapping("/{meniId}/vrati-verziju")

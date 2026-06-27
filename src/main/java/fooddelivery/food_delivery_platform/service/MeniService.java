@@ -230,4 +230,8 @@ public class MeniService {
         syncSeasonalMenus();
         return m;
     }
+
+    public List<Proizvod>findJedinstveniProizvodiUGrupiMenija(Long grupniId){
+        return stavkaMenijaRepository.findJedinstveniProizvodiUGrupiMenija(grupniId);
+    }
 }
