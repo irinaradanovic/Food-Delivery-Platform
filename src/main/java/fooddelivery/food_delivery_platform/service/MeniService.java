@@ -99,6 +99,7 @@ public class MeniService {
         noviMeni.setRestoran(restoran);
         noviMeni.setVerzija("v1");
         noviMeni.setAktivan(true);
+        noviMeni.setRazlogVerzionisanja(RazlogVerzionisanja.INICIJALNO_KREIRANJE);
 
         meniRepository.save(noviMeni);
         noviMeni.setGrupniMeniId(noviMeni.getMeniId());
@@ -192,6 +193,8 @@ public class MeniService {
 
         String sledecaVerzija = findNextVersion(staraVerzija.getGrupniMeniId());
         novaVerzija.setVerzija(sledecaVerzija);
+        novaVerzija.setRazlogVerzionisanja(RazlogVerzionisanja.ROLLBACK);
+        novaVerzija.setIzvornaVerzijaId(staraVerzija.getMeniId());
 
         meniRepository.save(novaVerzija);
         meniRepository.flush();

@@ -212,6 +212,7 @@ public class StavkaMenijaService {
         noviMeni.setVerzija(novaVerzija);
         noviMeni.setAktivan(true);
         noviMeni.setDatumOd(LocalDate.now()); // datum pocetka aktivacije menija
+        noviMeni.setRazlogVerzionisanja(RazlogVerzionisanja.DODAVANJE_STAVKE);
 
         meniRepository.save(noviMeni);
         meniRepository.flush();
@@ -354,6 +355,7 @@ public class StavkaMenijaService {
         noviMeni.setVerzija(novaVerzija);
         noviMeni.setAktivan(true);
         noviMeni.setDatumOd(LocalDate.now()); // datum pocetka aktivacije menija
+        noviMeni.setRazlogVerzionisanja(RazlogVerzionisanja.IZMENA_CENOVNIKA);
 
         meniRepository.save(noviMeni);
         meniRepository.flush();

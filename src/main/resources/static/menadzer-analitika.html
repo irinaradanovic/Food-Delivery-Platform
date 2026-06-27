@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <title>Menadžerska Analitika</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        nav {
+            background: white; border-bottom: 1px solid #e5e0d8;
+            padding: 0 40px; height: 68px; width: 100%;
+            display: flex; align-items: center; justify-content: space-between;
+            position: fixed; top: 0; left: 0; z-index: 100;
+        }
+        .nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .nav-logo-icon { width: 76px; height: 96px; display: flex; align-items: center; justify-content: center; }
+        .nav-logo-text { font-family: 'Playfair Display', serif; font-size: 20px; color: #1a1a1a; font-weight: 700; }
+        .nav-links { display: flex; align-items: center; gap: 4px; }
+        .nav-links a { padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 500; color: #6b7280; transition: all 0.15s; }
+        .nav-links a:hover { background: #f3f4f6; color: #1a1a1a; }
+        .nav-links a.active { background: #2d6a2d !important; color: white !important; }
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .nav-user { font-size: 13px; color: #6b7280; background: #f3f4f6; padding: 6px 12px; border-radius: 20px; font-family: sans-serif; }
+        .btn-odjava { background: none; border: 1.5px solid #e5e0d8; border-radius: 8px; padding: 7px 14px; font-size: 13px; font-weight: 500; color: #6b7280; cursor: pointer; transition: all 0.15s; }
+        .btn-odjava:hover { border-color: #dc2626; color: #dc2626; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen pt-24 p-8">
+
+<nav>
+    <div class="flex items-center gap-4">
+        <button onclick="nazadNaMenije()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-lg transition cursor-pointer">
+            Nazad na menije
+        </button>
+    </div>
+    <div class="text-xl font-bold text-gray-800" id="nav-naslov-menija">Analitika</div>
+    <div></div>
+</nav>
+
+<div class="max-w-6xl mx-auto space-y-8">
+
+    <div>
+        <h1 class="text-3xl font-bold text-gray-800" id="glavni-naslov">Učitavanje analitike...</h1>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4">
+            <div class="flex items-center justify-between border-bottom pb-2 border-gray-100">
+                <h2 class="text-xl font-bold text-gray-800">
+                    A. Pokretači izmena
+                </h2>
+                <span id="badge-ukupno-verzija" class="text-xs bg-indigo-50 text-indigo-600 font-bold px-2.5 py-1 rounded-full">-- verzija</span>
+            </div>
+
+            <div id="pokretaci-lista" class="space-y-2 pt-2">
+            </div>
+
+            <div id="zakljucak-cene-kontejner" class="p-4 rounded-xl mt-4 text-sm font-medium">
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between space-y-4">
+            <div class="border-bottom pb-2 border-gray-100">
+                <h2 class="text-xl font-bold text-gray-800">
+                    B. Stabilnost menadžmenta (Rollback Rate)
+                </h2>
+            </div>
+
+            <div class="text-center py-6">
+                <p class="text-sm text-gray-400 uppercase tracking-wider font-semibold">Stopa povlačenja (Error Rate)</p>
+                <h1 id="rollback-procenat" class="text-6xl font-black mt-2">--%</h1>
+                <p id="rollback-brojac" class="text-xs text-gray-400 mt-1">Poništeno -- od -- izmena</p>
+            </div>
+
+            <div id="stabilnost-upozorenje" class="p-4 rounded-xl text-sm font-medium">
+            </div>
+        </div>
+
+    </div>
+
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4">
+        <h2 class="text-xl font-bold text-gray-800 border-bottom pb-2 border-gray-100">
+            C. Hronika eksperimenata i poništenih odluka
+        </h2>
+        <div class="p-4 bg-gray-50 rounded-xl border border-gray-200">
+            <p id="hronika-tekst" class="text-gray-700 italic leading-relaxed">
+                Pretraživanje kriznih prozora...
+            </p>
+        </div>
+    </div>
+
+</div>
+
+<script src="./js/api.js"></script>
+<script src="./js/auth.js"></script>
+<script>
+    zastitiStranicu();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const grupniMeniId = urlParams.get('grupniMeniId');
+    const nazivMenija = urlParams.get('naziv') || 'Meni';
+    const restoranId = urlParams.get('restoranId');
+
+    document.getElementById('nav-naslov-menija').innerText = nazivMenija;
+    document.getElementById('glavni-naslov').innerText = `Analitika: ${nazivMenija}`;
+
+    function nazadNaMenije() {
+        window.location.href = `pregled-menija.html?restoranId=${restoranId}`;
+    }
+
+    async function ucitajSveAnalitike() {
+        if (!grupniMeniId) {
+            alert("Grupni Meni ID nije prosleđen.");
+            return;
+        }
+
+        try {
+            const [dataPokretaci, dataStabilnost, dataHronika] = await Promise.all([
+                apiFetch(`/menadzer/analitika/pokretaci?grupniMeniId=${grupniMeniId}`),
+                apiFetch(`/menadzer/analitika/stabilnost?grupniMeniId=${grupniMeniId}`),
+                apiFetch(`/menadzer/analitika/hronika?grupniMeniId=${grupniMeniId}`)
+            ]);
+
+            renderujPokretace(dataPokretaci);
+            renderujStabilnost(dataStabilnost);
+            renderujHroniku(dataHronika);
+
+        } catch (error) {
+            console.error("Greška pri učitavanju analitike:", error);
+            document.getElementById('glavni-naslov').innerText = "Greška pri učitavanju analitičkih podataka.";
+        }
+    }
+
+    function renderujPokretace(data) {
+        document.getElementById('badge-ukupno-verzija').innerText = `${data.ukupanBrojVerzija} verzija`;
+
+        const lista = document.getElementById('pokretaci-lista');
+        lista.innerHTML = '';
+
+        if (!data.procenatPoRazlogu || Object.keys(data.procenatPoRazlogu).length === 0) {
+            lista.innerHTML = '<p class="text-gray-400 text-sm">Nema istorijskih izmena za ovaj meni.</p>';
+            return;
+        }
+
+        Object.keys(data.procenatPoRazlogu).forEach(razlog => {
+            const procenat = data.procenatPoRazlogu[razlog];
+            const fontBroj = data.brojPoRazlogu[razlog] || 0;
+
+            const stavka = document.createElement('div');
+            stavka.className = "flex justify-between text-sm font-semibold text-gray-700 py-1 border-b border-gray-50";
+            stavka.innerHTML = `
+                <span>${formatirajNazivRazloga(razlog)}</span>
+                <span class="text-gray-500">${procenat}% (${fontBroj}x)</span>
+            `;
+            lista.appendChild(stavka);
+        });
+
+        const kontejnerZakljucka = document.getElementById('zakljucak-cene-kontejner');
+        // Promenjeno iz crvene u umerenu žutu/amber varijantu
+        if (data.procenatPoRazlogu['IZMENA_CENOVNIKA'] > 50) {
+            kontejnerZakljucka.className = "p-4 rounded-xl mt-4 text-sm font-medium bg-amber-50 text-amber-800 border border-amber-200";
+        } else {
+            kontejnerZakljucka.className = "p-4 rounded-xl mt-4 text-sm font-medium bg-emerald-50 text-emerald-700 border border-emerald-100";
+        }
+        kontejnerZakljucka.innerHTML = `<strong>Uvid:</strong> ${data.menadzerskiZakljucak}`;
+    }
+
+    function renderujStabilnost(data) {
+        const procenatPolje = document.getElementById('rollback-procenat');
+        procenatPolje.innerText = `${data.rollbackRate}%`;
+        document.getElementById('rollback-brojac').innerText = `Poništeno ${data.brojRollbackova} od ${data.ukupanBrojVerzija} izmena`;
+
+        const upozorenjeKontejner = document.getElementById('stabilnost-upozorenje');
+
+        // Prag (treshold) pomeren na fleksibilnijih i realnijih 20%
+        if (data.rollbackRate > 20) {
+            procenatPolje.className = "text-6xl font-black mt-2 text-amber-600";
+            upozorenjeKontejner.className = "p-4 rounded-xl text-sm font-medium bg-amber-50 text-amber-800 border border-amber-200 shadow-sm";
+            upozorenjeKontejner.innerHTML = `<strong>Napomena o stabilnosti:</strong> Primetan je povišen broj povlačenja menija (preko 20%). Preporučuje se dodatna provera unosa artikala i cena pre nego što se verzija pusti uživo.`;
+        } else {
+            procenatPolje.className = "text-6xl font-black mt-2 text-emerald-600";
+            upozorenjeKontejner.className = "p-4 rounded-xl text-sm font-medium bg-emerald-50 text-emerald-700 border border-emerald-100";
+            upozorenjeKontejner.innerHTML = `<strong>Stabilno upravljanje:</strong> Ponuda se menja promišljeno. Broj povučenih verzija je minimalan, što ukazuje na dobru operativnu stabilnost.`;
+        }
+    }
+
+    function renderujHroniku(data) {
+        const tekstPolje = document.getElementById('hronika-tekst');
+        tekstPolje.innerText = data.tekstUvida;
+
+        if (data.imaZabelezenihMene) {
+            tekstPolje.parentElement.className = "p-4 bg-amber-50/60 rounded-xl border border-amber-200 text-amber-900";
+        } else {
+            tekstPolje.parentElement.className = "p-4 bg-gray-50 rounded-xl border border-gray-200 text-gray-600";
+        }
+    }
+
+    function formatirajNazivRazloga(razlog) {
+        switch(razlog) {
+            case 'INICIJALNO_KREIRANJE': return 'Inicijalno kreiranje menija';
+            case 'IZMENA_CENOVNIKA': return 'Izmena cenovnika';
+            case 'DODAVANJE_STAVKE': return 'Dodavanje novih stavki';
+            case 'ROLLBACK': return 'Poništavanje izmena (Rollback na staru verziju)';
+            default: return razlog;
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', ucitajSveAnalitike);
+</script>
+</body>
+</html>
