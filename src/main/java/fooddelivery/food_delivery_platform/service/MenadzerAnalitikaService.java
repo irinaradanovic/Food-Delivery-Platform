@@ -1,13 +1,16 @@
 package fooddelivery.food_delivery_platform.service;
 
-import fooddelivery.food_delivery_platform.dto.menadzerAnalitika.HronikaEksperimenataDTO;
-import fooddelivery.food_delivery_platform.dto.menadzerAnalitika.PokretaciIzmenaDTO;
-import fooddelivery.food_delivery_platform.dto.menadzerAnalitika.StabilnostUpravljanjaDTO;
+import fooddelivery.food_delivery_platform.dto.menadzerAnalitika.*;
 import fooddelivery.food_delivery_platform.model.Meni;
 import fooddelivery.food_delivery_platform.repository.MeniRepository;
+import fooddelivery.food_delivery_platform.repository.PorudzbinaRepository;
+import fooddelivery.food_delivery_platform.repository.StavkaMenijaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
@@ -19,9 +22,15 @@ public class MenadzerAnalitikaService {
     @Autowired
     private MeniRepository meniRepository;
 
+    @Autowired
+    private StavkaMenijaRepository stavkaMenijaRepository;
+
+    @Autowired
+    private PorudzbinaRepository porudzbinaRepository;
+
     // PRONALAZI STA NAJVISE UTICE NA KREIRANJE NOVE VERZIJE
     public PokretaciIzmenaDTO getPokretaceIzmena(Long grupniMeniId) {
-        List<Meni> sveVerzije = meniRepository.findByGrupniMeniIdOrderByMeniIdDesc(grupniMeniId);
+        List<Meni> sveVerzije = meniRepository.findByGrupniMeniIdOrderByVerzijaDesc(grupniMeniId);
         if (sveVerzije.isEmpty()) return new PokretaciIzmenaDTO(grupniMeniId, 0, Map.of(), Map.of(), "Nema podataka.");
 
         long ukupanBrojVerzija = sveVerzije.size();
@@ -48,7 +57,7 @@ public class MenadzerAnalitikaService {
     }
 
     public StabilnostUpravljanjaDTO getStabilnostUpravljanja(Long grupniMeniId) {
-        List<Meni> sveVerzije = meniRepository.findByGrupniMeniIdOrderByMeniIdDesc(grupniMeniId);
+        List<Meni> sveVerzije = meniRepository.findByGrupniMeniIdOrderByVerzijaDesc(grupniMeniId);
         if (sveVerzije.isEmpty()) return new StabilnostUpravljanjaDTO(grupniMeniId, 0, 0, 0.0, false);
 
         long ukupanBrojVerzija = sveVerzije.size();
@@ -64,7 +73,7 @@ public class MenadzerAnalitikaService {
     }
 
     public HronikaEksperimenataDTO getHronikuEksperimenata(Long grupniMeniId) {
-        List<Meni> sveVerzije = meniRepository.findByGrupniMeniIdOrderByMeniIdDesc(grupniMeniId);
+        List<Meni> sveVerzije = meniRepository.findByGrupniMeniIdOrderByVerzijaDesc(grupniMeniId);
 
         for (int i = 0; i < sveVerzije.size(); i++) {
             Meni trenutni = sveVerzije.get(i);
@@ -93,5 +102,43 @@ public class MenadzerAnalitikaService {
         }
 
         return new HronikaEksperimenataDTO(grupniMeniId, "Nema registrovanih kriznih rollback događaja.", false);
+    }
+
+
+
+
+    public KomparacijaVerzijaDTO komparacijaVerzija(Long meniIdA, Long meniIdB) {
+        MeniStatistikaDTO statsA = generisiStatistikuZaMeni(meniIdA);
+        MeniStatistikaDTO statsB = generisiStatistikuZaMeni(meniIdB);
+        return new KomparacijaVerzijaDTO(statsA, statsB);
+    }
+
+    private MeniStatistikaDTO generisiStatistikuZaMeni(Long meniId) {
+        Meni meni = meniRepository.findById(meniId)
+                .orElseThrow(() -> new IllegalArgumentException("Meni sa ID-jem " + meniId + " ne postoji."));
+
+        long brojStavki = stavkaMenijaRepository.countByMeniMeniIdAndObrisanFalse(meniId);
+        long brojKategorija = stavkaMenijaRepository.countJedinstveneKategorijeZaMeni(meniId);
+        double prosecnaCena = stavkaMenijaRepository.getProsecnaCenaZaMeni(meniId);
+        prosecnaCena = Math.round(prosecnaCena * 100.0) / 100.0;
+
+        long ukupanBrojPorudzbina = porudzbinaRepository.countUkupnoPorudzbinaZaMeni(meniId);
+        long brojPotvrdjenih = porudzbinaRepository.countPotvrdjenihPorudzbinaZaMeni(meniId);
+        BigDecimal ukupnaZarada = porudzbinaRepository.sumZaradaOdStavkiMenija(meniId);
+
+        String razlog = meni.getRazlogVerzionisanja() != null ? meni.getRazlogVerzionisanja().name() : "NEPOZNATO";
+
+        return new MeniStatistikaDTO(
+                meni.getVerzija(),
+                razlog,
+                meni.getDatumOd(),
+                meni.getDatumDo(),
+                brojStavki,
+                brojKategorija,
+                prosecnaCena,
+                ukupanBrojPorudzbina,
+                brojPotvrdjenih,
+                ukupnaZarada
+        );
     }
 }
