@@ -45,4 +45,11 @@ public abstract class Meni {
     @JoinColumn(name = "restoran_id")
     private Restoran restoran;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "razlog_verzionisanja")
+    private RazlogVerzionisanja razlogVerzionisanja;
+
+    @Column(name = "izvorna_verzija_id")
+    private Long izvornaVerzijaId; // ID menija na koji smo se vratili tokom rollbacka
+
 }
