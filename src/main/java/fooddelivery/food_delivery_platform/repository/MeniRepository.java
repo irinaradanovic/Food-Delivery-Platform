@@ -34,7 +34,7 @@ public interface MeniRepository extends JpaRepository<Meni, Long> {
             nativeQuery = true)
     List<Meni> findJedinstveniMenijiPoGrupama(@Param("restoranId") Long restoranId);
 
-    List<Meni> findByGrupniMeniIdOrderByVerzijaDesc(Long grupniId);
+    List<Meni> findByGrupniMeniIdOrderByMeniIdDesc(Long grupniId);
 
     Optional<Meni> findByGrupniMeniIdAndAktivanTrue(Long grupniMeniId);
 

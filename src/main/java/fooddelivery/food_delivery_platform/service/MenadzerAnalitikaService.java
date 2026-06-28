@@ -30,7 +30,7 @@ public class MenadzerAnalitikaService {
 
     // PRONALAZI STA NAJVISE UTICE NA KREIRANJE NOVE VERZIJE
     public PokretaciIzmenaDTO getPokretaceIzmena(Long grupniMeniId) {
-        List<Meni> sveVerzije = meniRepository.findByGrupniMeniIdOrderByVerzijaDesc(grupniMeniId);
+        List<Meni> sveVerzije = meniRepository.findByGrupniMeniIdOrderByMeniIdDesc(grupniMeniId);
         if (sveVerzije.isEmpty()) return new PokretaciIzmenaDTO(grupniMeniId, 0, Map.of(), Map.of(), "Nema podataka.");
 
         long ukupanBrojVerzija = sveVerzije.size();
@@ -57,7 +57,7 @@ public class MenadzerAnalitikaService {
     }
 
     public StabilnostUpravljanjaDTO getStabilnostUpravljanja(Long grupniMeniId) {
-        List<Meni> sveVerzije = meniRepository.findByGrupniMeniIdOrderByVerzijaDesc(grupniMeniId);
+        List<Meni> sveVerzije = meniRepository.findByGrupniMeniIdOrderByMeniIdDesc(grupniMeniId);
         if (sveVerzije.isEmpty()) return new StabilnostUpravljanjaDTO(grupniMeniId, 0, 0, 0.0, false);
 
         long ukupanBrojVerzija = sveVerzije.size();
@@ -73,7 +73,7 @@ public class MenadzerAnalitikaService {
     }
 
     public HronikaEksperimenataDTO getHronikuEksperimenata(Long grupniMeniId) {
-        List<Meni> sveVerzije = meniRepository.findByGrupniMeniIdOrderByVerzijaDesc(grupniMeniId);
+        List<Meni> sveVerzije = meniRepository.findByGrupniMeniIdOrderByMeniIdDesc(grupniMeniId);
 
         for (int i = 0; i < sveVerzije.size(); i++) {
             Meni trenutni = sveVerzije.get(i);

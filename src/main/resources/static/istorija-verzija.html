@@ -41,6 +41,7 @@
                 <th class="px-6 py-4 font-semibold text-gray-700">Datum od</th>
                 <th class="px-6 py-4 font-semibold text-gray-700">Datum do</th>
                 <th class="px-6 py-4 font-semibold text-gray-700">Status</th>
+                <th class="px-6 py-4 font-semibold text-gray-700">Razlog verzionisanja</th>
                 <th class="px-6 py-4 font-semibold text-gray-700">Akcije</th>
             </tr>
             </thead>
@@ -85,6 +86,7 @@
                     <td class="px-6 py-4 text-gray-600">${m.datumOd || '-'}</td>
                     <td class="px-6 py-4 text-gray-600">${m.datumDo || '-'}</td>
                     <td class="px-6 py-4">${statusTekst}</td>
+                    <td class="px-6 py-4">${m.razlogVerzionisanja}</td>
                     <td class="px-6 py-4 flex gap-2">
                         <button onclick="window.location.href='detalji-menija.html?meniId=${m.meniId}'"
                                 class="px-3 py-1.5 border border-emerald-600 text-emerald-600 rounded-lg cursor-pointer hover:bg-emerald-50 transition">Pregled</button>

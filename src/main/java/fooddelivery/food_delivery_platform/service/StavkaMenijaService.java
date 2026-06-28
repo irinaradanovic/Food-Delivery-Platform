@@ -48,6 +48,9 @@ public class StavkaMenijaService {
     @Autowired
     private MeniService meniService;
 
+    @jakarta.persistence.PersistenceContext
+    private jakarta.persistence.EntityManager entityManager;
+
     private final String UPLOAD_DIR = "src/main/resources/static/images/food/";
 
     @Transactional(readOnly = true)
@@ -215,10 +218,10 @@ public class StavkaMenijaService {
         noviMeni.setRazlogVerzionisanja(RazlogVerzionisanja.DODAVANJE_STAVKE);
 
         meniRepository.save(noviMeni);
-        meniRepository.flush();
+
         // okida se triger koji deaktivira staru verziju
 
-        meniService.copyMenuItems(meni.getMeniId(), noviMeni);
+        //meniService.copyMenuItems(meni.getMeniId(), noviMeni);
 
         StavkaMenija stavkaMenija = StavkaMenija.builder()
                 .meni(noviMeni)
@@ -230,6 +233,7 @@ public class StavkaMenijaService {
                 .obrisan(false)
                 .build();
         stavkaMenijaRepository.save(stavkaMenija);
+        meniRepository.flush();
         stavkaMenijaRepository.flush();
 
         return noviMeni.getMeniId();
@@ -361,8 +365,8 @@ public class StavkaMenijaService {
         meniRepository.flush();
         // okida se triger koji kopira sve stavke sa novim cenama
 
-        meniService.copyMenuItems(stariMeni.getMeniId(), noviMeni);
-        stavkaMenijaRepository.flush();
+        //meniService.copyMenuItems(stariMeni.getMeniId(), noviMeni);
+        //stavkaMenijaRepository.flush();
 
         for (var izmena : dto.getIzmeneCena()) {
             StavkaMenija novaStavka = stavkaMenijaRepository
@@ -372,6 +376,7 @@ public class StavkaMenijaService {
             novaStavka.setCena(izmena.getNovaCena());
             stavkaMenijaRepository.save(novaStavka);
         }
+        stavkaMenijaRepository.flush();
         return noviMeni;
     }
 
@@ -383,7 +388,7 @@ public class StavkaMenijaService {
     }
 
 
-    public Map<String, Integer> calculateAvgPreparationTime(Long kategorijaId) {
+    /*public Map<String, Integer> calculateAvgPreparationTime(Long kategorijaId) {
         Map<String, Integer> mapa = new HashMap<>();
 
         Double min = stavkaMenijaRepository.findAvgMinByKategorija(kategorijaId);
@@ -395,6 +400,31 @@ public class StavkaMenijaService {
         } else {
             mapa.put("min", 15);
             mapa.put("max", 25);
+        }
+
+        return mapa;
+    } */
+
+    public Map<String, Integer> calculateAvgPreparationTime(Long kategorijaId) {
+        Map<String, Integer> mapa = new HashMap<>();
+
+        try {
+            Object[] rezultat = (Object[]) entityManager.createNativeQuery(
+                            "SELECT * FROM fn_analiza_vremena_pripreme(?)"
+                    )
+                    .setParameter(1, kategorijaId)
+                    .getSingleResult();
+
+            if (rezultat != null && rezultat.length == 2) {
+                mapa.put("min", ((Number) rezultat[0]).intValue());
+                mapa.put("max", ((Number) rezultat[1]).intValue());
+            } else {
+                mapa.put("min", 15);
+                mapa.put("max", 25);
+            }
+        } catch (Exception e) {
+            // U slucaju da funkcija baci nas custom RAISE EXCEPTION, ovde ga prihvatamo
+            throw new RuntimeException("Greška u bazi pri računanju statistike: " + e.getMessage(), e);
         }
 
         return mapa;

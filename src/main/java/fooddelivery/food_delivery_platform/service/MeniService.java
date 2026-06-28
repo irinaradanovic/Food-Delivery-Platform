@@ -167,7 +167,7 @@ public class MeniService {
     }
 
     public List<Meni> getMenuVersionHstory(Long grupniMeniId){
-        return meniRepository.findByGrupniMeniIdOrderByVerzijaDesc(grupniMeniId);
+        return meniRepository.findByGrupniMeniIdOrderByMeniIdDesc(grupniMeniId);
     }
 
     @Transactional
@@ -176,14 +176,6 @@ public class MeniService {
                 .orElseThrow(() -> new EntityNotFoundException("Meni nije pronađen"));
 
         checkAccess(staraVerzija, userId);
-
-        // deaktiviraj sve aktivne verzije u grupi
-      /*  meniRepository.findByGrupniMeniIdAndAktivanTrue(staraVerzija.getGrupniMeniId())
-                .ifPresent(trenutnoAktivni -> {
-                    trenutnoAktivni.setAktivan(false);
-                    trenutnoAktivni.setDatumDo(LocalDate.now());
-                    meniRepository.save(trenutnoAktivni);
-                }); */
         //kopiraj staru verziju
         Meni novaVerzija = cloneMenu(staraVerzija);
 
@@ -199,7 +191,7 @@ public class MeniService {
         meniRepository.save(novaVerzija);
         meniRepository.flush();
 
-        copyMenuItems(meniId, novaVerzija);
+        //copyMenuItems(meniId, novaVerzija);
         return novaVerzija;
     }
 
