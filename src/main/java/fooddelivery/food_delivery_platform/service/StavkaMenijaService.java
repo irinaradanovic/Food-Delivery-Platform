@@ -218,10 +218,10 @@ public class StavkaMenijaService {
         noviMeni.setRazlogVerzionisanja(RazlogVerzionisanja.DODAVANJE_STAVKE);
 
         meniRepository.save(noviMeni);
-        meniRepository.flush();
+
         // okida se triger koji deaktivira staru verziju
 
-        meniService.copyMenuItems(meni.getMeniId(), noviMeni);
+        //meniService.copyMenuItems(meni.getMeniId(), noviMeni);
 
         StavkaMenija stavkaMenija = StavkaMenija.builder()
                 .meni(noviMeni)
@@ -233,6 +233,7 @@ public class StavkaMenijaService {
                 .obrisan(false)
                 .build();
         stavkaMenijaRepository.save(stavkaMenija);
+        meniRepository.flush();
         stavkaMenijaRepository.flush();
 
         return noviMeni.getMeniId();
@@ -364,8 +365,8 @@ public class StavkaMenijaService {
         meniRepository.flush();
         // okida se triger koji kopira sve stavke sa novim cenama
 
-        meniService.copyMenuItems(stariMeni.getMeniId(), noviMeni);
-        stavkaMenijaRepository.flush();
+        //meniService.copyMenuItems(stariMeni.getMeniId(), noviMeni);
+        //stavkaMenijaRepository.flush();
 
         for (var izmena : dto.getIzmeneCena()) {
             StavkaMenija novaStavka = stavkaMenijaRepository
@@ -375,6 +376,7 @@ public class StavkaMenijaService {
             novaStavka.setCena(izmena.getNovaCena());
             stavkaMenijaRepository.save(novaStavka);
         }
+        stavkaMenijaRepository.flush();
         return noviMeni;
     }
 
