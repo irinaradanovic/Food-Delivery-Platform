@@ -48,9 +48,9 @@ public class MenadzerAnalitikaService {
         });
 
         double procenatCena = procenatPoRazlogu.getOrDefault("IZMENA_CENOVNIKA", 0.0);
-        String zakljucak = "Formiranje cena je stabilno. Izmene su izbalansirane sa uvođenjem novih artikala.";
+        String zakljucak = "Formiranje cena je stabilno. Izmene su izbalansirane sa uvodjenjem novih artikala.";
         if (procenatCena > 50.0) {
-            zakljucak = "Ako 'Izmena cenovnika' drastično dominira, to je signal menadžeru da cene variraju previše često i da nabavka/formiranje cena nije stabilno.";
+            zakljucak = "Ako 'Izmena cenovnika' drasticno dominira, to je signal menadzeru da cene variraju previse cesto i da nabavka/formiranje cena nije stabilno.";
         }
 
         return new PokretaciIzmenaDTO(grupniMeniId, ukupanBrojVerzija, brojPoRazlogu, procenatPoRazlogu, zakljucak);
