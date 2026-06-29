@@ -252,14 +252,6 @@ INSERT INTO pretrage (pretraga_id, tekst_upita, tip_pretrage, vreme_pretrage, ko
                                                                                                (11, 'car',        'OPSTA', '2026-05-24 13:34:36.56451',  5),
                                                                                                (12, 'limunada',   'OPSTA', '2026-05-25 23:38:32.113215', 5),
                                                                                                (13, 'hygui',      'OPSTA', '2026-05-25 23:39:20.161768', 5);
-INSERT INTO stavke_menija (stavka_id, meni_id, proizvod_id, cena, dostupno, vreme_pripreme_min, vreme_pripreme_max, obrisan) VALUES
-                                                                                                                                 (17, 2, 17, 850.00, true, 8, 12, false),
-                                                                                                                                 (18, 2, 18, 980.00, true, 8, 12, false),
-                                                                                                                                 (19, 2, 19, 1050.00, true, 10, 15, false),
-                                                                                                                                 (20, 2, 20, 780.00, true, 8, 12, false),
-                                                                                                                                 (21, 1, 21, 750.00, true, 10, 15, false),
-                                                                                                                                 (22, 1, 22, 950.00, true, 12, 18, false),
-                                                                                                                                 (23, 1, 23, 820.00, true, 10, 15, false);
 
 INSERT INTO stavke_porudzbine (stavka_id, cena, porudzbina_id, kolicina, stavka_menija_id) VALUES
                                                                                                (DEFAULT, 550.00, 1, 1, 1),
