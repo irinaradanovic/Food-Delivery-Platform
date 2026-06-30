@@ -249,6 +249,7 @@
 <script src="/js/auth.js"></script>
 <script>
     const sesija = getSesija();
+    if (sesija.uloga === 'ADMIN') window.location.href = '/kuponi.html';
     if (sesija.uloga === 'KUPAC') window.location.href = '/proizvodi.html';
     if (sesija.uloga === 'MENADZER') window.location.href = '/izbor-restorana.html';
     if (sesija.uloga === 'DOSTAVLJAC') window.location.href = '/dostavljac-porudzbine.html';
@@ -288,7 +289,7 @@
             } else if (korisnik.uloga === 'DOSTAVLJAC') {
                 window.location.href = '/dostavljac-porudzbine.html';
             } else if (korisnik.uloga === 'ADMIN') {
-                window.location.href = '/analitika-preporuka.html';
+                window.location.href = '/kuponi.html';
             } else {
                 throw new Error('Nepoznata uloga');
             }

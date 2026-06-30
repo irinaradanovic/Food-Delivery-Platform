@@ -13,6 +13,7 @@ import fooddelivery.food_delivery_platform.model.Kupac;
 import fooddelivery.food_delivery_platform.model.Meni;
 import fooddelivery.food_delivery_platform.model.NacinPlacanja;
 import fooddelivery.food_delivery_platform.model.Porudzbina;
+import fooddelivery.food_delivery_platform.model.PrikazaniKombo;
 import fooddelivery.food_delivery_platform.model.Proizvod;
 import fooddelivery.food_delivery_platform.model.Dostava;
 import fooddelivery.food_delivery_platform.model.Dostavljac;
@@ -173,6 +174,7 @@ public class PorudzbinaService {
                 .build();
 
         List<Proizvod> kupljeniProizvodi = new ArrayList<>();
+        Set<Long> naruceneStavkeMenijaIds = new HashSet<>();
         for (ObracunStavka obracunStavka : obracun.stavke()) {
             StavkaPorudzbine stavka = StavkaPorudzbine.builder()
                     .porudzbina(porudzbina)
@@ -182,6 +184,7 @@ public class PorudzbinaService {
                     .napomena(obracunStavka.napomena())
                     .build();
             porudzbina.getStavke().add(stavka);
+            naruceneStavkeMenijaIds.add(obracunStavka.stavkaMenija().getStavkaId());
 
             if (obracunStavka.stavkaMenija().getProizvod() != null) {
                 kupljeniProizvodi.add(obracunStavka.stavkaMenija().getProizvod());
@@ -197,6 +200,8 @@ public class PorudzbinaService {
 
         Porudzbina sacuvana = porudzbinaRepository.save(porudzbina);
         zabeleziKupovinu(kupac, kupljeniProizvodi);
+        oznaciPreporukeKaoUspesne(kupac.getKorisnikId(), kupljeniProizvodi);
+        oznaciKomboeKaoUspesne(kupac.getKorisnikId(), naruceneStavkeMenijaIds);
         return sacuvana;
     }
 
@@ -285,8 +290,6 @@ public class PorudzbinaService {
         prikazaniKomboRepository.saveAll(kandidati);
     }
 
-    private Obracun obracunaj(List<StavkaPorudzbineDTO> stavkeDto, String kuponKod, NacinPlacanja nacinPlacanja,
-                              BigDecimal trazeniIznosKarticom, boolean uvecajUpotrebuKupona) {
     private Obracun obracunaj(Long kupacId, List<StavkaPorudzbineDTO> stavkeDto, Long kuponId, String kuponKod,
                              NacinPlacanja nacinPlacanja, BigDecimal trazeniIznosKarticom) {
         if (nacinPlacanja == null) {
