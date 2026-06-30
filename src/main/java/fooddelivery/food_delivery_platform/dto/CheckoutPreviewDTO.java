@@ -15,6 +15,8 @@ public class CheckoutPreviewDTO {
     @NotNull
     private Long kupacId;
 
+    private Long kuponId;
+
     private String kuponKod;
 
     @NotNull
@@ -25,3 +27,4 @@ public class CheckoutPreviewDTO {
     @NotEmpty
     private List<@Valid StavkaPorudzbineDTO> stavke;
 }
+

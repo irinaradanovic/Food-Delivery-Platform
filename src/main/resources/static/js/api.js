@@ -150,6 +150,21 @@ const api = {
         URL.revokeObjectURL(url);
     },
 
+    // Kuponi
+    getKuponi: () =>
+        apiFetch('/kuponi', {
+            headers: { 'Content-Type': 'application/json', 'X-User-Id': localStorage.getItem('korisnikId') }
+        }),
+    getMojiKuponi: () =>
+        apiFetch('/kuponi/moji', {
+            headers: { 'Content-Type': 'application/json', 'X-User-Id': localStorage.getItem('korisnikId') }
+        }),
+    kreirajKupon: (payload) =>
+        apiFetch('/kuponi', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-User-Id': localStorage.getItem('korisnikId') },
+            body: JSON.stringify(payload)
+        }),
     getPreporuke: (kupacId, limit = 10) =>
         apiFetch(`/preporuke/kupac/${kupacId}?limit=${limit}`),
 
@@ -178,3 +193,7 @@ const api = {
         }).catch(e => console.warn('Tracking pretraga greška:', e));
     },
 };
+
+
+
+

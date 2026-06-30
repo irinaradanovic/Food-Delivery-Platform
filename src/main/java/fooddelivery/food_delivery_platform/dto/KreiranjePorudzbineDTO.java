@@ -19,6 +19,8 @@ public class KreiranjePorudzbineDTO {
     @NotBlank
     private String adresaDostave;
 
+    private Long kuponId;
+
     private String kuponKod;
 
     private String napomena;
@@ -31,3 +33,4 @@ public class KreiranjePorudzbineDTO {
     @NotEmpty
     private List<@Valid StavkaPorudzbineDTO> stavke;
 }
+

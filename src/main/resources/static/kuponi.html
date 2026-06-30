@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuponi - Big Bite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root { --green:#2d6a2d; --green-lt:#3a8a3a; --cream:#faf7f2; --dark:#1a1a1a; --gray:#6b7280; --border:#e5e0d8; --danger:#dc2626; }
+        body { font-family:'DM Sans', sans-serif; background:var(--cream); min-height:100vh; color:var(--dark); }
+        nav { background:white; border-bottom:1px solid var(--border); padding:0 40px; height:68px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
+        .nav-logo { display:flex; align-items:center; gap:12px; text-decoration:none; }
+        .nav-logo-icon { width:76px; height:96px; display:flex; align-items:center; justify-content:center; }
+        .nav-logo-text { font-family:'Playfair Display', serif; font-size:20px; color:var(--dark); }
+        .nav-links { display:flex; align-items:center; gap:4px; }
+        .nav-links a { padding:8px 16px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:500; color:var(--gray); }
+        .nav-links a:hover, .nav-links a.active { background:var(--green); color:white; }
+        .nav-right { display:flex; align-items:center; gap:12px; }
+        .nav-user { font-size:13px; color:var(--gray); background:#f3f4f6; padding:6px 12px; border-radius:20px; }
+        .btn-odjava { background:none; border:1.5px solid var(--border); border-radius:8px; padding:7px 14px; font-size:13px; font-weight:500; color:var(--gray); cursor:pointer; }
+        main { max-width:1120px; margin:0 auto; padding:36px 24px 56px; }
+        .header { display:flex; justify-content:space-between; align-items:flex-end; gap:16px; margin-bottom:24px; }
+        h1 { font-family:'Playfair Display', serif; font-size:34px; }
+        .hint { color:var(--gray); font-size:13px; line-height:1.5; margin-top:8px; }
+        .layout { display:grid; grid-template-columns:360px minmax(0, 1fr); gap:24px; align-items:start; }
+        .panel { background:white; border:1px solid var(--border); border-radius:8px; padding:22px; }
+        .panel h2 { font-size:18px; margin-bottom:16px; }
+        label { display:block; font-size:13px; font-weight:700; color:#374151; margin-bottom:7px; }
+        input, select { width:100%; border:1.5px solid var(--border); border-radius:8px; padding:11px 12px; font:inherit; outline:none; background:white; }
+        input:focus, select:focus { border-color:var(--green); }
+        .field { margin-bottom:14px; }
+        .lookup-row { display:grid; grid-template-columns:minmax(0, 1fr) auto; gap:8px; align-items:center; }
+        .btn-secondary { background:white; color:var(--green); border:1.5px solid var(--green); border-radius:8px; padding:11px 14px; font:inherit; font-weight:800; cursor:pointer; white-space:nowrap; }
+        .btn-secondary:hover { background:#f0f7f0; }
+        .found { background:#f8fafc; border:1px solid var(--border); border-radius:8px; padding:10px 12px; margin-top:10px; font-size:14px; display:none; }
+        .btn-primary { width:100%; background:var(--green); color:white; border:0; border-radius:8px; padding:14px 18px; font:inherit; font-weight:800; cursor:pointer; margin-top:4px; }
+        .btn-primary:hover { background:var(--green-lt); }
+        .btn-primary:disabled { background:#9ca3af; cursor:not-allowed; }
+        .error { color:var(--danger); font-size:13px; margin-top:10px; min-height:18px; }
+        .success { background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; border-radius:8px; padding:12px; margin-top:12px; display:none; font-size:14px; }
+        table { width:100%; border-collapse:collapse; font-size:14px; }
+        th, td { text-align:left; padding:12px 10px; border-bottom:1px solid var(--border); vertical-align:top; }
+        th { color:#374151; font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+        .badge { display:inline-block; border-radius:999px; padding:4px 9px; font-size:12px; font-weight:700; }
+        .badge.ok { background:#ecfdf5; color:#047857; }
+        .badge.off { background:#f3f4f6; color:#6b7280; }
+        @media (max-width: 860px) { nav { padding:0 18px; } .layout { grid-template-columns:1fr; } .header { align-items:flex-start; flex-direction:column; } table { display:block; overflow-x:auto; } }
+    </style>
+</head>
+<body>
+<nav></nav>
+<main>
+    <div class="header">
+        <div>
+            <h1>Kuponi</h1>
+            <p class="hint">Kreiranje i dodela jednokratnih kupona kupcima.</p>
+        </div>
+    </div>
+
+    <div class="layout">
+        <section class="panel">
+            <h2>Novi kupon</h2>
+            <div class="field">
+                <label for="kupacEmail">Email kupca</label>
+                <div class="lookup-row">
+                    <input id="kupacEmail" type="email" placeholder="kupac@example.com">
+                    <button type="button" class="btn-secondary" onclick="pretraziKupca()">Pretrazi</button>
+                </div>
+                <div id="pronadjeniKupac" class="found"></div>
+            </div>
+            <div class="field">
+                <label for="vrednost">Vrednost kupona (RSD)</label>
+                <input id="vrednost" type="number" min="1" step="1" placeholder="Npr. 500">
+            </div>
+            <div class="field">
+                <label for="vaziDo">Rok vazenja</label>
+                <input id="vaziDo" type="datetime-local">
+            </div>
+            <button id="kreiraj" class="btn-primary" onclick="kreirajKupon()">Kreiraj kupon</button>
+            <div id="greska" class="error"></div>
+            <div id="uspeh" class="success"></div>
+        </section>
+
+        <section class="panel">
+            <h2>Postojeci kuponi</h2>
+            <table>
+                <thead>
+                <tr>
+                    <th>Kod</th>
+                    <th>Kupac</th>
+                    <th>Vrednost</th>
+                    <th>Vazi do</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody id="kuponiTabela"></tbody>
+            </table>
+        </section>
+    </div>
+</main>
+
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+    zastitiStranicu();
+
+    function formatRsd(value) {
+        return (Number(value || 0)).toLocaleString('sr-RS') + ' RSD';
+    }
+
+    function formatDatum(value) {
+        return value ? new Date(value).toLocaleString('sr-RS') : '-';
+    }
+
+    let selectedKupac = null;
+
+    function prikaziGresku(message) {
+        document.getElementById('greska').textContent = message;
+        document.getElementById('uspeh').style.display = 'none';
+    }
+
+    function prikaziPronadjenogKupca(kupac) {
+        const el = document.getElementById('pronadjeniKupac');
+        if (!kupac) {
+            el.style.display = 'none';
+            el.innerHTML = '';
+            return;
+        }
+        el.style.display = 'block';
+        el.innerHTML = `<strong>${kupac.ime} ${kupac.prezime}</strong><div class="hint">${kupac.email}</div>`;
+    }
+
+    async function pretraziKupca() {
+        const email = document.getElementById('kupacEmail').value.trim();
+        selectedKupac = null;
+        prikaziPronadjenogKupca(null);
+        document.getElementById('greska').textContent = '';
+        if (!email) {
+            prikaziGresku('Unesite email kupca.');
+            return;
+        }
+        try {
+            const kupci = await api.getKupciByEmail(email);
+            if (!kupci.length) {
+                prikaziGresku('Kupac sa unetim emailom nije pronadjen.');
+                return;
+            }
+            selectedKupac = kupci[0];
+            prikaziPronadjenogKupca(selectedKupac);
+        } catch (e) {
+            prikaziGresku(e.message || 'Pretraga kupca nije uspela.');
+        }
+    }
+
+    async function ucitajKupone() {
+        const kuponi = await api.getKuponi();
+        const tbody = document.getElementById('kuponiTabela');
+        tbody.innerHTML = kuponi.length ? kuponi.map(k => {
+            const aktivan = k.aktivan && !k.iskoriscen;
+            return `<tr>
+                <td><strong>${k.kod}</strong></td>
+                <td>${k.kupacIme || '-'}<div class="hint">${k.kupacEmail || ''}</div></td>
+                <td>${formatRsd(k.vrednost)}</td>
+                <td>${formatDatum(k.vaziDo)}</td>
+                <td><span class="badge ${aktivan ? 'ok' : 'off'}">${aktivan ? 'Dostupan' : 'Iskoriscen/neaktivan'}</span></td>
+            </tr>`;
+        }).join('') : '<tr><td colspan="5" class="hint">Nema kupona.</td></tr>';
+    }
+
+    async function kreirajKupon() {
+        const kupacId = selectedKupac?.korisnikId;
+        const vrednost = Number(document.getElementById('vrednost').value);
+        const vaziDoInput = document.getElementById('vaziDo').value;
+        if (!kupacId || !vrednost || vrednost <= 0 || !vaziDoInput) {
+            prikaziGresku('Pronadjite kupca preko emaila i popunite vrednost i rok vazenja.');
+            return;
+        }
+        try {
+            document.getElementById('kreiraj').disabled = true;
+            document.getElementById('greska').textContent = '';
+            const kupon = await api.kreirajKupon({ kupacId, vrednost, vaziDo: vaziDoInput });
+            document.getElementById('uspeh').textContent = `Kupon ${kupon.kod} je kreiran.`;
+            document.getElementById('uspeh').style.display = 'block';
+            document.getElementById('vrednost').value = '';
+            await ucitajKupone();
+        } catch (e) {
+            prikaziGresku(e.message || 'Kreiranje kupona nije uspelo.');
+        } finally {
+            document.getElementById('kreiraj').disabled = false;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        if (localStorage.getItem('uloga') !== 'ADMIN') {
+            window.location.href = '/login.html?poruka=morate-biti-prijavljeni';
+            return;
+        }
+        document.getElementById('kupacEmail').addEventListener('keydown', e => { if (e.key === 'Enter') pretraziKupca(); });
+        document.getElementById('kupacEmail').addEventListener('input', () => {
+            selectedKupac = null;
+            prikaziPronadjenogKupca(null);
+        });
+        await ucitajKupone().catch(e => prikaziGresku(e.message || 'Ucitavanje kupona nije uspelo.'));
+    });
+</script>
+</body>
+</html>

@@ -2,7 +2,7 @@ ALTER TABLE stavke_menija
     ADD CONSTRAINT uq_meni_proizvod UNIQUE (meni_id, proizvod_id);
 -- Menadzeri
 INSERT INTO korisnici (korisnik_id, ime, prezime, telefon, lozinka, email, datum_reg, uloga) VALUES
-                                                                                                 (1, 'Marko', 'Marković', '064123456', 'password123', 'menadzer1@test.com', '2026-05-25', 'MENADZER'),
+                                                                                                 (1, 'Marko', 'Marković', '064123456', 'password123', 'menadzer1@test.com', '2026-05-25', 'MENA3DZER'),
                                                                                                  (2, 'Nikola', 'Nikolić', '065987654', 'password123', 'menadzer2@test.com', '2026-05-25', 'MENADZER'),
                                                                                                  (3, 'Jovana', 'Jovanić', '063111222', 'password123', 'menadzer3@test.com', '2026-05-25', 'MENADZER');
 
@@ -12,6 +12,8 @@ INSERT INTO menadzeri (korisnik_id) VALUES (1), (2), (3);
 INSERT INTO korisnici (korisnik_id, ime, prezime, telefon, lozinka, email, datum_reg, uloga) VALUES (4, 'Marko', 'Markovic', '064235768', '123456', 'markovic@gmail.com', '2026-05-25', 'KUPAC');
 INSERT INTO korisnici (korisnik_id, ime, prezime, telefon, lozinka, email, datum_reg, uloga) VALUES (5, 'Nenad', 'Lalic', '067892568', '123456', 'lalic@gmail.com', '2026-05-25', 'KUPAC');
 
+-- Administrator
+INSERT INTO korisnici (korisnik_id, ime, prezime, telefon, lozinka, email, datum_reg, uloga) VALUES (100, 'Admin', 'Big Bite', '060000000', 'admin123', 'admin@test.com', '2026-05-25', 'ADMIN');
 
 -- Dostavljaci
 INSERT INTO korisnici (korisnik_id, ime, prezime, telefon, lozinka, email, datum_reg, uloga) VALUES
@@ -446,3 +448,4 @@ SELECT setval(pg_get_serial_sequence('klikovi', 'klik_id'), MAX(klik_id)) FROM k
 SELECT setval(pg_get_serial_sequence('pretrage', 'pretraga_id'), MAX(pretraga_id)) FROM pretrage;
 SELECT setval(pg_get_serial_sequence('omiljeni_proizvodi', 'omiljeni_id'), MAX(omiljeni_id)) FROM omiljeni_proizvodi;
 SELECT setval(pg_get_serial_sequence('omiljene_kategorije', 'omiljena_kategorija_id'), MAX(omiljena_kategorija_id)) FROM omiljene_kategorije;
+

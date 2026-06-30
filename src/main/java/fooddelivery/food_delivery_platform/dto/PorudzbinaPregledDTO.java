@@ -28,9 +28,11 @@ public class PorudzbinaPregledDTO {
     private BigDecimal iznosKarticom;
     private BigDecimal iznosKes;
     private BigDecimal ukupnaCena;
+    private Long kuponId;
     private String kuponKod;
     private Long dostavljacId;
     private boolean imaRacun;
     private boolean imaStorno;
     private List<CheckoutStavkaDTO> stavke;
 }
+

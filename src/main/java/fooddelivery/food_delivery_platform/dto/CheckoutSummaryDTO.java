@@ -19,6 +19,8 @@ public class CheckoutSummaryDTO {
     private NacinPlacanja nacinPlacanja;
     private BigDecimal iznosKarticom;
     private BigDecimal iznosKes;
+    private Long kuponId;
     private String kuponKod;
     private String poruka;
 }
+

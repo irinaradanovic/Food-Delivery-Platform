@@ -194,6 +194,7 @@ public class PorudzbinaController {
                 .iznosKarticom(porudzbina.getIznosKarticom())
                 .iznosKes(porudzbina.getIznosKes())
                 .ukupnaCena(porudzbina.getUkupnaCena())
+                .kuponId(porudzbina.getKupon() != null ? porudzbina.getKupon().getKuponId() : null)
                 .kuponKod(porudzbina.getKupon() != null ? porudzbina.getKupon().getKod() : null)
                 .dostavljacId(porudzbina.getDostavljacId())
                 .imaRacun(racunService.postojiRacun(porudzbina.getPorudzbinaId()))
@@ -216,3 +217,4 @@ public class PorudzbinaController {
                 .build();
     }
 }
+
