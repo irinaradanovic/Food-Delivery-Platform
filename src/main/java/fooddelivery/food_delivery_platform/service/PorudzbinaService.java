@@ -137,7 +137,7 @@ public class PorudzbinaService {
         if (!isKupac(korisnik) || !trenutniKorisnikId.equals(dto.getKupacId())) {
             throw new AccessDeniedException("Nemate ovlascenje za obracun ove porudzbine.");
         }
-        Obracun obracun = obracunaj(dto.getStavke(), dto.getKuponKod(), dto.getNacinPlacanja(), dto.getIznosKarticom(), false);
+        Obracun obracun = obracunaj(dto.getKupacId(), dto.getStavke(), dto.getKuponId(), dto.getKuponKod(), dto.getNacinPlacanja(), dto.getIznosKarticom());
         return obracun.summary();
     }
 
@@ -153,7 +153,7 @@ public class PorudzbinaService {
         Kupac kupac = kupacRepository.findById(dto.getKupacId())
                 .orElseThrow(() -> new RuntimeException("Kupac nije pronadjen: " + dto.getKupacId()));
 
-        Obracun obracun = obracunaj(dto.getStavke(), dto.getKuponKod(), dto.getNacinPlacanja(), dto.getIznosKarticom(), true);
+        Obracun obracun = obracunaj(dto.getKupacId(), dto.getStavke(), dto.getKuponId(), dto.getKuponKod(), dto.getNacinPlacanja(), dto.getIznosKarticom());
 
         Porudzbina porudzbina = Porudzbina.builder()
                 .kupac(kupac)
@@ -175,7 +175,6 @@ public class PorudzbinaService {
 
         List<Proizvod> kupljeniProizvodi = new ArrayList<>();
         Set<Long> naruceneStavkeMenijaIds = new HashSet<>();
-
         for (ObracunStavka obracunStavka : obracun.stavke()) {
             StavkaPorudzbine stavka = StavkaPorudzbine.builder()
                     .porudzbina(porudzbina)
@@ -185,7 +184,6 @@ public class PorudzbinaService {
                     .napomena(obracunStavka.napomena())
                     .build();
             porudzbina.getStavke().add(stavka);
-
             naruceneStavkeMenijaIds.add(obracunStavka.stavkaMenija().getStavkaId());
 
             if (obracunStavka.stavkaMenija().getProizvod() != null) {
@@ -227,6 +225,7 @@ public class PorudzbinaService {
         }
         porudzbina.setStatus(noviStatus);
         azurirajPlacanjeZaStatus(porudzbina, noviStatus);
+        oznaciKuponAkoJePlacanjeUspesno(porudzbina, noviStatus);
         sinhronizujDostavuZaStatus(porudzbina, noviStatus);
         dodajIstorijuStatusa(porudzbina, noviStatus, trenutniKorisnikId);
         Porudzbina sacuvana = porudzbinaRepository.save(porudzbina);
@@ -291,8 +290,8 @@ public class PorudzbinaService {
         prikazaniKomboRepository.saveAll(kandidati);
     }
 
-    private Obracun obracunaj(List<StavkaPorudzbineDTO> stavkeDto, String kuponKod, NacinPlacanja nacinPlacanja,
-                              BigDecimal trazeniIznosKarticom, boolean uvecajUpotrebuKupona) {
+    private Obracun obracunaj(Long kupacId, List<StavkaPorudzbineDTO> stavkeDto, Long kuponId, String kuponKod,
+                             NacinPlacanja nacinPlacanja, BigDecimal trazeniIznosKarticom) {
         if (nacinPlacanja == null) {
             throw new RuntimeException("Nacin placanja je obavezan.");
         }
@@ -314,22 +313,17 @@ public class PorudzbinaService {
         }
 
         cenaArtikala = scale(cenaArtikala);
+        BigDecimal cenaDostave = CENA_DOSTAVE;
         BigDecimal popustArtikli = BigDecimal.ZERO;
+        BigDecimal popustDostava = BigDecimal.ZERO;
         Kupon kupon = null;
-        if (kuponKod != null && !kuponKod.isBlank()) {
-            kupon = validirajKupon(kuponKod);
-            popustArtikli = izracunajPopust(kupon, cenaArtikala);
-            if (uvecajUpotrebuKupona) {
-                kupon.setUpotrebljenoPuta((kupon.getUpotrebljenoPuta() == null ? 0 : kupon.getUpotrebljenoPuta()) + 1);
-                if (kupon.getMaxUpotreba() != null && kupon.getUpotrebljenoPuta() >= kupon.getMaxUpotreba()) {
-                    kupon.setAktivan(false);
-                }
-                kuponRepository.save(kupon);
-            }
+        if (kuponId != null || (kuponKod != null && !kuponKod.isBlank())) {
+            kupon = validirajKupon(kuponId, kuponKod, kupacId);
+            BigDecimal ukupniPopust = izracunajPopust(kupon, cenaArtikala.add(cenaDostave));
+            popustArtikli = ukupniPopust.min(cenaArtikala);
+            popustDostava = scale(ukupniPopust.subtract(popustArtikli));
         }
 
-        BigDecimal cenaDostave = CENA_DOSTAVE;
-        BigDecimal popustDostava = BigDecimal.ZERO;
         BigDecimal ukupnaCena = scale(cenaArtikala.subtract(popustArtikli).add(cenaDostave).subtract(popustDostava));
         IznosiPlacanja iznosiPlacanja = izracunajPlacanje(nacinPlacanja, trazeniIznosKarticom, ukupnaCena);
 
@@ -343,6 +337,7 @@ public class PorudzbinaService {
                 .nacinPlacanja(nacinPlacanja)
                 .iznosKarticom(iznosiPlacanja.iznosKarticom())
                 .iznosKes(iznosiPlacanja.iznosKes())
+                .kuponId(kupon != null ? kupon.getKuponId() : null)
                 .kuponKod(kupon != null ? kupon.getKod() : null)
                 .poruka("Obracun je uspesno izvrsen.")
                 .build();
@@ -351,9 +346,10 @@ public class PorudzbinaService {
                 ukupnaCena, iznosiPlacanja.iznosKarticom(), iznosiPlacanja.iznosKes(), kupon, summary);
     }
 
-    private Kupon validirajKupon(String kuponKod) {
-        Kupon kupon = kuponRepository.findByKod(kuponKod)
-                .orElseThrow(() -> new RuntimeException("Kupon nije pronadjen: " + kuponKod));
+    private Kupon validirajKupon(Long kuponId, String kuponKod, Long kupacId) {
+        Kupon kupon = kuponId != null
+                ? kuponRepository.findById(kuponId).orElseThrow(() -> new RuntimeException("Kupon nije pronadjen: " + kuponId))
+                : kuponRepository.findByKod(kuponKod).orElseThrow(() -> new RuntimeException("Kupon nije pronadjen: " + kuponKod));
         LocalDateTime sada = LocalDateTime.now();
         boolean valid = kupon.isAktivan();
         if (kupon.getVaziOd() != null && kupon.getVaziOd().isAfter(sada)) valid = false;
@@ -361,8 +357,11 @@ public class PorudzbinaService {
         if (kupon.getMaxUpotreba() != null && kupon.getUpotrebljenoPuta() != null && kupon.getUpotrebljenoPuta() >= kupon.getMaxUpotreba()) {
             valid = false;
         }
+        if (kupon.getVlasnik() == null || !kupon.getVlasnik().getKorisnikId().equals(kupacId)) {
+            throw new RuntimeException("Kupon ne pripada ovom kupcu.");
+        }
         if (!valid) {
-            throw new RuntimeException("Kupon nije validan ili vise ne vazi: " + kuponKod);
+            throw new RuntimeException("Kupon nije validan ili vise ne vazi: " + kupon.getKod());
         }
         return kupon;
     }
@@ -438,6 +437,10 @@ public class PorudzbinaService {
             porudzbina.setStatusPlacanja(StatusPlacanja.NAPLACENO);
             return;
         }
+        if (noviStatus == StatusPorudzbine.ISPORUCENA && porudzbina.getStatusPlacanja() == StatusPlacanja.PLACANJE_UZIVO) {
+            porudzbina.setStatusPlacanja(StatusPlacanja.NAPLACENO);
+            return;
+        }
         if (noviStatus == StatusPorudzbine.OTKAZANA) {
             if (porudzbina.getStatusPlacanja() == StatusPlacanja.NAPLACENO) {
                 porudzbina.setStatusPlacanja(StatusPlacanja.REFUNDIRANO);
@@ -447,6 +450,23 @@ public class PorudzbinaService {
         }
     }
 
+    private void oznaciKuponAkoJePlacanjeUspesno(Porudzbina porudzbina, StatusPorudzbine noviStatus) {
+        Kupon kupon = porudzbina.getKupon();
+        if (kupon == null || porudzbina.getStatusPlacanja() != StatusPlacanja.NAPLACENO) {
+            return;
+        }
+        boolean karticnoPlacanjePotvrdjeno = noviStatus == StatusPorudzbine.POTVRDJENA && porudzbina.getNacinPlacanja() != NacinPlacanja.KES;
+        boolean kesPlacanjeZavrseno = noviStatus == StatusPorudzbine.ISPORUCENA && porudzbina.getNacinPlacanja() == NacinPlacanja.KES;
+        if (!karticnoPlacanjePotvrdjeno && !kesPlacanjeZavrseno) {
+            return;
+        }
+        validirajKupon(kupon.getKuponId(), null, porudzbina.getKupac().getKorisnikId());
+        kupon.setUpotrebljenoPuta((kupon.getUpotrebljenoPuta() == null ? 0 : kupon.getUpotrebljenoPuta()) + 1);
+        if (kupon.getMaxUpotreba() != null && kupon.getUpotrebljenoPuta() >= kupon.getMaxUpotreba()) {
+            kupon.setAktivan(false);
+        }
+        kuponRepository.save(kupon);
+    }
     private void dodajIstorijuStatusa(Porudzbina porudzbina, StatusPorudzbine status, Long korisnikId) {
         porudzbina.getIstorijaStatusa().add(StatusPorudzbineIstorija.builder()
                 .porudzbina(porudzbina)

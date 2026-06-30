@@ -37,7 +37,8 @@ function zastitiStranicu() {
         'checkout',
         'moje-porudzbine',
         'porudzbine',
-        'dostavljac-porudzbine'
+        'dostavljac-porudzbine',
+        'kuponi'
     ];
 
     if (!uloga) {
@@ -50,8 +51,10 @@ function zastitiStranicu() {
         return;
     }
 
-    // Admin sme svuda — bez ograničenja
-    if (uloga === 'ADMIN') return;
+    if (uloga !== 'ADMIN' && trenutnaStranica.includes('kuponi')) {
+        window.location.href = '/login.html?poruka=morate-biti-prijavljeni';
+        return;
+    }
 
     // Menadzer ne sme na kupacke stranice
     if (uloga === 'MENADZER' && (
@@ -98,6 +101,7 @@ function osveziNavigaciju() {
 
     if (uloga === 'ADMIN') {
         linkoviHtml = `
+            <a href="/kuponi.html" id="nav-kuponi">Kuponi</a>
             <a href="/analitika-preporuka.html" id="nav-analitika-preporuka">Analitika preporuka</a>
         `;
     } else if (uloga === 'MENADZER') {
@@ -140,7 +144,7 @@ function osveziNavigaciju() {
         `;
     } else {
         navDesnoHtml = `
-            ${uloga !== 'MENADZER' && uloga !== 'DOSTAVLJAC' ? `
+            ${uloga === 'KUPAC' ? `
             <button class="nav-korpa" onclick="prikaziKorpu()">
                 🛒 Korpa
                 <span class="korpa-badge" id="korpa-badge"></span>
@@ -151,7 +155,7 @@ function osveziNavigaciju() {
     }
 
     navElement.innerHTML = `
-        <a href="${uloga === 'MENADZER' ? '/izbor-restorana.html' : (uloga === 'DOSTAVLJAC' ? '/dostavljac-porudzbine.html' : '/proizvodi.html')}" class="nav-logo">
+        <a href="${uloga === 'ADMIN' ? '/kuponi.html' : (uloga === 'MENADZER' ? '/izbor-restorana.html' : (uloga === 'DOSTAVLJAC' ? '/dostavljac-porudzbine.html' : '/proizvodi.html'))}" class="nav-logo">
             <div class="nav-logo-icon">
                 <img src="/asset/logo.png" alt="Big Bite" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
             </div>

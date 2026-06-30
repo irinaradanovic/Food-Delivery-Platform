@@ -109,7 +109,7 @@
                 </div>
                 <div class="field">
                     <label for="kupon">Kupon</label>
-                    <input id="kupon" type="text" placeholder="Kod kupona">
+                    <select id="kupon"><option value="">Bez kupona</option></select>
                 </div>
                 <div id="summary">
                     <div class="summary-row"><span>Artikli</span><strong id="cenaArtikala">0 RSD</strong></div>
@@ -135,6 +135,7 @@
 
     let korpa = JSON.parse(localStorage.getItem('korpa') || '[]').filter(stavka => stavka.stavkaMenijaId);
     let poslednjiPreview = null;
+    let dostupniKuponi = [];
     let debounceTimer = null;
 
     function formatRsd(value) {
@@ -148,7 +149,8 @@
     function payloadBase() {
         return {
             kupacId: Number(localStorage.getItem('korisnikId')),
-            kuponKod: document.getElementById('kupon').value.trim() || null,
+            kuponId: document.getElementById('kupon').value ? Number(document.getElementById('kupon').value) : null,
+            kuponKod: null,
             nacinPlacanja: izabranoPlacanje(),
             iznosKarticom: document.getElementById('iznosKarticom').value ? Number(document.getElementById('iznosKarticom').value) : null,
             stavke: korpa.map(stavka => ({
@@ -204,6 +206,18 @@
         osveziPreview();
     }
 
+    async function ucitajKupone() {
+        const select = document.getElementById('kupon');
+        try {
+            dostupniKuponi = await api.getMojiKuponi();
+            select.innerHTML = '<option value="">Bez kupona</option>' + dostupniKuponi.map(k =>
+                `<option value="${k.kuponId}">${k.kod} - ${formatRsd(k.vrednost)} do ${new Date(k.vaziDo).toLocaleDateString('sr-RS')}</option>`
+            ).join('');
+        } catch (_) {
+            dostupniKuponi = [];
+            select.innerHTML = '<option value="">Bez dostupnih kupona</option>';
+        }
+    }
     async function ucitajKupca() {
         const kupacId = localStorage.getItem('korisnikId');
         const kupac = await apiFetch(`/kupci/${kupacId}`);
@@ -270,6 +284,7 @@
         renderStavke();
         renderAlergene();
         await ucitajKupca().catch(() => {});
+        await ucitajKupone();
         osveziPreview();
 
         document.querySelectorAll('input[name="placanje"]').forEach(input => {
@@ -278,8 +293,11 @@
                 osveziPreview();
             });
         });
-        ['kupon', 'iznosKarticom'].forEach(id => document.getElementById(id).addEventListener('input', osveziPreview));
+        document.getElementById('kupon').addEventListener('change', osveziPreview);
+        document.getElementById('iznosKarticom').addEventListener('input', osveziPreview);
     });
 </script>
 </body>
 </html>
+
+
