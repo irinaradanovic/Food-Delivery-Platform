@@ -2,7 +2,10 @@ ALTER TABLE stavke_menija
     ADD CONSTRAINT uq_meni_proizvod UNIQUE (meni_id, proizvod_id);
 -- Menadzeri
 INSERT INTO korisnici (korisnik_id, ime, prezime, telefon, lozinka, email, datum_reg, uloga) VALUES
-                                                                                                 (1, 'Marko', 'Marković', '064123456', 'password123', 'menadzer1@test.com', '2026-05-25', 'MENA3DZER'),
+    (99, 'Admin', 'Admin', '060000000', 'admin123', 'admin@bigbite.com', '2026-05-25', 'ADMIN');
+
+INSERT INTO korisnici (korisnik_id, ime, prezime, telefon, lozinka, email, datum_reg, uloga) VALUES
+                                                                                                 (1, 'Marko', 'Marković', '064123456', 'password123', 'menadzer1@test.com', '2026-05-25', 'MENADZER'),
                                                                                                  (2, 'Nikola', 'Nikolić', '065987654', 'password123', 'menadzer2@test.com', '2026-05-25', 'MENADZER'),
                                                                                                  (3, 'Jovana', 'Jovanić', '063111222', 'password123', 'menadzer3@test.com', '2026-05-25', 'MENADZER');
 
@@ -449,3 +452,117 @@ SELECT setval(pg_get_serial_sequence('pretrage', 'pretraga_id'), MAX(pretraga_id
 SELECT setval(pg_get_serial_sequence('omiljeni_proizvodi', 'omiljeni_id'), MAX(omiljeni_id)) FROM omiljeni_proizvodi;
 SELECT setval(pg_get_serial_sequence('omiljene_kategorije', 'omiljena_kategorija_id'), MAX(omiljena_kategorija_id)) FROM omiljene_kategorije;
 
+-- ═══════════════════════════════════════════════════════════════════════════
+-- Prikazane preporuke — istorijski seed podaci
+--
+-- Mapiranje stavke_menija -> proizvod_id:
+--   stavka 1 -> proizvod 1  (Classic Burger)
+--   stavka 2 -> proizvod 2  (Monster Burger)
+--   stavka 5 -> proizvod 14 (Omelette Klasik)
+--   stavka 6 -> proizvod 15 (Avocado Toast)
+--   stavka 7 -> proizvod 3  (Pizza Capricciosa)
+--   stavka 8 -> proizvod 4  (Pizza Marinara)
+--   stavka 9 -> proizvod 9  (Domaca Kafa)
+--   stavka 10-> proizvod 10 (Tiramisu)
+--
+-- Kupac 5 (Nenad) narucio u porudzbinama 1-7 na 2026-05-25:
+--   porudzbina 1: proizvod 1, 2
+--   porudzbina 2: proizvod 14, 15
+--   porudzbina 3: proizvod 3, 4, 9, 10
+-- ═══════════════════════════════════════════════════════════════════════════
+
+INSERT INTO prikazane_preporuke
+(kupac_id, proizvod_id, tip_preporuke, prikazano_u, realizovano_u, uspesna)
+VALUES
+-- Kupac 5, sesija 1 (08:50) — personalizovane, pre porudzbina 1 i 2
+(5,  1, 'PERSONALIZOVANA', '2026-05-25 08:50:00', '2026-05-25 09:08:06', true),
+(5,  2, 'PERSONALIZOVANA', '2026-05-25 08:50:00', '2026-05-25 09:08:06', true),
+(5, 14, 'PERSONALIZOVANA', '2026-05-25 08:50:00', '2026-05-25 09:08:18', true),
+(5, 15, 'PERSONALIZOVANA', '2026-05-25 08:50:00', '2026-05-25 09:08:18', true),
+(5,  6, 'PERSONALIZOVANA', '2026-05-25 08:50:00', NULL,                  false),
+(5, 12, 'PERSONALIZOVANA', '2026-05-25 08:50:00', NULL,                  false),
+-- Kupac 5, sesija 2 (09:05) — trend, pre porudzbine 3
+(5,  3, 'TREND', '2026-05-25 09:05:00', '2026-05-25 09:09:25', true),
+(5,  4, 'TREND', '2026-05-25 09:05:00', '2026-05-25 09:09:25', true),
+(5,  9, 'TREND', '2026-05-25 09:05:00', '2026-05-25 09:09:25', true),
+(5, 10, 'TREND', '2026-05-25 09:05:00', '2026-05-25 09:09:25', true),
+(5, 11, 'TREND', '2026-05-25 09:05:00', NULL,                   false),
+-- Kupac 5, sesija 3 (09:07) — sezonske
+(5, 11, 'SEZONSKA', '2026-05-25 09:07:00', NULL, false),
+(5,  7, 'SEZONSKA', '2026-05-25 09:07:00', NULL, false),
+(5, 16, 'SEZONSKA', '2026-05-25 09:07:00', NULL, false),
+-- Kupac 5, sesija 4 (09:08) — vremenske (samo proizvodi iz vremenskog menija: 14,15,3,4,9,10)
+(5,  3, 'VREMENSKA', '2026-05-25 09:08:00', '2026-05-25 09:09:25', true),
+(5,  9, 'VREMENSKA', '2026-05-25 09:08:00', '2026-05-25 09:09:25', true),
+(5, 14, 'VREMENSKA', '2026-05-25 09:08:00', '2026-05-25 09:08:18', true),
+(5, 15, 'VREMENSKA', '2026-05-25 09:08:00', '2026-05-25 09:08:18', true),
+(5,  4, 'VREMENSKA', '2026-05-25 09:08:00', NULL,                  false),
+(5, 10, 'VREMENSKA', '2026-05-25 09:08:00', NULL,                  false),
+-- Kupac 4 (Marko) — pregledao, nije narucio
+(4,  1, 'PERSONALIZOVANA', '2026-05-26 14:10:00', NULL, false),
+(4,  3, 'PERSONALIZOVANA', '2026-05-26 14:10:00', NULL, false),
+(4,  6, 'PERSONALIZOVANA', '2026-05-26 14:10:00', NULL, false),
+(4, 12, 'PERSONALIZOVANA', '2026-05-26 14:10:00', NULL, false),
+(4,  2, 'TREND',           '2026-05-26 14:11:00', NULL, false),
+(4,  5, 'TREND',           '2026-05-26 14:11:00', NULL, false),
+(4,  6, 'SEZONSKA',        '2026-05-26 14:12:00', NULL, false),
+(4, 16, 'SEZONSKA',        '2026-05-26 14:12:00', NULL, false),
+-- Kupac 5, korpa preporuke (prikazane dok je pregledao korpu pre porudzbine 3)
+(5,  9, 'KORPA', '2026-05-25 09:06:00', '2026-05-25 09:09:25', true),
+(5, 10, 'KORPA', '2026-05-25 09:06:00', '2026-05-25 09:09:25', true),
+(5, 11, 'KORPA', '2026-05-25 09:06:00', NULL,                  false),
+-- Kupac 4, korpa preporuke (nije narucio)
+(4,  9, 'KORPA', '2026-05-26 14:13:00', NULL, false),
+(4, 10, 'KORPA', '2026-05-26 14:13:00', NULL, false);
+
+SELECT setval(pg_get_serial_sequence('prikazane_preporuke', 'id'), MAX(id)) FROM prikazane_preporuke;
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- Prikazani komboi — istorijski seed podaci
+--
+-- Stavke menija i njihovi proizvodi:
+--   1->P1(ClassicBurger), 2->P2(MonsterBurger), 3->P12(BuffaloWings)
+--   4->P8(CocaCola), 5->P14(Omelette), 6->P15(AvocadoToast)
+--   7->P3(Capricciosa), 8->P4(Marinara), 9->P9(Kafa), 10->P10(Tiramisu)
+--   11->P6(CezarSalata), 12->P7(AvocadoMediteran), 14->P11(Cheesecake)
+--
+-- Kupac 5 je narucio stavke: 1,2,5,6,7,8,9,10
+-- ═══════════════════════════════════════════════════════════════════════════
+
+-- Kombo 1: Burger+Wings+Kola (stavke 1,3,4) — kupac 5 narucio 1/3 (samo burger)
+INSERT INTO prikazani_komboi (kupac_id, prikazano_u, realizovano_u, uspesna, broj_narucenih_stavki)
+VALUES (5, '2026-05-25 08:49:00', '2026-05-25 09:08:06', true, 1);
+INSERT INTO prikazani_kombo_stavke (kombo_id, stavka_menija_id)
+VALUES (1, 1), (1, 3), (1, 4);
+
+-- Kombo 2: Pizza+Kafa+Tiramisu (stavke 7,9,10) — kupac 5 narucio 3/3 (sve)
+INSERT INTO prikazani_komboi (kupac_id, prikazano_u, realizovano_u, uspesna, broj_narucenih_stavki)
+VALUES (5, '2026-05-25 09:04:00', '2026-05-25 09:09:25', true, 3);
+INSERT INTO prikazani_kombo_stavke (kombo_id, stavka_menija_id)
+VALUES (2, 7), (2, 9), (2, 10);
+
+-- Kombo 3: Omelette+AvocadoToast+Kafa (stavke 5,6,9) — kupac 5 narucio 3/3
+INSERT INTO prikazani_komboi (kupac_id, prikazano_u, realizovano_u, uspesna, broj_narucenih_stavki)
+VALUES (5, '2026-05-25 08:49:00', '2026-05-25 09:08:18', true, 3);
+INSERT INTO prikazani_kombo_stavke (kombo_id, stavka_menija_id)
+VALUES (3, 5), (3, 6), (3, 9);
+
+-- Kombo 4: CezarSalata+Wings+Cheesecake (stavke 11,3,14) — kupac 5 narucio 0/3 (nista)
+INSERT INTO prikazani_komboi (kupac_id, prikazano_u, realizovano_u, uspesna, broj_narucenih_stavki)
+VALUES (5, '2026-05-25 09:04:00', NULL, false, 0);
+INSERT INTO prikazani_kombo_stavke (kombo_id, stavka_menija_id)
+VALUES (4, 11), (4, 3), (4, 14);
+
+-- Kombo 5: MonsterBurger+Pizza+Tiramisu (stavke 2,8,10) — kupac 5 narucio 3/3
+INSERT INTO prikazani_komboi (kupac_id, prikazano_u, realizovano_u, uspesna, broj_narucenih_stavki)
+VALUES (5, '2026-05-25 09:05:00', '2026-05-25 09:09:25', true, 3);
+INSERT INTO prikazani_kombo_stavke (kombo_id, stavka_menija_id)
+VALUES (5, 2), (5, 8), (5, 10);
+
+-- Kombo 6: kupac 4 — nije narucio nista
+INSERT INTO prikazani_komboi (kupac_id, prikazano_u, realizovano_u, uspesna, broj_narucenih_stavki)
+VALUES (4, '2026-05-26 14:10:00', NULL, false, 0);
+INSERT INTO prikazani_kombo_stavke (kombo_id, stavka_menija_id)
+VALUES (6, 7), (6, 9), (6, 14);
+
+SELECT setval(pg_get_serial_sequence('prikazani_komboi', 'id'), MAX(id)) FROM prikazani_komboi;

@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <title>Menadžerska Analitika</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        nav {
+            background: white; border-bottom: 1px solid #e5e0d8;
+            padding: 0 40px; height: 68px; width: 100%;
+            display: flex; align-items: center; justify-content: space-between;
+            position: fixed; top: 0; left: 0; z-index: 100;
+        }
+        .nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .nav-logo-icon { width: 76px; height: 96px; display: flex; align-items: center; justify-content: center; }
+        .nav-logo-text { font-family: 'Playfair Display', serif; font-size: 20px; color: #1a1a1a; font-weight: 700; }
+        .nav-links { display: flex; align-items: center; gap: 4px; }
+        .nav-links a { padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 500; color: #6b7280; transition: all 0.15s; }
+        .nav-links a:hover { background: #f3f4f6; color: #1a1a1a; }
+        .nav-links a.active { background: #2d6a2d !important; color: white !important; }
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .nav-user { font-size: 13px; color: #6b7280; background: #f3f4f6; padding: 6px 12px; border-radius: 20px; font-family: sans-serif; }
+        .btn-odjava { background: none; border: 1.5px solid #e5e0d8; border-radius: 8px; padding: 7px 14px; font-size: 13px; font-weight: 500; color: #6b7280; cursor: pointer; transition: all 0.15s; }
+        .btn-odjava:hover { border-color: #dc2626; color: #dc2626; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen pt-24 p-8">
+
+<nav>
+    <div class="flex items-center gap-4">
+        <button onclick="nazadNaMenije()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-lg transition cursor-pointer">
+            Nazad na menije
+        </button>
+    </div>
+    <div class="text-xl font-bold text-gray-800" id="nav-naslov-menija">Analitika</div>
+    <div></div>
+</nav>
+
+<div class="max-w-6xl mx-auto space-y-8">
+
+    <div>
+        <h1 class="text-3xl font-bold text-gray-800" id="glavni-naslov">Učitavanje analitike...</h1>
+    </div>
+    <div>
+        <button onclick="izveziiPDF()" id="btn-pdf" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center gap-2">
+            Preuzmi PDF
+        </button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4">
+            <div class="flex items-center justify-between border-bottom pb-2 border-gray-100">
+                <h2 class="text-xl font-bold text-gray-800">
+                    A. Pokretači izmena
+                </h2>
+                <span id="badge-ukupno-verzija" class="text-xs bg-indigo-50 text-indigo-600 font-bold px-2.5 py-1 rounded-full">-- verzija</span>
+            </div>
+
+            <div id="pokretaci-lista" class="space-y-2 pt-2">
+            </div>
+
+            <div id="zakljucak-cene-kontejner" class="p-4 rounded-xl mt-4 text-sm font-medium">
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between space-y-4">
+            <div class="border-bottom pb-2 border-gray-100">
+                <h2 class="text-xl font-bold text-gray-800">
+                    B. Stabilnost menadžmenta (Rollback Rate)
+                </h2>
+            </div>
+
+            <div class="text-center py-6">
+                <p class="text-sm text-gray-400 uppercase tracking-wider font-semibold">Stopa povlačenja (Error Rate)</p>
+                <h1 id="rollback-procenat" class="text-6xl font-black mt-2">--%</h1>
+                <p id="rollback-brojac" class="text-xs text-gray-400 mt-1">Poništeno -- od -- izmena</p>
+            </div>
+
+            <div id="stabilnost-upozorenje" class="p-4 rounded-xl text-sm font-medium">
+            </div>
+        </div>
+
+    </div>
+
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4">
+        <h2 class="text-xl font-bold text-gray-800 border-bottom pb-2 border-gray-100">
+            C. Hronika eksperimenata i poništenih odluka
+        </h2>
+        <div class="p-4 bg-gray-50 rounded-xl border border-gray-200">
+            <p id="hronika-tekst" class="text-gray-700 italic leading-relaxed">
+                Pretraživanje kriznih prozora...
+            </p>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-6">
+        <div class="border-b pb-2 border-gray-100">
+            <h2 class="text-xl font-bold text-gray-800">
+                D. Uporedna analitika
+            </h2>
+            <p class="text-gray-400 text-xs mt-0.5">Izaberite bilo koje dve verzije kako biste ih uporedili.</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-4 bg-gray-50 p-4 rounded-xl border border-gray-200 text-sm">
+            <div class="flex items-center gap-2">
+                <label class="font-medium text-gray-600">Verzija A:</label>
+                <select id="select-verzija-a" class="bg-white border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-gray-400"></select>
+            </div>
+            <div class="flex items-center gap-2">
+                <label class="font-medium text-gray-600">Verzija B:</label>
+                <select id="select-verzija-b" class="bg-white border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-gray-400"></select>
+            </div>
+            <button onclick="uporediVerzije()" class="px-5 py-1.5 bg-gray-800 hover:bg-gray-900 text-white font-semibold rounded-lg shadow-sm cursor-pointer transition ml-auto">
+                Uporedi
+            </button>
+        </div>
+
+        <div id="komparacija-rezultat-kontejner" class="hidden overflow-hidden rounded-xl border border-gray-200 shadow-sm">
+            <table class="w-full text-left border-collapse text-sm">
+                <thead>
+                <tr class="bg-gray-100 text-gray-700 border-b border-gray-200 font-semibold">
+                    <th class="p-4 w-1/3">Metrika / Podatak</th>
+                    <th id="th-verzija-a" class="p-4 w-1/3 border-l border-gray-200 bg-gray-50/50">Verzija A</th>
+                    <th id="th-verzija-b" class="p-4 w-1/3 border-l border-gray-200 bg-gray-50/50">Verzija B</th>
+                </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 bg-white text-gray-700 font-medium">
+                <tr>
+                    <td class="p-4 text-gray-500 font-normal">Period aktivnosti</td>
+                    <td id="td-period-a" class="p-4 border-l border-gray-100"></td>
+                    <td id="td-period-b" class="p-4 border-l border-gray-100"></td>
+                </tr>
+                <tr>
+                    <td class="p-4 text-gray-500 font-normal">Razlog verzionisanja</td>
+                    <td id="td-razlog-a" class="p-4 border-l border-gray-100"></td>
+                    <td id="td-razlog-b" class="p-4 border-l border-gray-100"></td>
+                </tr>
+                <tr class="bg-gray-50/30">
+                    <td class="p-4 text-gray-500 font-normal">Ukupan broj stavki na meniju</td>
+                    <td id="td-stavke-a" class="p-4 font-semibold border-l border-gray-100"></td>
+                    <td id="td-stavke-b" class="p-4 font-semibold border-l border-gray-100"></td>
+                </tr>
+                <tr>
+                    <td class="p-4 text-gray-500 font-normal">Broj kategorija</td>
+                    <td id="td-kategorije-a" class="p-4 border-l border-gray-100"></td>
+                    <td id="td-kategorije-b" class="p-4 border-l border-gray-100"></td>
+                </tr>
+                <tr>
+                    <td class="p-4 text-gray-500 font-normal">Prosečna cena artikla</td>
+                    <td id="td-cena-a" class="p-4 text-gray-900 font-semibold border-l border-gray-100"></td>
+                    <td id="td-cena-b" class="p-4 text-gray-900 font-semibold border-l border-gray-100"></td>
+                </tr>
+                <tr class="bg-amber-50/20 font-semibold text-gray-900">
+                    <td class="p-4 text-gray-500 font-normal">Ukupan broj započetih porudžbina</td>
+                    <td id="td-porudzbine-a" class="p-4 border-l border-gray-100"></td>
+                    <td id="td-porudzbine-b" class="p-4 border-l border-gray-100"></td>
+                </tr>
+                <tr class="font-semibold text-gray-900">
+                    <td class="p-4 text-gray-500 font-normal">Realizovane (potvrđene) porudžbine</td>
+                    <td id="td-potvrdjene-a" class="p-4 border-l border-gray-100"></td>
+                    <td id="td-potvrdjene-b" class="p-4 border-l border-gray-100"></td>
+                </tr>
+                <tr class="font-bold text-base text-gray-900 border-t border-gray-200">
+                    <td class="p-4 text-gray-600 font-medium">Ukupna zarada (RSD)</td>
+                    <td id="td-zarada-a" class="p-4 border-l border-gray-100"></td>
+                    <td id="td-zarada-b" class="p-4 border-l border-gray-100"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-6">
+        <div class="border-b pb-2 border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <h2 class="text-xl font-bold text-gray-800">E. Istorijski trendovi artikala</h2>
+                <p class="text-gray-400 text-xs mt-0.5">Praćenje cene proizvoda kroz verzije.</p>
+            </div>
+            <select id="select-artikal-trend" onchange="osveziGrafikonCene()" class="bg-white border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400">
+                <option value="">Izaberite artikal...</option>
+            </select>
+        </div>
+
+        <div class="w-full bg-gray-50 p-4 rounded-xl border border-gray-200" style="height: 320px; position: relative;">
+            <canvas id="chartKretanjeCene"></canvas>
+        </div>
+    </div>
+
+</div>
+
+<script src="./js/api.js"></script>
+<script src="./js/auth.js"></script>
+<script>
+    zastitiStranicu();
+    let mojGrafikon = null;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const grupniMeniId = urlParams.get('grupniMeniId');
+    const nazivMenija = urlParams.get('naziv') || 'Meni';
+    const restoranId = urlParams.get('restoranId');
+
+    document.getElementById('nav-naslov-menija').innerText = nazivMenija;
+    document.getElementById('glavni-naslov').innerText = `Analitika: ${nazivMenija}`;
+
+    function nazadNaMenije() {
+        window.location.href = `pregled-menija.html?restoranId=${restoranId}`;
+    }
+    async function izveziiPDF() {
+        const btn = document.getElementById('btn-pdf');
+        btn.innerText = 'Generišem...';
+        btn.disabled = true;
+
+        try {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+            const nazivMenijaZaPDF = nazivMenija || 'Meni';
+            console.log('RAW innerText:', JSON.stringify(nazivMenijaZaPDF));
+            console.log('Globalna var nazivMenija:', nazivMenija);
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const margin = 14;
+            const contentWidth = pageWidth - margin * 2;
+
+            const BOJA_TAMNA    = [17, 24, 39];      // gray-900
+            const BOJA_SREDNJA  = [75, 85, 99];      // gray-600
+            const BOJA_SVETLA   = [156, 163, 175];   // gray-400
+            const BOJA_INDIGO   = [79, 70, 229];     // indigo-600
+            const BOJA_AMBER    = [217, 119, 6];     // amber-600
+            const BOJA_EMERALD  = [5, 150, 105];     // emerald-600
+            const BOJA_BG_SVETLO = [249, 250, 251];  // gray-50
+            const BOJA_BORDER   = [229, 231, 235];   // gray-200
+
+            let y = margin;
+
+            function novaStraniceAko(potrebnoMm) {
+                if (y + potrebnoMm > pdf.internal.pageSize.getHeight() - margin) {
+                    pdf.addPage();
+                    y = margin;
+                }
+            }
+
+            function naslovSekcije(tekst) {
+                novaStraniceAko(14);
+                pdf.setFontSize(11);
+                pdf.setFont('helvetica', 'bold');
+                pdf.setTextColor(...BOJA_TAMNA);
+                pdf.text(tekst, margin, y);
+                // Linija ispod naslova
+                pdf.setDrawColor(...BOJA_BORDER);
+                pdf.setLineWidth(0.3);
+                pdf.line(margin, y + 2, margin + contentWidth, y + 2);
+                y += 8;
+            }
+
+            function razmak(mm = 6) { y += mm; }
+
+            // ZAGLAVLJE
+            pdf.setFillColor(...BOJA_INDIGO);
+            pdf.rect(0, 0, pageWidth, 22, 'F');
+            pdf.setFontSize(15);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(255, 255, 255);
+            pdf.text(`Analitika: ${nazivMenijaZaPDF}`, margin, 14);
+            pdf.setFontSize(8);
+            pdf.setFont('helvetica', 'normal');
+            pdf.text(`Generisano: ${new Date().toLocaleDateString('sr-RS')}`, pageWidth - margin, 14, { align: 'right' });
+            y = 30;
+
+            // A. POKRETAČI IZMENA
+            naslovSekcije('A. Pokretaci izmena');
+
+            // Ukupan broj verzija
+            const badgeTekst = document.getElementById('badge-ukupno-verzija')?.innerText || '';
+            pdf.setFontSize(8);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(...BOJA_INDIGO);
+            pdf.text(badgeTekst, margin + contentWidth, y - 6, { align: 'right' });
+
+            // Lista pokretača
+            const pokretaciRedovi = [];
+            document.querySelectorAll('#pokretaci-lista > div').forEach(div => {
+                const spans = div.querySelectorAll('span');
+                if (spans.length >= 2) {
+                    pokretaciRedovi.push([spans[0].innerText, spans[1].innerText]);
+                }
+            });
+
+            if (pokretaciRedovi.length > 0) {
+                pdf.autoTable({
+                    startY: y,
+                    margin: { left: margin, right: margin },
+                    head: [['Razlog izmene', 'Ucestalost']],
+                    body: pokretaciRedovi,
+                    styles: { fontSize: 9, cellPadding: 3 },
+                    headStyles: { fillColor: BOJA_BG_SVETLO, textColor: BOJA_SREDNJA, fontStyle: 'bold', lineColor: BOJA_BORDER, lineWidth: 0.3 },
+                    bodyStyles: { textColor: BOJA_TAMNA, lineColor: BOJA_BORDER, lineWidth: 0.2 },
+                    columnStyles: { 1: { halign: 'right', cellWidth: 35 } },
+                    alternateRowStyles: { fillColor: [255, 255, 255] },
+                });
+                y = pdf.lastAutoTable.finalY + 3;
+            }
+
+            // Zaključak
+            const zakljucakEl = document.getElementById('zakljucak-cene-kontejner');
+            if (zakljucakEl?.innerText?.trim()) {
+                novaStraniceAko(14);
+                const tekst = zakljucakEl.innerText.trim();
+                const isAmber = zakljucakEl.className.includes('amber');
+                pdf.setFillColor(...(isAmber ? [255, 251, 235] : [236, 253, 245]));
+                pdf.setDrawColor(...(isAmber ? [253, 230, 138] : [167, 243, 208]));
+                pdf.setLineWidth(0.3);
+                const linije = pdf.splitTextToSize(tekst, contentWidth - 8);
+                const visina = linije.length * 5 + 6;
+                pdf.roundedRect(margin, y, contentWidth, visina, 2, 2, 'FD');
+                pdf.setFontSize(8.5);
+                pdf.setFont('helvetica', 'normal');
+                pdf.setTextColor(...(isAmber ? BOJA_AMBER : BOJA_EMERALD));
+                pdf.text(linije, margin + 4, y + 5);
+                y += visina + 4;
+            }
+
+            razmak(4);
+
+            // B. STABILNOST
+            naslovSekcije('B. Stabilnost menadzmenta (Rollback Rate)');
+
+            const rollbackProcenat = document.getElementById('rollback-procenat')?.innerText || '--%';
+            const rollbackBrojac = document.getElementById('rollback-brojac')?.innerText || '';
+            const isAmberStabilnost = rollbackProcenat.replace('%', '') > 20;
+
+            // Veliki broj u sredini
+            novaStraniceAko(24);
+            pdf.setFontSize(36);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(...(isAmberStabilnost ? BOJA_AMBER : BOJA_EMERALD));
+            pdf.text(rollbackProcenat, pageWidth / 2, y + 12, { align: 'center' });
+            pdf.setFontSize(8);
+            pdf.setFont('helvetica', 'normal');
+            pdf.setTextColor(...BOJA_SVETLA);
+            pdf.text('STOPA POVLACENJA (ERROR RATE)', pageWidth / 2, y + 18, { align: 'center' });
+            pdf.text(rollbackBrojac, pageWidth / 2, y + 23, { align: 'center' });
+            y += 28;
+
+            // Upozorenje/potvrda
+            const upozorenjeEl = document.getElementById('stabilnost-upozorenje');
+            if (upozorenjeEl?.innerText?.trim()) {
+                const tekst = upozorenjeEl.innerText.trim();
+                const linije = pdf.splitTextToSize(tekst, contentWidth - 8);
+                const visina = linije.length * 5 + 6;
+                novaStraniceAko(visina + 4);
+                pdf.setFillColor(...(isAmberStabilnost ? [255, 251, 235] : [236, 253, 245]));
+                pdf.setDrawColor(...(isAmberStabilnost ? [253, 230, 138] : [167, 243, 208]));
+                pdf.setLineWidth(0.3);
+                pdf.roundedRect(margin, y, contentWidth, visina, 2, 2, 'FD');
+                pdf.setFontSize(8.5);
+                pdf.setTextColor(...(isAmberStabilnost ? BOJA_AMBER : BOJA_EMERALD));
+                pdf.text(linije, margin + 4, y + 5);
+                y += visina + 4;
+            }
+
+            razmak(4);
+
+
+            // C. HRONIKA
+            naslovSekcije('C. Hronika eksperimenata i poništenih odluka');
+
+            const hronikaEl = document.getElementById('hronika-tekst');
+            if (hronikaEl?.innerText?.trim()) {
+                const tekst = hronikaEl.innerText.trim();
+                const linije = pdf.splitTextToSize(tekst, contentWidth - 8);
+                const visina = linije.length * 5 + 6;
+                novaStraniceAko(visina + 4);
+                pdf.setFillColor(...BOJA_BG_SVETLO);
+                pdf.setDrawColor(...BOJA_BORDER);
+                pdf.setLineWidth(0.3);
+                pdf.roundedRect(margin, y, contentWidth, visina, 2, 2, 'FD');
+                pdf.setFontSize(8.5);
+                pdf.setFont('helvetica', 'italic');
+                pdf.setTextColor(...BOJA_SREDNJA);
+                pdf.text(linije, margin + 4, y + 5);
+                y += visina + 4;
+            }
+
+            razmak(4);
+
+            // D. KOMPARACIJA
+            naslovSekcije('D. Uporedna analitika');
+
+            const verzijaA = document.getElementById('th-verzija-a')?.innerText || 'Verzija A';
+            const verzijaB = document.getElementById('th-verzija-b')?.innerText || 'Verzija B';
+
+            const metrike = [
+                ['Period aktivnosti',               'td-period-a',      'td-period-b'],
+                ['Razlog verzionisanja',             'td-razlog-a',      'td-razlog-b'],
+                ['Ukupan broj stavki',               'td-stavke-a',      'td-stavke-b'],
+                ['Broj kategorija',                  'td-kategorije-a',  'td-kategorije-b'],
+                ['Prosecna cena artikla',            'td-cena-a',        'td-cena-b'],
+                ['Ukupno porudzbina',                'td-porudzbine-a',  'td-porudzbine-b'],
+                ['Potvrdjene porudzbine',            'td-potvrdjene-a',  'td-potvrdjene-b'],
+                ['Ukupna zarada (RSD)',              'td-zarada-a',      'td-zarada-b'],
+            ];
+
+            const komparacijaBody = metrike.map(([label, idA, idB]) => [
+                label,
+                document.getElementById(idA)?.innerText || '—',
+                document.getElementById(idB)?.innerText || '—',
+            ]);
+
+            pdf.autoTable({
+                startY: y,
+                margin: { left: margin, right: margin },
+                head: [['Metrika', verzijaA, verzijaB]],
+                body: komparacijaBody,
+                styles: { fontSize: 9, cellPadding: 3.5 },
+                headStyles: { fillColor: BOJA_INDIGO, textColor: [255, 255, 255], fontStyle: 'bold' },
+                bodyStyles: { textColor: BOJA_TAMNA, lineColor: BOJA_BORDER, lineWidth: 0.2 },
+                columnStyles: {
+                    0: { cellWidth: 60, fontStyle: 'normal', textColor: BOJA_SREDNJA },
+                    1: { halign: 'center' },
+                    2: { halign: 'center' },
+                },
+                alternateRowStyles: { fillColor: BOJA_BG_SVETLO },
+            });
+            y = pdf.lastAutoTable.finalY + 4;
+
+            razmak(4);
+
+
+            // E. GRAFIKON
+            naslovSekcije('E. Istorijski trendovi artikala');
+
+            if (mojGrafikon) {
+                const izabraniArtikal = document.getElementById('select-artikal-trend');
+                const nazivArtikla = izabraniArtikal?.options[izabraniArtikal.selectedIndex]?.text || '';
+                if (nazivArtikla) {
+                    pdf.setFontSize(8.5);
+                    pdf.setFont('helvetica', 'italic');
+                    pdf.setTextColor(...BOJA_SVETLA);
+                    pdf.text(`Artikal: ${nazivArtikla}`, margin, y);
+                    y += 5;
+                }
+
+                const grafikonSlika = mojGrafikon.toBase64Image('image/png', 1.0);
+                const grafikonVisina = 70; // mm
+                novaStraniceAko(grafikonVisina + 4);
+                pdf.addImage(grafikonSlika, 'PNG', margin, y, contentWidth, grafikonVisina);
+                y += grafikonVisina + 4;
+            } else {
+                pdf.setFontSize(8.5);
+                pdf.setFont('helvetica', 'italic');
+                pdf.setTextColor(...BOJA_SVETLA);
+                pdf.text('Grafikon nije učitan, odaberite artikal pre preuzimanja PDF-a.', margin, y);
+                y += 8;
+            }
+
+            //Footer
+            const ukupnoStranica = pdf.internal.getNumberOfPages();
+            for (let i = 1; i <= ukupnoStranica; i++) {
+                pdf.setPage(i);
+                pdf.setFontSize(7.5);
+                pdf.setFont('helvetica', 'normal');
+                pdf.setTextColor(...BOJA_SVETLA);
+                pdf.text(
+                    `${nazivMenijaZaPDF} - Menadžerska analitika`,
+                    margin,
+                    pdf.internal.pageSize.getHeight() - 6
+                );
+                pdf.text(
+                    `${i} / ${ukupnoStranica}`,
+                    pageWidth - margin,
+                    pdf.internal.pageSize.getHeight() - 6,
+                    { align: 'right' }
+                );
+            }
+
+            pdf.save(`${nazivMenijaZaPDF}_analitika.pdf`);
+
+        } catch (error) {
+            console.error("Greška pri generisanju PDF-a:", error);
+            alert("Došlo je do greške: " + error.message);
+        } finally {
+            btn.innerHTML = 'Preuzmi PDF';
+            btn.disabled = false;
+        }
+    }
+
+    async function ucitajSveAnalitike() {
+        if (!grupniMeniId) {
+            alert("Grupni Meni ID nije prosleđen.");
+            return;
+        }
+
+        try {
+            const [dataPokretaci, dataStabilnost, dataHronika] = await Promise.all([
+                apiFetch(`/menadzer/analitika/pokretaci?grupniMeniId=${grupniMeniId}`),
+                apiFetch(`/menadzer/analitika/stabilnost?grupniMeniId=${grupniMeniId}`),
+                apiFetch(`/menadzer/analitika/hronika?grupniMeniId=${grupniMeniId}`)
+            ]);
+
+            renderujPokretace(dataPokretaci);
+            renderujStabilnost(dataStabilnost);
+            renderujHroniku(dataHronika);
+
+            popuniSelectOpcije(grupniMeniId);
+            ucitajProizvodeZaTrend();
+
+        } catch (error) {
+            console.error("Greška pri učitavanju analitike:", error);
+            document.getElementById('glavni-naslov').innerText = "Greška pri učitavanju analitičkih podataka.";
+        }
+    }
+
+    function renderujPokretace(data) {
+        document.getElementById('badge-ukupno-verzija').innerText = `${data.ukupanBrojVerzija} verzija`;
+
+        const lista = document.getElementById('pokretaci-lista');
+        lista.innerHTML = '';
+
+        if (!data.procenatPoRazlogu || Object.keys(data.procenatPoRazlogu).length === 0) {
+            lista.innerHTML = '<p class="text-gray-400 text-sm">Nema istorijskih izmena za ovaj meni u odabranom periodu.</p>';
+            return;
+        }
+
+        Object.keys(data.procenatPoRazlogu).forEach(razlog => {
+            const procenat = data.procenatPoRazlogu[razlog];
+            const fontBroj = data.brojPoRazlogu[razlog] || 0;
+
+            const stavka = document.createElement('div');
+            stavka.className = "flex justify-between text-sm font-semibold text-gray-700 py-1 border-b border-gray-50";
+            stavka.innerHTML = `
+                <span>${formatirajNazivRazloga(razlog)}</span>
+                <span class="text-gray-500">${procenat}% (${fontBroj}x)</span>
+            `;
+            lista.appendChild(stavka);
+        });
+
+        const kontejnerZakljucka = document.getElementById('zakljucak-cene-kontejner');
+        if (data.procenatPoRazlogu['IZMENA_CENOVNIKA'] > 50) {
+            kontejnerZakljucka.className = "p-4 rounded-xl mt-4 text-sm font-medium bg-amber-50 text-amber-800 border border-amber-200";
+        } else {
+            kontejnerZakljucka.className = "p-4 rounded-xl mt-4 text-sm font-medium bg-emerald-50 text-emerald-700 border border-emerald-100";
+        }
+        kontejnerZakljucka.innerHTML = `<strong>Uvid:</strong> ${data.menadzerskiZakljucak}`;
+    }
+
+    function renderujStabilnost(data) {
+        const procenatPolje = document.getElementById('rollback-procenat');
+        procenatPolje.innerText = `${data.rollbackRate}%`;
+        document.getElementById('rollback-brojac').innerText = `Poništeno ${data.brojRollbackova} od ${data.ukupanBrojVerzija} izmena`;
+
+        const upozorenjeKontejner = document.getElementById('stabilnost-upozorenje');
+
+        if (data.rollbackRate > 20) {
+            procenatPolje.className = "text-6xl font-black mt-2 text-amber-600";
+            upozorenjeKontejner.className = "p-4 rounded-xl text-sm font-medium bg-amber-50 text-amber-800 border border-amber-200 shadow-sm";
+            upozorenjeKontejner.innerHTML = `<strong>Napomena o stabilnosti:</strong> Primetan je povisen broj povlacenja menija (preko 20%).
+            Preporucuje se dodatna provera unosa artikala i cena pre nego sto se verzija pusti uzivo.`;
+        } else {
+            procenatPolje.className = "text-6xl font-black mt-2 text-emerald-600";
+            upozorenjeKontejner.className = "p-4 rounded-xl text-sm font-medium bg-emerald-50 text-emerald-700 border border-emerald-100";
+            upozorenjeKontejner.innerHTML = `<strong>Stabilno upravljanje:</strong> Ponuda se menja promisljeno. Broj povucenih verzija je minimalan, sto ukazuje na dobru operativnu stabilnost.`;
+        }
+    }
+
+    function renderujHroniku(data) {
+        const tekstPolje = document.getElementById('hronika-tekst');
+        tekstPolje.innerText = data.tekstUvida;
+
+        if (data.imaZabelezenihMene) {
+            tekstPolje.parentElement.className = "p-4 bg-amber-50/60 rounded-xl border border-amber-200 text-amber-900";
+        } else {
+            tekstPolje.parentElement.className = "p-4 bg-gray-50 rounded-xl border border-gray-200 text-gray-600";
+        }
+    }
+
+    async function popuniSelectOpcije(grupniId) {
+        try {
+            const response = await apiFetch(`/meni/grupa/${grupniId}`);
+
+            const selectA = document.getElementById('select-verzija-a');
+            const selectB = document.getElementById('select-verzija-b');
+
+            selectA.innerHTML = '';
+            selectB.innerHTML = '';
+
+            if(!response || response.length === 0) return;
+
+            response.forEach((meni, index) => {
+                const period = formatirajPeriod(meni.datumOd, meni.datumDo);
+                const optText = `${meni.verzija} (${period})`;
+
+                const optA = new Option(optText, meni.meniId);
+                const optB = new Option(optText, meni.meniId);
+
+                if(index === 0) optA.selected = true;
+                if(index === 1 || response.length === 1) optB.selected = true;
+
+                selectA.add(optA);
+                selectB.add(optB);
+            });
+        } catch(e) {
+            console.log("Greska u popuniSelectOpcije: " + e.message);
+        }
+    }
+
+    async function uporediVerzije() {
+        const idA = document.getElementById('select-verzija-a').value;
+        const idB = document.getElementById('select-verzija-b').value;
+
+        if (!idA || !idB) {
+            alert("Morate odabrati obe verzije za poređenje.");
+            return;
+        }
+
+        try {
+            const data = await apiFetch(`/menadzer/analitika/komparacija?meniIdA=${idA}&meniIdB=${idB}`);
+
+            document.getElementById('th-verzija-a').innerText = `Verzija ${data.meniA.verzija}`;
+            document.getElementById('th-verzija-b').innerText = `Verzija ${data.meniB.verzija}`;
+
+            document.getElementById('td-period-a').innerText = formatirajPeriod(data.meniA.datumOd, data.meniA.datumDo);
+            document.getElementById('td-period-b').innerText = formatirajPeriod(data.meniB.datumOd, data.meniB.datumDo);
+
+            document.getElementById('td-razlog-a').innerText = formatirajNazivRazloga(data.meniA.razlogVerzionisanja);
+            document.getElementById('td-razlog-b').innerText = formatirajNazivRazloga(data.meniB.razlogVerzionisanja);
+
+            document.getElementById('td-stavke-a').innerText = `${data.meniA.brojStavki}`;
+            document.getElementById('td-stavke-b').innerText = `${data.meniB.brojStavki}`;
+
+            document.getElementById('td-kategorije-a').innerText = data.meniA.brojKategorija;
+            document.getElementById('td-kategorije-b').innerText = data.meniB.brojKategorija;
+
+            document.getElementById('td-cena-a').innerText = `${data.meniA.prosecnaCenaStavki.toFixed(2)} RSD`;
+            document.getElementById('td-cena-b').innerText = `${data.meniB.prosecnaCenaStavki.toFixed(2)} RSD`;
+
+            document.getElementById('td-porudzbine-a').innerText = `${data.meniA.ukupanBrojPorudzbina}x`;
+            document.getElementById('td-porudzbine-b').innerText = `${data.meniB.ukupanBrojPorudzbina}x`;
+
+            document.getElementById('td-potvrdjene-a').innerText = `${data.meniA.brojPotvrdjenihPorudzbina}x`;
+            document.getElementById('td-potvrdjene-b').innerText = `${data.meniB.brojPotvrdjenihPorudzbina}x`;
+
+            document.getElementById('td-zarada-a').innerText = `${data.meniA.ukupnaZarada.toLocaleString('sr-RS')} RSD`;
+            document.getElementById('td-zarada-b').innerText = `${data.meniB.ukupnaZarada.toLocaleString('sr-RS')} RSD`;
+
+            document.getElementById('komparacija-rezultat-kontejner').classList.remove('hidden');
+
+        } catch (error) {
+            console.error("Greška pri poređenju verzija:", error);
+            alert("Došlo je do greške prilikom preuzimanja podataka za komparaciju.");
+        }
+    }
+
+    async function ucitajProizvodeZaTrend() {
+        try {
+            const proizvodi = await apiFetch(`/meni/grupa/${grupniMeniId}/proizvodi`);
+            const select = document.getElementById('select-artikal-trend');
+            const trenutniIzbor = select.value;
+
+            select.innerHTML = '<option value="">Izaberite artikal...</option>';
+            proizvodi.forEach(p => {
+                const opt = new Option(p.naziv, p.proizvodId);
+                select.add(opt);
+            });
+
+            if (trenutniIzbor) {
+                select.value = trenutniIzbor;
+                osveziGrafikonCene();
+            }
+        } catch (error) {
+            console.error("Greška pri učitavanju jedinstvenih proizvoda:", error);
+        }
+    }
+
+    async function osveziGrafikonCene() {
+        const proizvodId = document.getElementById('select-artikal-trend').value;
+        if (!proizvodId) return;
+
+
+        try {
+            const istorijaCena = await apiFetch(`/menadzer/analitika/cena-stavke?grupniMeniId=${grupniMeniId}&proizvodId=${proizvodId}`);
+
+            // 1. Ekstrakcija X ose (Labels) - Mapiramo niz objekata tako da dobijemo samo oznake verzija (npr. ["v1", "v2", "v3"])
+            const labele = istorijaCena.map(item => item.verzija);
+
+            // 2. Ekstrakcija Y ose (Data) - Mapiramo niz tako da dobijemo numeričke vrednosti cena (npr. [500, 520, 580])
+            const podaci = istorijaCena.map(item => item.cena);
+
+            // 3. Pristup HTML canvas elementu gde će se grafikon iscrtati
+            const ctx = document.getElementById('chartKretanjeCene').getContext('2d');
+
+            // 4. Resetovanje instance: Ako grafikon već postoji od prethodnog artikla, moramo ga uništiti.
+            // U suprotnom, Chart.js će bagovati i preklapati stari grafikon preko novog na hover mišem.
+            if (mojGrafikon) {
+                mojGrafikon.destroy();
+            }
+
+            // 5. Instanciranje novog linijskog grafikona (Line Chart)
+            mojGrafikon = new Chart(ctx, {
+                type: 'line', // Definiše tip grafikona kao linijski kretanje trenda
+                data: {
+                    labels: labele, // Postavljanje oznaka verzija na X osi
+                    datasets: [{
+                        label: 'Cena artikla (RSD)', // Tekst u legendi na vrhu grafikona
+                        data: podaci,              // Niz numeričkih vrednosti za tačke na liniji
+                        borderColor: '#6366f1',     // Boja glavne linije grafikona (Tailwind Indigo-500)
+                        backgroundColor: 'rgba(99, 102, 241, 0.06)', // Blago transparentna boja ispod linije
+                        borderWidth: 3,             // Debljina linije u pikselima
+                        tension: 0.15,              // Zakrivljenost linije (0 je potpuno oštra izlomljena linija)
+                        fill: true                  // Dozvoljava punjenje prostora ispod linije bojom iz 'backgroundColor'
+                    }]
+                },
+                options: {
+                    animation: false,
+                    responsive: true,           // Grafikon se automatski prilagođava širini ekrana (mobilni/desktop)
+                    maintainAspectRatio: false, // Dozvoljava grafikonu da se rastegne i popuni visinu roditeljskog div-a (320px)
+                    scales: {
+                        y: {
+                            beginAtZero: false, // Y osa ne počinje obavezno od 0, već se prilagođava opsegu cena radi bolje uočljivosti promena
+                            ticks: {
+                                // Callback funkcija koja svakom broju na Y osi dodaje sufiks valute za lepši prikaz menadžeru
+                                callback: value => value + ' RSD'
+                            }
+                        }
+                    }
+                }
+            });
+        } catch (error) {
+            console.error("Greška pri osvežavanju grafikona:", error);
+        }
+    }
+
+    function formatirajPeriod(od, doDate) {
+        if (!od) return "Nepoznato";
+        const dOd = new Date(od).toLocaleDateString('sr-RS');
+        const dDo = doDate ? new Date(doDate).toLocaleDateString('sr-RS') : "Aktivna";
+        return `${dOd} - ${dDo}`;
+    }
+
+    function fontJedan(razlog) {
+        switch(razlog) {
+            case 'INICIJALNO_KREIRANJE': return 'Inicijalno kreiranje menija';
+            case 'IZMENA_CENOVNIKA': return 'Izmena cenovnika';
+            case 'DODAVANJE_STAVKE': return 'Dodavanje novih stavki';
+            case 'ROLLBACK': return 'Poništavanje izmena (Rollback na staru verziju)';
+            default: return razlog;
+        }
+    }
+    const formatirajNazivRazloga = fontJedan;
+
+    function nazadNaMenije() {
+        window.location.href = `pregled-menija.html?restoranId=${restoranId}`;
+    }
+
+    window.addEventListener('DOMContentLoaded', ucitajSveAnalitike);
+</script>
+</body>
+</html>

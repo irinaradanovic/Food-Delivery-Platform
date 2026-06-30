@@ -48,11 +48,18 @@ public class StavkaMenijaService {
     @Autowired
     private MeniService meniService;
 
+    @jakarta.persistence.PersistenceContext
+    private jakarta.persistence.EntityManager entityManager;
+
     private final String UPLOAD_DIR = "src/main/resources/static/images/food/";
 
     @Transactional(readOnly = true)
     public List<StavkaMenija> getItemsByMenu(Long meniId) {
         return stavkaMenijaRepository.findByMeniMeniIdAndObrisanFalse(meniId);
+    }
+
+    public List<StavkaMenija> findStavkeZaAktivneMenijeRestorana(Long restoranId){
+        return stavkaMenijaRepository.findStavkeZaAktivneMenijeRestorana(restoranId);
     }
 
     public StavkaMenija getItemById(Long id) {
@@ -126,7 +133,7 @@ public class StavkaMenijaService {
     }
 
     @Transactional
-    public void addMenuItem(Long meniId, Long trenutniKorisnikId, NovaStavkaMenijaDTO request, MultipartFile slika) throws IOException {
+    public Long addMenuItem(Long meniId, Long trenutniKorisnikId, NovaStavkaMenijaDTO request, MultipartFile slika) throws IOException {
         Meni meni = meniRepository.findById(meniId)
                 .orElseThrow(() -> new IllegalArgumentException("Meni ne postoji."));
 
@@ -177,23 +184,47 @@ public class StavkaMenijaService {
         }
 
 
-        Proizvod proizvod = Proizvod.builder()
-                .naziv(request.getNaziv())
-                .opis(request.getOpis())
-                .kalorije(request.getKalorije())
-                .cena(request.getCena()) // Osnovna cena na proizvodu
-                .fotografija(putanjaSlikeUBazi)
-                .kolicina(request.getKolicina())
-                .mernaJedinica(request.getMernaJedinica())
-                .kategorija(kategorija)
-                .sastojci(konacniSastojci)
-                .alergeni(konacniAlergeni)
-                .build();
-        proizvod = proizvodRepository.save(proizvod);
+        Proizvod proizvod;
+        if (request.getKopirajIzStavkeId() != null) {
+            StavkaMenija staraStavka = stavkaMenijaRepository.findById(request.getKopirajIzStavkeId())
+                    .orElseThrow(() -> new IllegalArgumentException("Izabrana stavka menija ne postoji."));
 
+            proizvod = staraStavka.getProizvod();
+        } else {
+            proizvod = Proizvod.builder()
+                    .naziv(request.getNaziv())
+                    .opis(request.getOpis())
+                    .kalorije(request.getKalorije())
+                    .cena(request.getCena())
+                    .fotografija(putanjaSlikeUBazi)
+                    .kolicina(request.getKolicina())
+                    .mernaJedinica(request.getMernaJedinica())
+                    .kategorija(kategorija)
+                    .sastojci(konacniSastojci)
+                    .alergeni(konacniAlergeni)
+                    .build();
+            proizvod = proizvodRepository.save(proizvod);
+        }
+
+
+
+
+        // nova verzija pri dodavanju stavki
+        Meni noviMeni = meniService.cloneMenu(meni);
+        String novaVerzija = meniService.findNextVersion(meni.getGrupniMeniId());
+        noviMeni.setVerzija(novaVerzija);
+        noviMeni.setAktivan(true);
+        noviMeni.setDatumOd(LocalDate.now()); // datum pocetka aktivacije menija
+        noviMeni.setRazlogVerzionisanja(RazlogVerzionisanja.DODAVANJE_STAVKE);
+
+        meniRepository.save(noviMeni);
+
+        // okida se triger koji deaktivira staru verziju
+
+        //meniService.copyMenuItems(meni.getMeniId(), noviMeni);
 
         StavkaMenija stavkaMenija = StavkaMenija.builder()
-                .meni(meni)
+                .meni(noviMeni)
                 .proizvod(proizvod)
                 .vremePripremeMin(request.getVremePripremeMin())
                 .vremePripremeMax(request.getVremePripremeMax())
@@ -202,6 +233,12 @@ public class StavkaMenijaService {
                 .obrisan(false)
                 .build();
         stavkaMenijaRepository.save(stavkaMenija);
+        meniRepository.flush();
+        stavkaMenijaRepository.flush();
+
+        return noviMeni.getMeniId();
+
+
     }
 
 
@@ -322,13 +359,14 @@ public class StavkaMenijaService {
         noviMeni.setVerzija(novaVerzija);
         noviMeni.setAktivan(true);
         noviMeni.setDatumOd(LocalDate.now()); // datum pocetka aktivacije menija
+        noviMeni.setRazlogVerzionisanja(RazlogVerzionisanja.IZMENA_CENOVNIKA);
 
         meniRepository.save(noviMeni);
         meniRepository.flush();
         // okida se triger koji kopira sve stavke sa novim cenama
 
-        meniService.copyMenuItems(stariMeni.getMeniId(), noviMeni);
-        stavkaMenijaRepository.flush();
+        //meniService.copyMenuItems(stariMeni.getMeniId(), noviMeni);
+        //stavkaMenijaRepository.flush();
 
         for (var izmena : dto.getIzmeneCena()) {
             StavkaMenija novaStavka = stavkaMenijaRepository
@@ -338,6 +376,7 @@ public class StavkaMenijaService {
             novaStavka.setCena(izmena.getNovaCena());
             stavkaMenijaRepository.save(novaStavka);
         }
+        stavkaMenijaRepository.flush();
         return noviMeni;
     }
 
@@ -349,7 +388,7 @@ public class StavkaMenijaService {
     }
 
 
-    public Map<String, Integer> calculateAvgPreparationTime(Long kategorijaId) {
+    /*public Map<String, Integer> calculateAvgPreparationTime(Long kategorijaId) {
         Map<String, Integer> mapa = new HashMap<>();
 
         Double min = stavkaMenijaRepository.findAvgMinByKategorija(kategorijaId);
@@ -361,6 +400,31 @@ public class StavkaMenijaService {
         } else {
             mapa.put("min", 15);
             mapa.put("max", 25);
+        }
+
+        return mapa;
+    } */
+
+    public Map<String, Integer> calculateAvgPreparationTime(Long kategorijaId) {
+        Map<String, Integer> mapa = new HashMap<>();
+
+        try {
+            Object[] rezultat = (Object[]) entityManager.createNativeQuery(
+                            "SELECT * FROM fn_analiza_vremena_pripreme(?)"
+                    )
+                    .setParameter(1, kategorijaId)
+                    .getSingleResult();
+
+            if (rezultat != null && rezultat.length == 2) {
+                mapa.put("min", ((Number) rezultat[0]).intValue());
+                mapa.put("max", ((Number) rezultat[1]).intValue());
+            } else {
+                mapa.put("min", 15);
+                mapa.put("max", 25);
+            }
+        } catch (Exception e) {
+            // U slucaju da funkcija baci nas custom RAISE EXCEPTION, ovde ga prihvatamo
+            throw new RuntimeException("Greška u bazi pri računanju statistike: " + e.getMessage(), e);
         }
 
         return mapa;

@@ -148,24 +148,31 @@
                         statusBedz = `<span class="text-[10px] font-bold uppercase px-2 py-0.5 bg-rose-100 text-rose-700 rounded-full ml-2">Deaktiviran</span>`;
                     }
                     kartica.innerHTML = `
-        <div>
-            <div class="w-full h-40 ${bgBoja} flex items-center justify-center text-6xl select-none">
-                ${emoji}
-            </div>
-            <div class="p-4">
-                <div class="flex items-center justify-between">
-                    <span class="text-xs font-semibold uppercase px-2 py-1 bg-gray-100 text-gray-600 rounded-full">${prikazTipa}</span>
-                    ${statusBedz}
-                </div>
-                <h3 class="text-xl font-bold text-gray-800 mt-2">${meni.naziv}</h3>
-                <p class="text-xs text-gray-400 mt-1">Verzija: ${meni.verzija || 'v1'}</p>
-            </div>
+    <div>
+        <div class="w-full h-40 ${bgBoja} flex items-center justify-center text-6xl select-none relative">
+            ${emoji}
         </div>
-    `;
+        <div class="p-4">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold uppercase px-2 py-1 bg-gray-100 text-gray-600 rounded-full">${prikazTipa}</span>
+                ${statusBedz}
+            </div>
+            <h3 class="text-xl font-bold text-gray-800 mt-2">${meni.naziv}</h3>
+            <p class="text-xs text-gray-400 mt-1">Verzija: ${meni.verzija || 'v1'}</p>
+        </div>
+    </div>
+    <div class="p-4 pt-0 grid grid-cols-2 gap-2">
+        <button onclick="navigirajNaDetalje(event, ${meni.meniId})" class="w-full text-center px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg transition">
+            Detalji
+        </button>
+        <button onclick="navigirajNaAnalitiku(event, ${meni.grupniMeniId || meni.meniId}, '${meni.naziv}')" class="w-full text-center px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition shadow-sm">
+            Analitika
+        </button>
+    </div>
+`;
 
-                    kartica.onclick = () => {
-                        window.location.href = `detalji-menija.html?meniId=${meni.meniId}`;
-                    };
+                    kartica.onclick = null;
+
                     kontejner.appendChild(kartica);
                 });
             }
@@ -189,6 +196,16 @@
             console.error("Greška:", error);
             document.getElementById('meniji-kontejner').innerHTML = '<p class="text-red-500 col-span-4">Greška pri učitavanju podataka.</p>';
         }
+    }
+
+    function navigirajNaDetalje(event, meniId) {
+        event.stopPropagation();
+        window.location.href = `detalji-menija.html?meniId=${meniId}`;
+    }
+
+    function navigirajNaAnalitiku(event, grupniMeniId, nazivMenija) {
+        event.stopPropagation();
+        window.location.href = `menadzer-analitika.html?grupniMeniId=${grupniMeniId}&naziv=${encodeURIComponent(nazivMenija)}&restoranId=${restoranId}`;
     }
 
     function otvoriModal() {

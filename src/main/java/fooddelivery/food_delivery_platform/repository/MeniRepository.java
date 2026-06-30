@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
@@ -33,7 +34,7 @@ public interface MeniRepository extends JpaRepository<Meni, Long> {
             nativeQuery = true)
     List<Meni> findJedinstveniMenijiPoGrupama(@Param("restoranId") Long restoranId);
 
-    List<Meni> findByGrupniMeniIdOrderByVerzijaDesc(Long grupniId);
+    List<Meni> findByGrupniMeniIdOrderByMeniIdDesc(Long grupniId);
 
     Optional<Meni> findByGrupniMeniIdAndAktivanTrue(Long grupniMeniId);
 
@@ -43,5 +44,8 @@ public interface MeniRepository extends JpaRepository<Meni, Long> {
     @Query("SELECT m FROM Meni m"
     + " WHERE TYPE(m) = SezonskiMeni ")
     List<SezonskiMeni> findAllSeasonalMenus();
+
+    Meni findMeniByMeniId(Long id);
+
 
 }

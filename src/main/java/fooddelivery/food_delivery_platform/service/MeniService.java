@@ -99,6 +99,7 @@ public class MeniService {
         noviMeni.setRestoran(restoran);
         noviMeni.setVerzija("v1");
         noviMeni.setAktivan(true);
+        noviMeni.setRazlogVerzionisanja(RazlogVerzionisanja.INICIJALNO_KREIRANJE);
 
         meniRepository.save(noviMeni);
         noviMeni.setGrupniMeniId(noviMeni.getMeniId());
@@ -166,7 +167,7 @@ public class MeniService {
     }
 
     public List<Meni> getMenuVersionHstory(Long grupniMeniId){
-        return meniRepository.findByGrupniMeniIdOrderByVerzijaDesc(grupniMeniId);
+        return meniRepository.findByGrupniMeniIdOrderByMeniIdDesc(grupniMeniId);
     }
 
     @Transactional
@@ -175,14 +176,6 @@ public class MeniService {
                 .orElseThrow(() -> new EntityNotFoundException("Meni nije pronađen"));
 
         checkAccess(staraVerzija, userId);
-
-        // deaktiviraj sve aktivne verzije u grupi
-      /*  meniRepository.findByGrupniMeniIdAndAktivanTrue(staraVerzija.getGrupniMeniId())
-                .ifPresent(trenutnoAktivni -> {
-                    trenutnoAktivni.setAktivan(false);
-                    trenutnoAktivni.setDatumDo(LocalDate.now());
-                    meniRepository.save(trenutnoAktivni);
-                }); */
         //kopiraj staru verziju
         Meni novaVerzija = cloneMenu(staraVerzija);
 
@@ -192,11 +185,13 @@ public class MeniService {
 
         String sledecaVerzija = findNextVersion(staraVerzija.getGrupniMeniId());
         novaVerzija.setVerzija(sledecaVerzija);
+        novaVerzija.setRazlogVerzionisanja(RazlogVerzionisanja.ROLLBACK);
+        novaVerzija.setIzvornaVerzijaId(staraVerzija.getMeniId());
 
         meniRepository.save(novaVerzija);
         meniRepository.flush();
 
-        copyMenuItems(meniId, novaVerzija);
+        //copyMenuItems(meniId, novaVerzija);
         return novaVerzija;
     }
 
@@ -226,5 +221,9 @@ public class MeniService {
         meniRepository.save(m);
         syncSeasonalMenus();
         return m;
+    }
+
+    public List<Proizvod>findJedinstveniProizvodiUGrupiMenija(Long grupniId){
+        return stavkaMenijaRepository.findJedinstveniProizvodiUGrupiMenija(grupniId);
     }
 }

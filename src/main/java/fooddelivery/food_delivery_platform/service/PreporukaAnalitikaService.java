@@ -1,0 +1,138 @@
+package fooddelivery.food_delivery_platform.service;
+
+import fooddelivery.food_delivery_platform.dto.PreporukaAnalitikaDTO;
+import fooddelivery.food_delivery_platform.dto.TipPreporukeStatDTO;
+import fooddelivery.food_delivery_platform.dto.KategorijaPreporukeStatDTO;
+import fooddelivery.food_delivery_platform.dto.PreporukaDetaljDTO;
+import fooddelivery.food_delivery_platform.model.PrikazanaPreporuka;
+import fooddelivery.food_delivery_platform.repository.PrikazanaPreporukaRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class PreporukaAnalitikaService {
+
+    private final PrikazanaPreporukaRepository prikazanaRepo;
+
+    private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+
+
+    // Analitika za jednog kupca.
+
+    public PreporukaAnalitikaDTO izracunajAnalitiku(Long kupacId, int dani) {
+        LocalDateTime od = LocalDateTime.now().minusDays(dani);
+        List<PrikazanaPreporuka> sve = prikazanaRepo
+                .findByKupac_KorisnikIdAndPrikazanoUAfterOrderByPrikazanoUDesc(kupacId, od);
+        return izracunajIzListe(sve);
+    }
+
+
+    //  Analitika za sve kupce zajedno.
+
+    public PreporukaAnalitikaDTO izracunajAnalitikunZaSve(int dani) {
+        LocalDateTime od = LocalDateTime.now().minusDays(dani);
+        List<PrikazanaPreporuka> sve = prikazanaRepo
+                .findByPrikazanoUAfterOrderByPrikazanoUDesc(od);
+        return izracunajIzListe(sve);
+    }
+
+
+    private PreporukaAnalitikaDTO izracunajIzListe(List<PrikazanaPreporuka> sve) {
+        if (sve.isEmpty()) return praznaAnalitika();
+
+        Map<PrikazanaPreporuka.TipPreporuke, List<PrikazanaPreporuka>> poTipu =
+                sve.stream().collect(Collectors.groupingBy(PrikazanaPreporuka::getTipPreporuke));
+
+        int ukupnoPrikazano = sve.size();
+        long ukupnoUspesnih = sve.stream().filter(PrikazanaPreporuka::getUspesna).count();
+        double ukupnaStopa  = zaokruzi((double) ukupnoUspesnih / ukupnoPrikazano * 100);
+
+        // Po kategoriji
+        Map<String, int[]> katMap = new LinkedHashMap<>();
+        for (PrikazanaPreporuka p : sve) {
+            if (p.getProizvod() == null) continue;
+            String kat = p.getProizvod().getKategorija() != null
+                    ? p.getProizvod().getKategorija().getNaziv() : "Ostalo";
+            int[] stat = katMap.computeIfAbsent(kat, k -> new int[]{0, 0});
+            stat[0]++;
+            if (Boolean.TRUE.equals(p.getUspesna())) stat[1]++;
+        }
+
+        List<KategorijaPreporukeStatDTO> poKategoriji = katMap.entrySet().stream()
+                .map(e -> {
+                    double stopa = e.getValue()[0] > 0
+                            ? zaokruzi((double) e.getValue()[1] / e.getValue()[0] * 100) : 0.0;
+                    return KategorijaPreporukeStatDTO.builder()
+                            .kategorija(e.getKey())
+                            .prikazano(e.getValue()[0])
+                            .uspesnih(e.getValue()[1])
+                            .stopa(stopa)
+                            .build();
+                })
+                .sorted(Comparator.comparingDouble(KategorijaPreporukeStatDTO::getStopa).reversed())
+                .collect(Collectors.toList());
+
+        // Detalji
+        List<PreporukaDetaljDTO> detalji = sve.stream()
+                .map(p -> {
+                    String naziv = p.getProizvod() != null ? p.getProizvod().getNaziv() : "N/A";
+                    String kat   = (p.getProizvod() != null && p.getProizvod().getKategorija() != null)
+                            ? p.getProizvod().getKategorija().getNaziv() : "N/A";
+                    return PreporukaDetaljDTO.builder()
+                            .proizvodId(p.getProizvod() != null ? p.getProizvod().getProizvodId() : null)
+                            .nazivProizvoda(naziv)
+                            .kategorija(kat)
+                            .tipPreporuke(p.getTipPreporuke().name())
+                            .prikazanoU(p.getPrikazanoU() != null ? p.getPrikazanoU().format(FMT) : "N/A")
+                            .realizovanoU(p.getRealizovanoU() != null ? p.getRealizovanoU().format(FMT) : null)
+                            .uspesna(Boolean.TRUE.equals(p.getUspesna()))
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        return PreporukaAnalitikaDTO.builder()
+                .ukupnoPrikazano(ukupnoPrikazano)
+                .ukupnoUspesnih((int) ukupnoUspesnih)
+                .ukupnaStopa(ukupnaStopa)
+                .personalizovane(izracunajTip(poTipu.get(PrikazanaPreporuka.TipPreporuke.PERSONALIZOVANA)))
+                .trend(izracunajTip(poTipu.get(PrikazanaPreporuka.TipPreporuke.TREND)))
+                .sezonske(izracunajTip(poTipu.get(PrikazanaPreporuka.TipPreporuke.SEZONSKA)))
+                .vremenske(izracunajTip(poTipu.get(PrikazanaPreporuka.TipPreporuke.VREMENSKA)))
+                .korpa(izracunajTip(poTipu.get(PrikazanaPreporuka.TipPreporuke.KORPA)))
+                .poKategoriji(poKategoriji)
+                .detalji(detalji)
+                .build();
+    }
+
+    private TipPreporukeStatDTO izracunajTip(List<PrikazanaPreporuka> lista) {
+        if (lista == null || lista.isEmpty())
+            return TipPreporukeStatDTO.builder().prikazano(0).uspesnih(0).stopa(0.0).build();
+        int prikazano = lista.size();
+        int uspesnih  = (int) lista.stream().filter(PrikazanaPreporuka::getUspesna).count();
+        return TipPreporukeStatDTO.builder()
+                .prikazano(prikazano).uspesnih(uspesnih)
+                .stopa(zaokruzi((double) uspesnih / prikazano * 100))
+                .build();
+    }
+
+    private PreporukaAnalitikaDTO praznaAnalitika() {
+        TipPreporukeStatDTO prazan = TipPreporukeStatDTO.builder()
+                .prikazano(0).uspesnih(0).stopa(0.0).build();
+        return PreporukaAnalitikaDTO.builder()
+                .ukupnoPrikazano(0).ukupnoUspesnih(0).ukupnaStopa(0.0)
+                .personalizovane(prazan).trend(prazan).sezonske(prazan).vremenske(prazan).korpa(prazan)
+                .poKategoriji(Collections.emptyList())
+                .detalji(Collections.emptyList())
+                .build();
+    }
+
+    private double zaokruzi(double v) {
+        return Math.round(v * 10.0) / 10.0;
+    }
+}

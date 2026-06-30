@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -39,6 +40,36 @@ public interface StavkaMenijaRepository extends JpaRepository<StavkaMenija, Long
     @Query("SELECT COALESCE(AVG(s.vremePripremeMax),0) FROM StavkaMenija s " +
             "WHERE s.proizvod.kategorija.kategorijaId = :kategorijaId AND s.obrisan = false")
     Double findAvgMaxByKategorija(@Param("kategorijaId") Long kategorijaId);
+
+    @Query("SELECT sm FROM StavkaMenija sm JOIN FETCH sm.proizvod p JOIN FETCH sm.meni m " +
+            "WHERE m.restoran.restoranId = :restoranId AND m.aktivan = true AND sm.obrisan = false")
+    List<StavkaMenija> findStavkeZaAktivneMenijeRestorana(@Param("restoranId") Long restoranId);
+
+
+    long countByMeniMeniIdAndObrisanFalse(Long meniId);
+
+    @Query("SELECT COUNT(DISTINCT sm.proizvod.kategorija) FROM StavkaMenija sm " +
+            "WHERE sm.meni.meniId = :meniId AND sm.obrisan = false")
+    long countJedinstveneKategorijeZaMeni(@Param("meniId") Long meniId);
+
+    @Query("SELECT COALESCE(AVG(sm.cena), 0.0) FROM StavkaMenija sm " +
+            "WHERE sm.meni.meniId = :meniId AND sm.obrisan = false")
+    double getProsecnaCenaZaMeni(@Param("meniId") Long meniId);
+
+    @Query("SELECT sm FROM StavkaMenija sm " +
+            "JOIN sm.meni m " +
+            "WHERE m.grupniMeniId = :grupniMeniId " +
+            "AND sm.proizvod.proizvodId = :proizvodId " +
+            "AND sm.obrisan = false " +
+            "ORDER BY m.meniId ASC")
+    List<StavkaMenija> findIstorijaCenaStavke(
+            @Param("grupniMeniId") Long grupniMeniId,
+            @Param("proizvodId") Long proizvodId
+    );
+
+    @Query("SELECT DISTINCT sm.proizvod FROM StavkaMenija sm " +
+            "WHERE sm.meni.grupniMeniId = :grupniMeniId AND sm.obrisan = false")
+    List<Proizvod> findJedinstveniProizvodiUGrupiMenija(@Param("grupniMeniId") Long grupniMeniId);
 
 
 }

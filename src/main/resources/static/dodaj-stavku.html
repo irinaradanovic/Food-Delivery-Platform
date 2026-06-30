@@ -8,92 +8,102 @@
 <body class="bg-gray-50 min-h-screen pt-12 pb-24 px-4 md:px-8">
 
 <div class="max-w-3xl mx-auto bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
-    <div class="border-b border-gray-100 pb-6 mb-8">
-        <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Dodaj novu stavku u meni</h1>
-        <p class="text-sm text-gray-500 mt-1">Sva polja u formi su obavezna. Kreirani proizvod biće automatski vezan za ovaj meni.</p>
+    <div class="border-b border-gray-100 pb-6 mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Dodaj stavku u meni</h1>
+        </div>
+
+        <div class="bg-gray-100 p-1 rounded-xl flex gap-1 border border-gray-200 shrink-0">
+            <button type="button" id="btn-mod-novi" onclick="promeniMod('novi')" class="px-4 py-2 text-xs font-bold uppercase rounded-lg bg-white text-emerald-700 shadow-sm transition cursor-pointer">
+                Potpuno nova stavka
+            </button>
+            <button type="button" id="btn-mod-postojeci" onclick="promeniMod('postojeci')" class="px-4 py-2 text-xs font-bold uppercase rounded-lg text-gray-600 hover:text-gray-900 transition cursor-pointer">
+                Postojeća stavka iz drugog menija restorana
+            </button>
+        </div>
+    </div>
+
+    <div id="sekcija-postojeca-stavka" class="hidden mb-8 p-5 bg-amber-50 rounded-2xl border border-amber-200 space-y-3">
+        <label class="block text-xs font-bold uppercase text-amber-800">Izaberi stavku iz aktivnih menija tvog restorana</label>
+        <select id="kopirajIzStavkeId" onchange="popuniPodatkeIzStavke(this)" class="w-full border border-amber-300 rounded-xl p-3 bg-white outline-none focus:border-amber-500">
+            <option value="">-- Izaberite stavku --</option>
+        </select>
+        <p class="text-xs text-amber-700 italic">ℹ️ Podaci o proizvodu, kategoriji i sastojcima su preuzeti i zaključani. Dole možete slobodno izmeniti cenu i vreme pripreme za novi meni.</p>
     </div>
 
     <form id="forma-nova-stavka" onsubmit="sacuvajStavku(event)" class="space-y-8">
 
-        <div class="space-y-4">
-            <h3 class="text-lg font-bold text-emerald-700 border-b border-emerald-100 pb-1">1. Osnovne informacije</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Naziv proizvoda</label>
-                    <input type="text" id="naziv" required class="w-full border border-gray-200 rounded-xl p-3 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Kalorije (kcal)</label>
-                    <input type="number" id="kalorije" step="0.01" required class="w-full border border-gray-200 rounded-xl p-3 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition">
-                </div>
-            </div>
-            <div>
-                <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Opis proizvoda</label>
-                <textarea id="opis" rows="3" required class="w-full border border-gray-200 rounded-xl p-3 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition"></textarea>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="md:col-span-2">
-                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Količina / Mera</label>
-                    <input type="number" id="kolicina" step="0.01" required class="w-full border border-gray-200 rounded-xl p-3 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Merna jedinica</label>
-                    <select id="mernaJedinica" required class="w-full border border-gray-200 rounded-xl p-3 bg-white outline-none focus:border-emerald-600">
-                        <option value="g">grami (g)</option>
-                        <option value="ml">mililitri (ml)</option>
-                        <option value="kom">komad (kom)</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-
-        <div class="space-y-4">
-            <h3 class="text-lg font-bold text-emerald-700 border-b border-emerald-100 pb-1">2. Fotografija</h3>
-            <div class="flex items-center justify-center w-full">
-                <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition">
-                    <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                        <svg class="w-8 h-8 mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
-                        <p class="text-sm text-gray-500" id="fajl-placeholder">Izaberite sliku sa računara</p>
+        <div id="kontejner-proizvod-podaci" class="space-y-8 transition-opacity duration-200">
+            <div class="space-y-4">
+                <h3 class="text-lg font-bold text-emerald-700 border-b border-emerald-100 pb-1">1. Osnovne informacije</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Naziv proizvoda</label>
+                        <input type="text" id="naziv" required class="w-full border border-gray-200 rounded-xl p-3 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition">
                     </div>
-                    <input type="file" id="fotografija" required class="hidden" accept="image/*" onchange="prikaziImeFajla(this)" />
-                </label>
-            </div>
-        </div>
-
-        <div class="space-y-6">
-            <h3 class="text-lg font-bold text-emerald-700 border-b border-emerald-100 pb-1">3. Taksonomija i Sastav</h3>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                <div>
-                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Izaberi postojeću kategoriju</label>
-                    <select id="kategorijaId" class="w-full border border-gray-200 rounded-xl p-3 bg-white outline-none" onchange="toggleKategorijaUnos(this)">
-                        <option value="">-- Nova kategorija (Unesi desno) --</option>
-                    </select>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Kalorije (kcal)</label>
+                        <input type="number" id="kalorije" step="0.01" required class="w-full border border-gray-200 rounded-xl p-3 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition">
+                    </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Ili kreiraj novu kategoriju</label>
-                    <input type="text" id="novaKategorijaNaziv" required class="w-full border border-gray-200 rounded-xl p-3 outline-none bg-white">
+                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Opis proizvoda</label>
+                    <textarea id="opis" rows="3" required class="w-full border border-gray-200 rounded-xl p-3 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition"></textarea>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Količina / Mera</label>
+                        <input type="number" id="kolicina" step="0.01" required class="w-full border border-gray-200 rounded-xl p-3 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Merna jedinica</label>
+                        <select id="mernaJedinica" required class="w-full border border-gray-200 rounded-xl p-3 bg-white outline-none focus:border-emerald-600">
+                            <option value="g">grami (g)</option>
+                            <option value="ml">mililitri (ml)</option>
+                            <option value="kom">komad (kom)</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
-            <div class="space-y-2">
-                <label class="block text-xs font-bold uppercase text-gray-500">Sastojci (Izaberi postojeće)</label>
-                <div id="sastojci-checkbox-kontejner" class="grid grid-cols-2 sm:grid-cols-3 gap-2 bg-gray-50 p-4 rounded-2xl max-h-40 overflow-y-auto border border-gray-100">
+            <div class="space-y-4">
+                <h3 class="text-lg font-bold text-emerald-700 border-b border-emerald-100 pb-1">2. Fotografija</h3>
+                <div class="flex items-center justify-center w-full">
+                    <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition">
+                        <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                            <svg class="w-8 h-8 mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                            <p class="text-sm text-gray-500" id="fajl-placeholder">Izaberite sliku sa računara</p>
+                        </div>
+                        <input type="file" id="fotografija" required class="hidden" accept="image/*" onchange="prikaziImeFajla(this)" />
+                    </label>
                 </div>
-                <input type="text" id="noviSastojci" placeholder="Ili unesi nove sastojke razdvojene zarezom (npr. sir, salata, kečap)" class="w-full border border-gray-200 rounded-xl p-3 outline-none focus:border-emerald-600 transition mt-2">
             </div>
 
-            <div class="space-y-2">
-                <label class="block text-xs font-bold uppercase text-gray-500">
-                    Alergeni (Izaberi postojeće)
-                </label>
-
-                <div id="alergeni-checkbox-kontejner"
-                     class="grid grid-cols-2 sm:grid-cols-3 gap-2 bg-gray-50 p-4 rounded-2xl max-h-40 overflow-y-auto border border-gray-100">
+            <div class="space-y-6">
+                <h3 class="text-lg font-bold text-emerald-700 border-b border-emerald-100 pb-1">3. Taksonomija i Sastav</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Izaberi postojeću kategoriju</label>
+                        <select id="kategorijaId" class="w-full border border-gray-200 rounded-xl p-3 bg-white outline-none" onchange="toggleKategorijaUnos(this)">
+                            <option value="">-- Nova kategorija (Unesi desno) --</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Ili kreiraj novu kategoriju</label>
+                        <input type="text" id="novaKategorijaNaziv" required class="w-full border border-gray-200 rounded-xl p-3 outline-none bg-white">
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <label class="block text-xs font-bold uppercase text-gray-500">Sastojci (Izaberi postojeće)</label>
+                    <div id="sastojci-checkbox-kontejner" class="grid grid-cols-2 sm:grid-cols-3 gap-2 bg-gray-50 p-4 rounded-2xl max-h-40 overflow-y-auto border border-gray-100"></div>
+                    <input type="text" id="noviSastojci" placeholder="Ili unesi nove sastojke razdvojene zarezom" class="w-full border border-gray-200 rounded-xl p-3 outline-none focus:border-emerald-600 transition mt-2">
+                </div>
+                <div class="space-y-2">
+                    <label class="block text-xs font-bold uppercase text-gray-500">Alergeni (Izaberi postojeće)</label>
+                    <div id="alergeni-checkbox-kontejner" class="grid grid-cols-2 sm:grid-cols-3 gap-2 bg-gray-50 p-4 rounded-2xl max-h-40 overflow-y-auto border border-gray-100"></div>
                 </div>
             </div>
         </div>
-
 
         <div class="space-y-4">
             <h3 class="text-lg font-bold text-emerald-700 border-b border-emerald-100 pb-1">4. Cena i vreme pripreme</h3>
@@ -120,9 +130,14 @@
             <button type="button" onclick="vratiSeNazad()" class="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold rounded-xl transition cursor-pointer">
                 Otkaži
             </button>
-            <button type="submit" class="px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-md transition cursor-pointer">
-                Sačuvaj stavku
-            </button>
+            <div class="relative group">
+                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-56 p-2 bg-gray-900 text-white text-xs text-center rounded-lg shadow-lg z-10 after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-4 after:border-transparent after:border-t-gray-900">
+                    Čuvanjem ove stavke automatski se kreira i aktivira nova verzija menija!
+                </div>
+                <button type="submit" class="px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-md transition cursor-pointer">
+                    Sačuvaj stavku
+                </button>
+            </div>
         </div>
 
     </form>
@@ -137,20 +152,145 @@
     const meniId = urlParams.get('meniId');
     const ulogovaniKorisnikId = localStorage.getItem('korisnikId');
 
+    let trenutniMod = 'novi';
+    let sveStavkeLokalno = [];
+
     if (!meniId) {
         alert("Nije prepoznat ID menija!");
         window.location.href = "index.html";
     }
+    function promeniMod(mod) {
+        trenutniMod = mod;
+        const sekcijaPostojeci = document.getElementById('sekcija-postojeca-stavka');
+        const kontejnerProizvod = document.getElementById('kontejner-proizvod-podaci');
+        const slikaInput = document.getElementById('fotografija');
+
+        const btnNovi = document.getElementById('btn-mod-novi');
+        const btnPostojeci = document.getElementById('btn-mod-postojeci');
+
+        if (mod === 'postojeci') {
+            sekcijaPostojeci.classList.remove('hidden');
+            kontejnerProizvod.classList.add('opacity-40', 'pointer-events-none'); // Vizuelno blokiramo gornju formu
+            slikaInput.required = false;
+
+            btnPostojeci.className = "px-4 py-2 text-xs font-bold uppercase rounded-lg bg-white text-emerald-700 shadow-sm transition cursor-pointer";
+            btnNovi.className = "px-4 py-2 text-xs font-bold uppercase rounded-lg text-gray-600 hover:text-gray-900 transition cursor-pointer";
+
+            ucitajAktivneStavkeRestorana();
+        } else {
+            sekcijaPostojeci.classList.add('hidden');
+            kontejnerProizvod.classList.remove('opacity-40', 'pointer-events-none');
+            slikaInput.required = true;
+
+            btnNovi.className = "px-4 py-2 text-xs font-bold uppercase rounded-lg bg-white text-emerald-700 shadow-sm transition cursor-pointer";
+            btnPostojeci.className = "px-4 py-2 text-xs font-bold uppercase rounded-lg text-gray-600 hover:text-gray-900 transition cursor-pointer";
+
+            resetujFormu();
+        }
+    }
+
+    async function ucitajAktivneStavkeRestorana() {
+        if (sveStavkeLokalno.length > 0) return;
+
+        try {
+            const opt = { headers: { 'X-User-Id': ulogovaniKorisnikId } };
+            const stavke = await apiFetch(`/stavke-menija/aktivne-iz-restorana/${meniId}`, opt);
+            sveStavkeLokalno = stavke;
+
+            const select = document.getElementById('kopirajIzStavkeId');
+            select.innerHTML = '<option value="">-- Izaberite stavku --</option>';
+
+            stavke.forEach(sm => {
+                const optEl = document.createElement('option');
+                optEl.value = sm.stavkaId;
+                optEl.textContent = `${sm.proizvod.naziv} [Meni: ${sm.meni.naziv} ${sm.meni.verzija}] - ${sm.cena} RSD`;
+                select.appendChild(optEl);
+            });
+        } catch (error) {
+            console.error("Greška pri dobavljanju aktivnih stavki:", error);
+        }
+    }
+
+
+    function popuniPodatkeIzStavke(select) {
+        const id = parseInt(select.value);
+        if (!id) { resetujFormu(); return; }
+
+        const sm = sveStavkeLokalno.find(s => s.stavkaId === id);
+        if (!sm || !sm.proizvod) return;
+
+        const p = sm.proizvod;
+
+        document.getElementById('naziv').value = p.naziv || "";
+        document.getElementById('opis').value = p.opis || "";
+        document.getElementById('kalorije').value = p.kalorije || "";
+        document.getElementById('kolicina').value = p.kolicina || "";
+        document.getElementById('mernaJedinica').value = p.mernaJedinica || "g";
+
+        const katSelect = document.getElementById('kategorijaId');
+        if (p.kategorija && p.kategorija.kategorijaId) {
+            katSelect.value = p.kategorija.kategorijaId;
+        } else {
+            katSelect.value = "";
+        }
+        toggleKategorijaUnos(katSelect);
+
+        const sastojciCheckboxes = document.querySelectorAll('input[name="sastojciIds"]');
+        sastojciCheckboxes.forEach(cb => {
+
+            const imaSastojak = p.sastojci && p.sastojci.some(s => (s.sastojakId || s.id) === parseInt(cb.value));
+            cb.checked = imaSastojak;
+            cb.disabled = true;
+        });
+        document.getElementById('noviSastojci').disabled = true;
+
+
+        const alergeniCheckboxes = document.querySelectorAll('input[name="alergeniIds"]');
+        alergeniCheckboxes.forEach(cb => {
+            const imaAlergen = p.alergeni && p.alergeni.some(a => (a.alergenId || a.id) === parseInt(cb.value));
+            cb.checked = imaAlergen;
+            cb.disabled = true;
+        });
+        document.getElementById('cena').value = sm.cena || "";
+        document.getElementById('vremePripremeMin').value = sm.vremePripremeMin || "";
+        document.getElementById('vremePripremeMax').value = sm.vremePripremeMax || "";
+    }
+    function resetujFormu() {
+        document.getElementById('naziv').value = "";
+        document.getElementById('opis').value = "";
+        document.getElementById('kalorije').value = "";
+        document.getElementById('kolicina').value = "";
+        document.getElementById('mernaJedinica').value = "g";
+        document.getElementById('cena').value = "";
+        document.getElementById('vremePripremeMin').value = "";
+        document.getElementById('vremePripremeMax').value = "";
+        document.getElementById('kopirajIzStavkeId').value = "";
+        document.getElementById('poruka-preporuke').classList.add('hidden');
+
+        const katSelect = document.getElementById('kategorijaId');
+        katSelect.value = "";
+        katSelect.disabled = false;
+        toggleKategorijaUnos(katSelect);
+
+
+        document.getElementById('noviSastojci').value = "";
+        document.getElementById('noviSastojci').disabled = false;
+        const sastojciCheckboxes = document.querySelectorAll('input[name="sastojciIds"]');
+        sastojciCheckboxes.forEach(cb => {
+            cb.checked = false;
+            cb.disabled = false;
+        });
+
+        const alergeniCheckboxes = document.querySelectorAll('input[name="alergeniIds"]');
+        alergeniCheckboxes.forEach(cb => {
+            cb.checked = false;
+            cb.disabled = false;
+        });
+    }
 
     async function ucitajPomocnePodatke() {
         try {
-
-            const opt = {
-                headers: {
-                    'X-User-Id': ulogovaniKorisnikId
-                }
-            };
-
+            const opt = { headers: { 'X-User-Id': ulogovaniKorisnikId } };
             const [kategorije, sastojci, alergeni] = await Promise.all([
                 apiFetch('/kategorije/menadzer', opt),
                 apiFetch('/sastojci/menadzer', opt),
@@ -166,39 +306,22 @@
             });
 
             const sastojciKon = document.getElementById('sastojci-checkbox-kontejner');
-            if (sastojci.length === 0) {
-                sastojciKon.innerHTML = '<span class="text-gray-400 text-xs italic">Nema ponuđenih sastojaka</span>';
-            }
-
             sastojci.forEach(s => {
                 sastojciKon.innerHTML += `
                 <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer p-1 hover:bg-white rounded-md">
-                    <input type="checkbox"
-                           name="sastojciIds"
-                           value="${s.sastojakId || s.id}"
-                           class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500">
+                    <input type="checkbox" name="sastojciIds" value="${s.sastojakId || s.id}" class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500">
                     <span>${s.naziv}</span>
-                </label>
-            `;
+                </label>`;
             });
 
             const alergeniKon = document.getElementById('alergeni-checkbox-kontejner');
-            if (alergeni.length === 0) {
-                alergeniKon.innerHTML = '<span class="text-gray-400 text-xs italic">Nema ponuđenih alergena</span>';
-            }
-
             alergeni.forEach(a => {
                 alergeniKon.innerHTML += `
                 <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer p-1 hover:bg-white rounded-md">
-                    <input type="checkbox"
-                           name="alergeniIds"
-                           value="${a.alergenId || a.id}"
-                           class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500">
+                    <input type="checkbox" name="alergeniIds" value="${a.alergenId || a.id}" class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500">
                     <span>${a.naziv}</span>
-                </label>
-            `;
+                </label>`;
             });
-
         } catch (error) {
             console.error("Greška pri učitavanju pratećih šifarnika:", error);
         }
@@ -216,38 +339,26 @@
         const noviUnos = document.getElementById('novaKategorijaNaziv');
         const poruka = document.getElementById('poruka-preporuke');
         if (select.value !== "") {
-            noviUnos.value = "";
-            noviUnos.disabled = true;
-            noviUnos.required = false;
-            noviUnos.classList.add('bg-gray-100');
+            noviUnos.value = ""; noviUnos.disabled = true; noviUnos.required = false; noviUnos.classList.add('bg-gray-100');
             proveriPreporukuVremena(select.value);
         } else {
-            noviUnos.disabled = false;
-            noviUnos.required = true;
-            noviUnos.classList.remove('bg-gray-100');
-            poruka.classList.add('hidden');
+            noviUnos.disabled = false; noviUnos.required = true; noviUnos.classList.remove('bg-gray-100'); poruka.classList.add('hidden');
         }
     }
 
-    function vratiSeNazad() {
-        window.location.href = `detalji-menija.html?meniId=${meniId}`;
-    }
+    function vratiSeNazad() { window.location.href = `detalji-menija.html?meniId=${meniId}`; }
 
     async function proveriPreporukuVremena(kategorijaId) {
         if (!kategorijaId) return;
-
         try {
             const opt = { headers: { 'X-User-Id': ulogovaniKorisnikId } };
             const preporuka = await apiFetch(`/stavke-menija/preporuka-vremena/${kategorijaId}`, opt);
-
             if (preporuka && preporuka.min !== undefined && preporuka.max !== undefined) {
                 document.getElementById('vremePripremeMin').value = preporuka.min;
                 document.getElementById('vremePripremeMax').value = preporuka.max;
-
                 document.getElementById('poruka-preporuke').classList.remove('hidden');
             }
         } catch (e) {
-            console.warn("Nema preporuke za ovu kategoriju ili greška u komunikaciji.");
             document.getElementById('poruka-preporuke').classList.add('hidden');
         }
     }
@@ -255,75 +366,64 @@
     async function sacuvajStavku(event) {
         event.preventDefault();
 
-
-        const selektovaniSastojci = Array.from(document.querySelectorAll('input[name="sastojciIds"]:checked')).map(cb => parseInt(cb.value));
-        const selektovaniAlergeni = Array.from(document.querySelectorAll('input[name="alergeniIds"]:checked')).map(cb => parseInt(cb.value));
-
-
-        const tekstSastojci = document.getElementById('noviSastojci').value;
-        const noviSastojciLista = tekstSastojci ? tekstSastojci.split(',').map(s => s.trim()).filter(s => s.length > 0) : [];
-
-        //const tekstAlergeni = document.getElementById('noviAlergeni').value;
-        //const noviAlergeniLista = tekstAlergeni ? tekstAlergeni.split(',').map(a => a.trim()).filter(a => a.length > 0) : [];
-
-
-        const podaciDto = {
-            naziv: document.getElementById('naziv').value,
-            opis: document.getElementById('opis').value,
-            kalorije: parseFloat(document.getElementById('kalorije').value),
-            kolicina: parseFloat(document.getElementById('kolicina').value),
-            mernaJedinica: document.getElementById('mernaJedinica').value,
-
-            kategorijaId: document.getElementById('kategorijaId').value
-                ? parseInt(document.getElementById('kategorijaId').value)
-                : null,
-
-            novaKategorijaNaziv:
-                document.getElementById('novaKategorijaNaziv').value || null,
-
-            sastojciIds: selektovaniSastojci,
-            noviSastojciNazivi: noviSastojciLista,
-
-            alergeniIds: selektovaniAlergeni,
-            noviAlergeniNazivi: [],
-
+        let podaciDto = {
             cena: parseFloat(document.getElementById('cena').value),
             vremePripremeMin: parseInt(document.getElementById('vremePripremeMin').value),
             vremePripremeMax: parseInt(document.getElementById('vremePripremeMax').value)
         };
 
+        if (trenutniMod === 'postojeci') {
+            const sId = document.getElementById('kopirajIzStavkeId').value;
+            if (!sId) { alert("Molimo izaberite stavku za kopiranje!"); return; }
+
+            podaciDto.kopirajIzStavkeId = parseInt(sId);
+        } else {
+            const selektovaniSastojci = Array.from(document.querySelectorAll('input[name="sastojciIds"]:checked')).map(cb => parseInt(cb.value));
+            const selektovaniAlergeni = Array.from(document.querySelectorAll('input[name="alergeniIds"]:checked')).map(cb => parseInt(cb.value));
+            const tekstSastojci = document.getElementById('noviSastojci').value;
+            const noviSastojciLista = tekstSastojci ? tekstSastojci.split(',').map(s => s.trim()).filter(s => s.length > 0) : [];
+
+            podaciDto.naziv = document.getElementById('naziv').value;
+            podaciDto.opis = document.getElementById('opis').value;
+            podaciDto.kalorije = parseFloat(document.getElementById('kalorije').value);
+            podaciDto.kolicina = parseFloat(document.getElementById('kolicina').value);
+            podaciDto.mernaJedinica = document.getElementById('mernaJedinica').value;
+            podaciDto.kategorijaId = document.getElementById('kategorijaId').value ? parseInt(document.getElementById('kategorijaId').value) : null;
+            podaciDto.novaKategorijaNaziv = document.getElementById('novaKategorijaNaziv').value || null;
+            podaciDto.sastojciIds = selektovaniSastojci;
+            podaciDto.noviSastojciNazivi = noviSastojciLista;
+            podaciDto.alergeniIds = selektovaniAlergeni;
+            podaciDto.noviAlergeniNazivi = [];
+        }
 
         const formData = new FormData();
         formData.append("podaci", new Blob([JSON.stringify(podaciDto)], { type: "application/json" }));
 
         const slikaFajl = document.getElementById('fotografija').files[0];
-        if (slikaFajl) {
+        if (trenutniMod === 'novi' && slikaFajl) {
             formData.append("slika", slikaFajl);
         }
 
         try {
-
             const response = await fetch(`http://localhost:8080/api/stavke-menija/meni/${meniId}`, {
                 method: 'POST',
-                headers: {
-                    'X-User-Id': ulogovaniKorisnikId
-                },
+                headers: { 'X-User-Id': ulogovaniKorisnikId },
                 body: formData
             });
 
             if (response.ok) {
-                alert("Nova stavka uspešno dodata u meni i sačuvana u bazi podataka!");
-                vratiSeNazad();
+                const rezultat = await response.json();
+                alert("Stavka uspešno dodata u meni. Kreirana je nova verzija.");
+                window.location.href = `detalji-menija.html?meniId=${rezultat.noviMeniId}`;
             } else {
                 const errText = await response.text();
-                alert("Greška prilikom čuvanja: " + (errText || "Nemate pravo pristupa."));
+                alert("Greška prilikom čuvanja: " + errText);
             }
         } catch (error) {
             console.error("Mrežna greška:", error);
             alert("Došlo je do greške u povezivanju sa serverom.");
         }
     }
-
 
     window.addEventListener('DOMContentLoaded', ucitajPomocnePodatke);
 </script>

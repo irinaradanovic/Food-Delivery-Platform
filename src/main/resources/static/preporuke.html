@@ -1085,9 +1085,9 @@
                     <span class="card-kat">${p.kategorija?.naziv || 'Ostalo'}</span>
                     <div class="card-cena-row">
                         ${cena > 0
-            ? `<span class="card-cena">${cena.toLocaleString('sr-RS')} <small style="font-size:13px;font-weight:500;color:var(--gray)">RSD</small></span>`
-            : `<span class="card-cena-besplatno">Besplatno</span>`
-        }
+                ? `<span class="card-cena">${cena.toLocaleString('sr-RS')} <small style="font-size:13px;font-weight:500;color:var(--gray)">RSD</small></span>`
+                : `<span class="card-cena-besplatno">Besplatno</span>`
+            }
                         ${p.kolicina && p.mernaJedinica ? `<span class="card-cena-unit">/ ${p.kolicina} ${p.mernaJedinica}</span>` : ''}
                     </div>
                     <div class="card-actions">
@@ -1144,10 +1144,11 @@
         }
 
         // Endpointi koje ucitavamo za sve
+        const kupacParam = jeKupac() ? `&kupacId=${kupacId}` : '';
         const [sezonske, trend, vremenski] = await Promise.allSettled([
-            apiFetch('/preporuke/sezonske?limit=8'),
-            apiFetch('/preporuke/trend?limit=8'),
-            apiFetch('/preporuke/vremenski?limit=8')
+            apiFetch(`/preporuke/sezonske?limit=8${kupacParam}`),
+            apiFetch(`/preporuke/trend?limit=8${kupacParam}`),
+            apiFetch(`/preporuke/vremenski?limit=8${kupacParam}`)
         ]);
 
         // Personalizovane — samo za kupce
