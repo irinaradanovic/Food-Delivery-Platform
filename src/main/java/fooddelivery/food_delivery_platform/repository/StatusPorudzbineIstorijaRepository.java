@@ -11,4 +11,5 @@ import java.util.Optional;
 public interface StatusPorudzbineIstorijaRepository extends JpaRepository<StatusPorudzbineIstorija, Long> {
     List<StatusPorudzbineIstorija> findByPorudzbinaPorudzbinaIdOrderByVremePromeneAsc(Long porudzbinaId);
     Optional<StatusPorudzbineIstorija> findTopByPorudzbinaPorudzbinaIdOrderByVremePromeneDesc(Long porudzbinaId);
+    List<StatusPorudzbineIstorija> findByPorudzbinaPorudzbinaIdInOrderByVremePromeneAsc(List<Long> porudzbinaIds);
 }

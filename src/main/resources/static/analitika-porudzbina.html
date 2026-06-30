@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analitika porudzbina - Big Bite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root { --green:#2d6a2d; --green-2:#3a8a3a; --cream:#faf7f2; --dark:#1a1a1a; --muted:#6b7280; --border:#e5e0d8; --panel:#fff; --red:#b91c1c; --amber:#b45309; --blue:#2563eb; }
+        body { font-family:'DM Sans', sans-serif; background:var(--cream); color:var(--dark); min-height:100vh; }
+        nav {
+            background: white; border-bottom: 1px solid var(--border);
+            padding: 0 40px; height: 68px; width: 100%;
+            display: flex; align-items: center; justify-content: space-between;
+            position: fixed; top: 0; left: 0; z-index: 100;
+        }
+        .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .nav-logo-icon { width: 76px; height: 96px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .nav-logo-text { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--dark); font-weight: 700; }
+        .nav-links { display: flex; align-items: center; gap: 4px; }
+        .nav-links a { padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 500; color: var(--muted); transition: all 0.15s; }
+        .nav-links a:hover { background: #f3f4f6; color: var(--dark); }
+        .nav-links a.active { background: var(--green) !important; color: white !important; }
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .nav-user { font-size: 13px; color: var(--muted); background: #f3f4f6; padding: 6px 12px; border-radius: 20px; font-family: sans-serif; }
+        .btn-odjava { background: none; border: 1.5px solid var(--border); border-radius: 8px; padding: 7px 14px; font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer; transition: all 0.15s; }
+        .btn-odjava:hover { border-color: #dc2626; color: #dc2626; }
+        main { max-width:1240px; margin:0 auto; padding:102px 24px 56px; }
+        .page-head { display:flex; align-items:flex-end; justify-content:space-between; gap:20px; margin-bottom:20px; }
+        h1 { font-family:'Playfair Display', serif; font-size:34px; line-height:1.1; }
+        .subtitle { color:var(--muted); font-size:14px; margin-top:6px; }
+        .filters { display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; background:white; border:1px solid var(--border); border-radius:8px; padding:14px; margin-bottom:16px; }
+        .filter-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+        label { color:#374151; font-size:12px; font-weight:800; text-transform:uppercase; }
+        input, select, button { font:inherit; }
+        input, select { border:1.5px solid var(--border); border-radius:8px; background:white; color:var(--dark); padding:9px 11px; min-height:40px; }
+        button { border:1.5px solid var(--green); border-radius:8px; background:var(--green); color:white; font-weight:800; padding:10px 14px; cursor:pointer; transition:all .15s; min-height:40px; }
+        button:hover { background:var(--green-2); border-color:var(--green-2); }
+        button.secondary { background:white; color:var(--dark); border-color:var(--border); }
+        button.secondary:hover { color:var(--green); border-color:var(--green); }
+        .metrics { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px; margin-bottom:16px; }
+        .metric { background:white; border:1px solid var(--border); border-radius:8px; padding:16px; min-height:106px; }
+        .metric-label { color:var(--muted); font-size:11px; font-weight:800; text-transform:uppercase; line-height:1.3; }
+        .metric-value { margin-top:8px; font-size:25px; font-weight:800; line-height:1.15; overflow-wrap:anywhere; }
+        .metric-note { color:var(--muted); font-size:12px; margin-top:5px; }
+        .grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:16px; margin-bottom:16px; }
+        .panel { background:white; border:1px solid var(--border); border-radius:8px; padding:18px; min-width:0; }
+        .panel-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; }
+        .panel h2 { font-size:18px; line-height:1.2; }
+        .panel-subtitle { color:var(--muted); font-size:12px; margin-top:3px; }
+        .chart-box { height:300px; position:relative; }
+        .chart-box.short { height:250px; }
+        table { width:100%; border-collapse:collapse; font-size:14px; }
+        th { text-align:left; color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:0; padding:10px 8px; border-bottom:1px solid var(--border); }
+        td { padding:11px 8px; border-bottom:1px solid #f0ece5; vertical-align:top; }
+        tbody tr:last-child td { border-bottom:0; }
+        .number { text-align:right; white-space:nowrap; }
+        .badge { display:inline-flex; border-radius:999px; padding:5px 9px; font-size:11px; font-weight:800; background:#f3f4f6; color:#374151; white-space:nowrap; }
+        .badge.ok { background:#ecfdf5; color:#047857; }
+        .badge.cancel { background:#fef2f2; color:var(--red); }
+        .badge.wait { background:#fff7ed; color:var(--amber); }
+        .empty, .error { background:white; border:1px solid var(--border); border-radius:8px; padding:24px; text-align:center; color:var(--muted); }
+        .error { color:var(--red); }
+        .full { grid-column:1 / -1; }
+        @media (max-width: 860px) { nav { padding:0 18px; } main { padding:94px 16px 44px; } .page-head { flex-direction:column; align-items:flex-start; } .grid { grid-template-columns:1fr; } .filters { align-items:flex-start; } .filter-row { width:100%; } input, select, button { width:100%; } .chart-box { height:260px; } table { font-size:13px; } }
+    </style>
+</head>
+<body>
+<nav></nav>
+<main>
+    <div class="page-head">
+        <div>
+            <h1>Analitika porudzbina</h1>
+            <p class="subtitle">Pregled performansi porudzbina po restoranima, statusima, artiklima i vremenu.</p>
+        </div>
+        <button class="secondary" onclick="window.location.href='/porudzbine.html'">Porudzbine</button>
+    </div>
+
+    <section class="filters">
+        <div class="filter-row">
+            <label for="datum-od">Od</label>
+            <input type="date" id="datum-od">
+            <label for="datum-do">Do</label>
+            <input type="date" id="datum-do">
+            <label for="restoran-filter">Restoran</label>
+            <select id="restoran-filter">
+                <option value="">Svi restorani</option>
+            </select>
+        </div>
+        <div class="filter-row">
+            <button onclick="ucitajAnalitiku()">Osvezi</button>
+            <button class="secondary" onclick="postaviPodrazumevaniPeriod(); ucitajAnalitiku();">Poslednjih 30 dana</button>
+        </div>
+    </section>
+
+    <div id="status-poruka"></div>
+
+    <section class="metrics" id="metrics"></section>
+
+    <section class="grid" id="analytics-grid">
+        <article class="panel full">
+            <div class="panel-head">
+                <div>
+                    <h2>Dnevni trend</h2>
+                    <p class="panel-subtitle">Broj porudzbina i promet artikala po danu.</p>
+                </div>
+            </div>
+            <div class="chart-box"><canvas id="chart-dnevni"></canvas></div>
+        </article>
+
+        <article class="panel">
+            <div class="panel-head">
+                <div>
+                    <h2>Statusi</h2>
+                    <p class="panel-subtitle">Raspodela porudzbina po trenutnom statusu.</p>
+                </div>
+            </div>
+            <div class="chart-box short"><canvas id="chart-statusi"></canvas></div>
+        </article>
+
+        <article class="panel">
+            <div class="panel-head">
+                <div>
+                    <h2>Placanja</h2>
+                    <p class="panel-subtitle">Nacin placanja za izabrani period.</p>
+                </div>
+            </div>
+            <div class="chart-box short"><canvas id="chart-placanja"></canvas></div>
+        </article>
+
+        <article class="panel">
+            <div class="panel-head">
+                <div>
+                    <h2>Najtrazeniji artikli</h2>
+                    <p class="panel-subtitle">Top stavke po prometu iz menadzerskih restorana.</p>
+                </div>
+            </div>
+            <div class="chart-box short"><canvas id="chart-stavke"></canvas></div>
+        </article>
+
+        <article class="panel">
+            <div class="panel-head">
+                <div>
+                    <h2> Najcesce vreme porudzbina</h2>
+                </div>
+            </div>
+            <div class="chart-box short"><canvas id="chart-sati"></canvas></div>
+        </article>
+
+        <article class="panel full">
+            <div class="panel-head">
+                <div>
+                    <h2>Top artikli</h2>
+                    <p class="panel-subtitle">Kolicina, promet i prosecna cena po stavci.</p>
+                </div>
+            </div>
+            <div style="overflow-x:auto;"><table id="top-stavke-table"></table></div>
+        </article>
+
+        <article class="panel full">
+            <div class="panel-head">
+                <div>
+                    <h2>Nedavne porudzbine</h2>
+                    <p class="panel-subtitle">Poslednje porudzbine koje pripadaju izabranom opsegu.</p>
+                </div>
+            </div>
+            <div style="overflow-x:auto;"><table id="nedavne-table"></table></div>
+        </article>
+    </section>
+</main>
+
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+    zastitiStranicu();
+
+    const charts = {};
+    let poslednjaAnalitika = null;
+
+    function isoDate(date) {
+        return date.toISOString().slice(0, 10);
+    }
+
+    function postaviPodrazumevaniPeriod() {
+        const danas = new Date();
+        const od = new Date();
+        od.setDate(danas.getDate() - 29);
+        document.getElementById('datum-od').value = isoDate(od);
+        document.getElementById('datum-do').value = isoDate(danas);
+    }
+
+    function formatRsd(value) {
+        return Number(value || 0).toLocaleString('sr-RS', { maximumFractionDigits: 2 }) + ' RSD';
+    }
+
+    function formatBroj(value) {
+        return Number(value || 0).toLocaleString('sr-RS');
+    }
+
+    function formatDatum(value) {
+        if (!value) return '-';
+        return new Date(value).toLocaleString('sr-RS', { dateStyle: 'short', timeStyle: 'short' });
+    }
+
+    function formatMin(value) {
+        return value === null || value === undefined ? '-' : `${Number(value).toLocaleString('sr-RS', { maximumFractionDigits: 1 })} min`;
+    }
+
+    function statusClass(status) {
+        if (status === 'ISPORUCENA') return 'ok';
+        if (status === 'OTKAZANA') return 'cancel';
+        if (status === 'KREIRANA') return 'wait';
+        return '';
+    }
+
+    function setStatus(message, type = 'empty') {
+        document.getElementById('status-poruka').innerHTML = message ? `<div class="${type}">${message}</div>` : '';
+    }
+
+    function destroyChart(id) {
+        if (charts[id]) {
+            charts[id].destroy();
+            delete charts[id];
+        }
+    }
+
+    function makeChart(id, config) {
+        destroyChart(id);
+        charts[id] = new Chart(document.getElementById(id), config);
+    }
+
+    function renderRestorani(data) {
+        const select = document.getElementById('restoran-filter');
+        const trenutna = select.value;
+        select.innerHTML = '<option value="">Svi restorani</option>';
+        (data.restorani || []).forEach(r => {
+            select.add(new Option(r.naziv || `Restoran #${r.restoranId}`, r.restoranId));
+        });
+        select.value = trenutna;
+    }
+
+    function renderMetrics(data) {
+        const s = data.sazetak || {};
+        const k = data.kuponi || {};
+        const items = [
+            ['Ukupno porudzbina', formatBroj(s.ukupanBrojPorudzbina), data.restoranNaziv || 'Svi restorani'],
+            ['Promet artikala', formatRsd(s.prometArtikala), 'Samo stavke iz mojih restorana'],
+            ['Prosecna vrednost', formatRsd(s.prosecnaVrednostPorudzbine), 'Po porudzbini'],
+            ['Aktivne', formatBroj(s.aktivnePorudzbine), 'Potvrdjene, priprema i dostava'],
+            ['Isporucene', formatBroj(s.isporucenePorudzbine), 'Zavrsene porudzbine'],
+            ['Otkazivanje', `${Number(s.stopaOtkazivanja || 0).toFixed(1)}%`, `${formatBroj(s.otkazanePorudzbine)} otkazano`],
+            ['Do potvrde', formatMin(s.prosecnoVremeDoPotvrdeMin), 'Prosecno vreme'],
+            ['Do isporuke', formatMin(s.prosecnoVremeDoIsporukeMin), 'Kada postoje podaci'],
+            ['Kuponi', formatBroj(k.brojPorudzbinaSaKuponom), `Popust ${formatRsd(k.ukupanPopust)}`]
+        ];
+        document.getElementById('metrics').innerHTML = items.map(([label, value, note]) => `
+            <div class="metric">
+                <div class="metric-label">${label}</div>
+                <div class="metric-value">${value}</div>
+                <div class="metric-note">${note}</div>
+            </div>
+        `).join('');
+    }
+
+    function renderCharts(data) {
+        const dnevni = data.dnevniTrend || [];
+        makeChart('chart-dnevni', {
+            type: 'bar',
+            data: {
+                labels: dnevni.map(d => d.datum),
+                datasets: [
+                    { type: 'bar', label: 'Porudzbine', data: dnevni.map(d => d.brojPorudzbina), backgroundColor: '#2d6a2d', yAxisID: 'y' },
+                    { type: 'line', label: 'Promet', data: dnevni.map(d => Number(d.promet || 0)), borderColor: '#2563eb', backgroundColor: '#2563eb', tension: 0.25, yAxisID: 'y1' }
+                ]
+            },
+            options: { responsive:true, maintainAspectRatio:false, interaction:{ mode:'index', intersect:false }, scales:{ y:{ beginAtZero:true }, y1:{ beginAtZero:true, position:'right', grid:{ drawOnChartArea:false } } } }
+        });
+
+        const statusi = (data.statusi || []).filter(s => s.brojPorudzbina > 0);
+        makeChart('chart-statusi', {
+            type: 'doughnut',
+            data: { labels: statusi.map(s => s.status), datasets: [{ data: statusi.map(s => s.brojPorudzbina), backgroundColor: ['#f59e0b', '#2563eb', '#7c3aed', '#0d9488', '#0891b2', '#2d6a2d', '#b91c1c'] }] },
+            options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom' } } }
+        });
+
+        const placanja = (data.placanja || []).filter(p => p.brojPorudzbina > 0);
+        makeChart('chart-placanja', {
+            type: 'pie',
+            data: { labels: placanja.map(p => p.nacinPlacanja), datasets: [{ data: placanja.map(p => p.brojPorudzbina), backgroundColor: ['#2d6a2d', '#b45309', '#2563eb'] }] },
+            options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom' } } }
+        });
+
+        const top = (data.topStavke || []).slice(0, 7).reverse();
+        makeChart('chart-stavke', {
+            type: 'bar',
+            data: { labels: top.map(s => s.naziv), datasets: [{ label: 'Promet', data: top.map(s => Number(s.promet || 0)), backgroundColor: '#2563eb' }] },
+            options: { indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ x:{ beginAtZero:true } } }
+        });
+
+        const sati = data.satniTrend || [];
+        makeChart('chart-sati', {
+            type: 'bar',
+            data: { labels: sati.map(s => `${String(s.sat).padStart(2, '0')}h`), datasets: [{ label: 'Porudzbine', data: sati.map(s => s.brojPorudzbina), backgroundColor: '#0d9488' }] },
+            options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true } } }
+        });
+    }
+
+    function renderTables(data) {
+        const top = data.topStavke || [];
+        document.getElementById('top-stavke-table').innerHTML = `
+            <thead><tr><th>Artikal</th><th>Kategorija</th><th class="number">Kolicina</th><th class="number">Promet</th><th class="number">Prosek</th></tr></thead>
+            <tbody>${top.length ? top.map(s => `
+                <tr>
+                    <td><strong>${s.naziv}</strong></td>
+                    <td>${s.kategorija || '-'}</td>
+                    <td class="number">${formatBroj(s.kolicina)}</td>
+                    <td class="number">${formatRsd(s.promet)}</td>
+                    <td class="number">${formatRsd(s.prosecnaCena)}</td>
+                </tr>
+            `).join('') : '<tr><td colspan="5">Nema artikala za izabrani period.</td></tr>'}</tbody>
+        `;
+
+        const nedavne = data.nedavnePorudzbine || [];
+        document.getElementById('nedavne-table').innerHTML = `
+            <thead><tr><th>Porudzbina</th><th>Datum</th><th>Status</th><th>Placanje</th><th class="number">Stavke</th><th class="number">Promet</th></tr></thead>
+            <tbody>${nedavne.length ? nedavne.map(p => `
+                <tr>
+                    <td><strong>#${p.porudzbinaId}</strong></td>
+                    <td>${formatDatum(p.datumKreiranja)}</td>
+                    <td><span class="badge ${statusClass(p.status)}">${p.status || '-'}</span></td>
+                    <td>${p.nacinPlacanja || '-'}</td>
+                    <td class="number">${formatBroj(p.brojStavki)}</td>
+                    <td class="number">${formatRsd(p.prometMenadzera)}</td>
+                </tr>
+            `).join('') : '<tr><td colspan="6">Nema porudzbina za izabrani period.</td></tr>'}</tbody>
+        `;
+    }
+
+    function renderAnalitika(data) {
+        poslednjaAnalitika = data;
+        renderRestorani(data);
+        renderMetrics(data);
+        renderCharts(data);
+        renderTables(data);
+        const ukupno = data.sazetak?.ukupanBrojPorudzbina || 0;
+        setStatus(ukupno === 0 ? 'Nema porudzbina za izabrani period i restoran.' : '');
+    }
+
+    async function ucitajAnalitiku() {
+        const od = document.getElementById('datum-od').value;
+        const doDatum = document.getElementById('datum-do').value;
+        const restoranId = document.getElementById('restoran-filter').value;
+        setStatus('Ucitavanje analitike...');
+        try {
+            const data = await api.getAnalitikaPorudzbina({ od, doDatum, restoranId });
+            renderAnalitika(data);
+        } catch (e) {
+            console.error(e);
+            setStatus(e.message || 'Nije moguce ucitati analitiku porudzbina.', 'error');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (localStorage.getItem('uloga') !== 'MENADZER') {
+            window.location.href = '/izbor-restorana.html';
+            return;
+        }
+        postaviPodrazumevaniPeriod();
+        ucitajAnalitiku();
+    });
+</script>
+</body>
+</html>
