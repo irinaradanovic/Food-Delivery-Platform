@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:8080/api';
+﻿const API_BASE = 'http://localhost:8080/api';
 
 async function apiFetch(url, options = {}) {
     const res = await fetch(`${API_BASE}${url}`, {
@@ -21,14 +21,14 @@ async function apiFetch(url, options = {}) {
 
 const api = {
 
-    // ── Kupci ──────────────────────────────────────────────
+    // â”€â”€ Kupci â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     getKupciByEmail: (email) => apiFetch(`/kupci?email=${encodeURIComponent(email)}`),
 
-    // ── Restorani ──────────────────────────────────────────
+    // â”€â”€ Restorani â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     getSviRestorani: () => apiFetch('/restorani'),
     getRestoranByMenadzer: (menadzerId) => apiFetch(`/restorani/menadzer/${menadzerId}`),
 
-    // ── Proizvodi ──────────────────────────────────────────
+    // â”€â”€ Proizvodi â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     // Menadzer - vidi sve
     getProizvodi: () => apiFetch('/proizvodi'),
     getProizvod: (id) => apiFetch(`/proizvodi/${id}`),
@@ -52,7 +52,7 @@ const api = {
         return apiFetch(`/proizvodi/kupac/restoran/${restoranId}/kategorija/${kategorijaId}`);
     },
 
-    // ── Kategorije ─────────────────────────────────────────
+    // â”€â”€ Kategorije â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     // Menadzer - vidi sve
     getKategorije: () => apiFetch('/kategorije'),
     getKategorijeZaMenadzera: (menadzerId) => apiFetch(`/kategorije/menadzer`, {
@@ -66,13 +66,13 @@ const api = {
         return apiFetch(`/kategorije/kupac/restoran/${restoranId}`);
     },
 
-    // ── Meniji ─────────────────────────────────────────────
+    // â”€â”€ Meniji â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     getMenijiZaMenadzera: (restoranId) => apiFetch(`/meni/restorani/${restoranId}`),
     getMenijiZaKupca: (restoranId) => apiFetch(`/meni/kupac/restorani/${restoranId}`),
     getMeni: (meniId) => apiFetch(`/meni/${meniId}`),
     getRestorani: (menadzerId) => apiFetch(`/meni/restorani?menadzerId=${menadzerId}`),
 
-    // ── Stavke menija ──────────────────────────────────────
+    // â”€â”€ Stavke menija â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     getStavkeMenija: (meniId) => apiFetch(`/stavke-menija/meni/${meniId}`),
     getStavkeMenijaZaKupca: (meniId) => apiFetch(`/stavke-menija/kupac/meni/${meniId}`),
     getStavkeMenijaZaRestoranKupca: () => {
@@ -81,21 +81,21 @@ const api = {
         return apiFetch(`/stavke-menija/kupac/restoran/${restoranId}`);
     },
 
-    // ── Omiljeni ───────────────────────────────────────────
+    // â”€â”€ Omiljeni â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     getOmiljeni: (kupacId) => apiFetch(`/omiljeni/${kupacId}`),
     dodajOmiljeni: (kupacId, proizvodId) =>
         apiFetch(`/omiljeni/${kupacId}/proizvodi/${proizvodId}`, { method: 'POST' }),
     ukloniOmiljeni: (kupacId, proizvodId) =>
         apiFetch(`/omiljeni/${kupacId}/proizvodi/${proizvodId}`, { method: 'DELETE' }),
 
-    // ── Omiljene kategorije ────────────────────────────────
+    // â”€â”€ Omiljene kategorije â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     getOmiljeneKategorije: (kupacId) => apiFetch(`/omiljene-kategorije/${kupacId}`),
     dodajOmiljenuKategoriju: (kupacId, kategorijaId) =>
         apiFetch(`/omiljene-kategorije/${kupacId}/kategorije/${kategorijaId}`, { method: 'POST' }),
     ukloniOmiljenuKategoriju: (kupacId, kategorijaId) =>
         apiFetch(`/omiljene-kategorije/${kupacId}/kategorije/${kategorijaId}`, { method: 'DELETE' }),
 
-    // ── Porudžbine ─────────────────────────────────────────
+    // â”€â”€ PorudÅ¾bine â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     kreirajPorudzbinu: (payload) =>
         apiFetch('/porudzbine', {
             method: 'POST',
@@ -121,7 +121,7 @@ const api = {
             headers: { 'Content-Type': 'application/json', 'X-User-Id': localStorage.getItem('korisnikId') }
         }),
 
-    // ── Preporuke ──────────────────────────────────────────
+    // â”€â”€ Preporuke â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     getPorudzbineMenadzera: () =>
         api.getPorudzbineTrenutnogKorisnika(),
     promeniStatusPorudzbine: (porudzbinaId, noviStatus) =>
@@ -150,6 +150,16 @@ const api = {
         URL.revokeObjectURL(url);
     },
 
+    getAnalitikaPorudzbina: ({ od, doDatum, restoranId } = {}) => {
+        const params = new URLSearchParams();
+        if (od) params.set('od', od);
+        if (doDatum) params.set('do', doDatum);
+        if (restoranId) params.set('restoranId', restoranId);
+        const query = params.toString() ? `?${params.toString()}` : '';
+        return apiFetch(`/menadzer/analitika/porudzbine${query}`, {
+            headers: { 'Content-Type': 'application/json', 'X-User-Id': localStorage.getItem('korisnikId') }
+        });
+    },
     // Kuponi
     getKuponi: () =>
         apiFetch('/kuponi', {
@@ -168,13 +178,13 @@ const api = {
     getPreporuke: (kupacId, limit = 10) =>
         apiFetch(`/preporuke/kupac/${kupacId}?limit=${limit}`),
 
-    // ── Tracking ───────────────────────────────────────────
+    // â”€â”€ Tracking â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     zabeleziKlik: (kupacId, proizvodId, tipAkcije = 'PREGLED') => {
         if (!kupacId || !proizvodId) return Promise.resolve();
         return apiFetch(`/tracking/klik/${kupacId}/proizvodi/${proizvodId}`, {
             method: 'POST',
             body: JSON.stringify({ tipAkcije })
-        }).catch(e => console.warn('Tracking klik greška:', e));
+        }).catch(e => console.warn('Tracking klik greÅ¡ka:', e));
     },
 
     zabeleziKlikKategorija: (kupacId, kategorijaId, tipAkcije = 'PREGLED') => {
@@ -182,7 +192,7 @@ const api = {
         return apiFetch(`/tracking/klik/${kupacId}/kategorije/${kategorijaId}`, {
             method: 'POST',
             body: JSON.stringify({ tipAkcije })
-        }).catch(e => console.warn('Tracking klik kategorija greška:', e));
+        }).catch(e => console.warn('Tracking klik kategorija greÅ¡ka:', e));
     },
 
     zabeleziPretragu: (kupacId, tekstUpita) => {
@@ -190,9 +200,10 @@ const api = {
         return apiFetch(`/tracking/pretraga/${kupacId}`, {
             method: 'POST',
             body: JSON.stringify({ tekstUpita, tipPretrage: 'OPSTA' })
-        }).catch(e => console.warn('Tracking pretraga greška:', e));
+        }).catch(e => console.warn('Tracking pretraga greÅ¡ka:', e));
     },
 };
+
 
 
 

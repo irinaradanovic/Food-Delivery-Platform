@@ -27,11 +27,20 @@ function odjavi() {
     window.location.href = '/izbor-restorana.html';
 }
 
+function otvoriKorpu() {
+    if (typeof prikaziKorpu === 'function') {
+        prikaziKorpu();
+        return;
+    }
+
+    window.location.href = '/checkout.html';
+}
+
 function zastitiStranicu() {
     const uloga = localStorage.getItem('uloga');
     const trenutnaStranica = window.location.pathname;
 
-    // Stranice koje zahtevaju prijavu (nije dozvoljeno gostima)
+    // Stranice koje zahtevaju prijavu.
     const samoPrijavljeni = [
         'omiljeni',
         'checkout',
@@ -42,12 +51,12 @@ function zastitiStranicu() {
     ];
 
     if (!uloga) {
-        // Gost — blokiraj samo omiljene i preporuke
+        // Gost - blokiraj samo zasticene stranice
         if (samoPrijavljeni.some(s => trenutnaStranica.includes(s))) {
             window.location.href = '/login.html?poruka=morate-biti-prijavljeni';
             return;
         }
-        // Sve ostalo je dozvoljeno gostima — nastavi
+        // Sve ostalo je dozvoljeno gostima
         return;
     }
 
@@ -79,7 +88,7 @@ function zastitiStranicu() {
         window.location.href = '/dostavljac-porudzbine.html';
     }
 
-    // Kupac ili Gost bez izabranog restorana
+    // Kupac ili gost bez izabranog restorana.
     if ((uloga === 'KUPAC' || !uloga) && !localStorage.getItem('restoranId')) {
         if (
             trenutnaStranica.includes('proizvodi') ||
@@ -108,6 +117,7 @@ function osveziNavigaciju() {
         linkoviHtml = `
             <a href="/izbor-restorana.html" id="nav-restorani">Moji restorani</a>
             <a href="/porudzbine.html" id="nav-porudzbine">Porudzbine</a>
+            <a href="/analitika-porudzbina.html" id="nav-analitika-porudzbina">Analitika porudzbina</a>
         `;
     } else if (uloga === 'DOSTAVLJAC') {
         linkoviHtml = `
@@ -116,7 +126,7 @@ function osveziNavigaciju() {
             <a href="/mapa.html" id="nav-mapa">Mapa</a>
         `;
     } else {
-        // KUPAC ili GOST
+        // KUPAC ili GOST.
         linkoviHtml = `
             <a href="/izbor-restorana.html" id="nav-restorani">Restorani</a>
             <a href="/proizvodi.html" id="nav-proizvodi">Proizvodi</a>
@@ -129,14 +139,14 @@ function osveziNavigaciju() {
         `;
     }
 
-    // Desni deo navigacije — razlika između gosta i prijavljenog korisnika
+    // Desni deo navigacije za gosta i prijavljenog korisnika
     let navDesnoHtml = '';
     if (!uloga) {
-        // GOST — prikaži Login i Registracija
+        // GOST - prikazi login i registraciju
         navDesnoHtml = `
             ${uloga !== 'MENADZER' && uloga !== 'DOSTAVLJAC' ? `
-            <button class="nav-korpa" onclick="prikaziKorpu ? prikaziKorpu() : null">
-                🛒 Korpa
+            <button class="nav-korpa" type="button" onclick="otvoriKorpu()">
+                Korpa
                 <span class="korpa-badge" id="korpa-badge"></span>
             </button>` : ''}
             <a href="/login.html" class="btn-login">Prijava</a>
@@ -145,8 +155,8 @@ function osveziNavigaciju() {
     } else {
         navDesnoHtml = `
             ${uloga === 'KUPAC' ? `
-            <button class="nav-korpa" onclick="prikaziKorpu()">
-                🛒 Korpa
+            <button class="nav-korpa" type="button" onclick="otvoriKorpu()">
+                Korpa
                 <span class="korpa-badge" id="korpa-badge"></span>
             </button>` : ''}
             <span class="nav-user" id="nav-user">${sesija.ime || ''}</span>
@@ -157,7 +167,7 @@ function osveziNavigaciju() {
     navElement.innerHTML = `
         <a href="${uloga === 'ADMIN' ? '/kuponi.html' : (uloga === 'MENADZER' ? '/izbor-restorana.html' : (uloga === 'DOSTAVLJAC' ? '/dostavljac-porudzbine.html' : '/proizvodi.html'))}" class="nav-logo">
             <div class="nav-logo-icon">
-                <img src="/asset/logo.png" alt="Big Bite" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+                <img src="/asset/logo.png" alt="Big Bite" class="nav-logo-img">
             </div>
             <span class="nav-logo-text">Big Bite</span>
         </a>
@@ -171,18 +181,55 @@ function osveziNavigaciju() {
 
     const trenutnaStranica = window.location.pathname;
     document.querySelectorAll('.nav-links a').forEach(link => {
-        if (trenutnaStranica.includes(link.getAttribute('href').replace('/', ''))) {
+        const linkPath = new URL(link.getAttribute('href'), window.location.origin).pathname;
+        if (trenutnaStranica === linkPath) {
             link.classList.add('active');
         }
     });
 }
 
-// Dodaj stilove za btn-login i btn-registracija ako ih nema
+// Dodaj stilove za navigaciju ako ih nema.
 (function injectGostStyles() {
     if (document.getElementById('gost-nav-styles')) return;
     const style = document.createElement('style');
     style.id = 'gost-nav-styles';
     style.textContent = `
+        nav {
+            min-height: 68px;
+            overflow: visible;
+        }
+        .nav-logo {
+            flex: 0 0 auto;
+            min-width: 0;
+        }
+        .nav-logo-icon {
+            width: 40px !important;
+            height: 40px !important;
+            flex: 0 0 40px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .nav-logo-img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .nav-links {
+            min-width: 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .nav-right {
+            flex: 0 0 auto;
+        }
+        .nav-logo,
+        .nav-links a,
+        .nav-right a,
+        .nav-right button {
+            position: relative;
+            z-index: 1;
+        }
         .btn-login {
             text-decoration: none;
             background: none;

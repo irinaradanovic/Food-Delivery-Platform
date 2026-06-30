@@ -1,7 +1,5 @@
 package fooddelivery.food_delivery_platform.repository;
 
-
-
 import fooddelivery.food_delivery_platform.model.Dostava;
 import fooddelivery.food_delivery_platform.model.StatusDostave;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,4 +14,6 @@ public interface DostavaRepository extends JpaRepository<Dostava, Long> {
     List<Dostava> findByDostavljacId(Long dostavljacId);
 
     Optional<Dostava> findByPorudzbinaId(Long porudzbinaId);
+
+    List<Dostava> findByPorudzbinaIdIn(List<Long> porudzbinaIds);
 }
